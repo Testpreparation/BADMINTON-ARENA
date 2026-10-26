@@ -510,6 +510,28 @@ function showPointScore(w){const s=score,T=mode==='tennis',p=(n)=>T?(n>=3&&s.pts
 function beginServe(){$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
  $('msg').textContent=server===1?'Spaceでサーブ':'相手のサーブ'}
 let matchIntro=null;
+function introSound(phase){
+ const v=+$('vol').value;if(!v)return;
+ try{
+  audio();const t=ac.currentTime;
+  const tone=(freq,endFreq,duration,type,gain,delay=0)=>{
+   const o=ac.createOscillator(),g=ac.createGain(),at=t+delay;
+   o.type=type;o.frequency.setValueAtTime(freq,at);
+   if(endFreq!==freq)o.frequency.exponentialRampToValueAtTime(Math.max(1,endFreq),at+duration);
+   g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(Math.max(.0002,gain*v),at+.025);
+   g.gain.exponentialRampToValueAtTime(.0001,at+duration);
+   o.connect(g);g.connect(ac.destination);o.start(at);o.stop(at+duration+.03);
+  };
+  if(phase==='player'){transientNoise(.42,650,5200,.19*v,.015);tone(520,180,.38,'sine',.12)}
+  else if(phase==='opponent'){transientNoise(.5,420,3600,.22*v,.02);tone(300,110,.42,'triangle',.16)}
+  else if(phase==='match'){transientNoise(.65,350,6200,.16*v,.02);tone(440,660,.42,'sine',.09,.08)}
+  else if(phase==='ready'){tone(660,660,.14,'triangle',.19);tone(880,880,.16,'triangle',.21,.19)}
+  else if(phase==='play'){
+   transientNoise(.28,180,2400,.28*v,.025);
+   tone(180,65,.42,'sawtooth',.14);tone(520,1040,.22,'sine',.12,.035);
+  }
+ }catch(e){}
+}
 function startMatchIntro(){
  if($('matchIntro'))$('matchIntro').remove();
  const el=document.createElement('div');el.id='matchIntro';el.innerHTML='<div class="mi-panel"><div class="mi-glow"></div><div class="mi-top">RACKET STARS · MATCH PRESENTATION</div><div class="mi-bar top"></div><div class="mi-main"><div class="mi-title" id="miTitle">PLAYER 1</div><div class="mi-sub" id="miSub">YOUR COURT. YOUR MOMENT.</div><div class="mi-dots"><i></i><i></i><i></i></div></div><div class="mi-bar bottom"></div><div class="mi-bottom" id="miBottom">INTRODUCING YOU</div></div>';
@@ -532,6 +554,7 @@ function updateMatchIntro(dt){
  }
  if(matchIntro.phase!==phase){
    matchIntro.phase=phase;
+   introSound(phase);
    title.classList.remove('changing');void title.offsetWidth;title.classList.add('changing');
    sub.classList.remove('changing');void sub.offsetWidth;sub.classList.add('changing');
  }
