@@ -539,7 +539,7 @@ function showMatchTransition(kicker,title,sub,duration=1350){
  try{audio();const t=ac.currentTime,v=+$('vol').value;if(v){const o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(760,t+.22);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.12*v,t+.035);g.gain.exponentialRampToValueAtTime(.0001,t+.42);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.45)}}catch(e){}
  transitionTimer=setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),260);transitionTimer=null},duration);
 }
-function point(w,why){if(!practice&&replayFrames.length>1){replayAutoPending=true;replayPointT=tm;replayAutoAt=tm+.65;$('replayBtn').hidden=true;}if(practice){state='point';msgT=1.4;best=Math.max(best,rally);$('msg').textContent='ラリー '+rally+'回！（'+why+'）';rally=0;server=1;updScore();$('pointScore').hidden=true;beep(300,.2);return}state='point';msgT=2.4;pointScoreShown=false;pointWinner=w;$('pointScore').hidden=true;$('msg').textContent=why;const i=w===1?0:1,o=1-i,s=score,serving=server,oldGames0=s.games[0],oldGames1=s.games[1];let m=(w===1?'ポイント！':'相手のポイント')+'（'+why+'）';
+function point(w,why){const replayDuration=replayFrames.length>1?replayFrames[replayFrames.length-1].t-replayFrames[0].t:0;if(!practice&&replayFrames.length>1&&replayDuration>=1.2){replayAutoPending=true;replayPointT=tm;replayAutoAt=tm+.65;$('replayBtn').hidden=true;}else{replayAutoPending=false;if($('replayBtn'))$('replayBtn').hidden=true;}if(practice){state='point';msgT=1.4;best=Math.max(best,rally);$('msg').textContent='ラリー '+rally+'回！（'+why+'）';rally=0;server=1;updScore();$('pointScore').hidden=true;beep(300,.2);return}state='point';msgT=2.4;pointScoreShown=false;pointWinner=w;$('pointScore').hidden=true;$('msg').textContent=why;const i=w===1?0:1,o=1-i,s=score,serving=server,oldGames0=s.games[0],oldGames1=s.games[1];let m=(w===1?'ポイント！':'相手のポイント')+'（'+why+'）';
  s.pts[i]++;
  if(mode==='tennis'){if(s.pts[i]>=4&&s.pts[i]-s.pts[o]>=2){s.games[i]++;s.pts=[0,0];suppressPointScore=true;m=(w===1?'ゲーム獲得！':'相手がゲーム獲得');if(s.games[i]>=GW[OPT.mlen])over=w}server=(s.games[0]!==oldGames0||s.games[1]!==oldGames1)?-serving:serving}
  else{server=w;if(s.pts[i]>=BP[OPT.mlen]&&s.pts[i]-s.pts[o]>=2||s.pts[i]>=BP[OPT.mlen]+4)over=w}
@@ -553,7 +553,7 @@ function showPointScore(w){const s=score,T=mode==='tennis',p=(n)=>T?(n>=3&&s.pts
 // 直近10秒の試合状態を記録し、物理進行を止めて再生する
 const REPLAY_MAX=10,REPLAY_STEP=.08;let replayFrames=[],replayRecordT=0,replayPlaying=false,replayAutoPending=false,replayAutoAt=0,replayPointT=0,replayPlayT=0,replaySaved=null,replayBadge=null;
 function captureReplayFrame(){
- if(replayPlaying||state==='menu'||paused||netRole==='guest')return;
+ if(replayPlaying||state!=='rally'||paused||netRole==='guest')return;
  const now=tm;if(now-replayRecordT<REPLAY_STEP)return;replayRecordT=now;
  const pack=p=>({x:p.x,z:p.z,swingT:p.swingT||0,jumpT:p.jumpT||0,diveT:p.diveT||0,diveX:p.diveX||0,diveZ:p.diveZ||0,rot:p.g.rotation.z||0});
  replayFrames.push({t:now,state,P:pack(P),C:pack(C),P2:pack(P2),C2:pack(C2),ball:{x:ball.pos.x,y:ball.pos.y,z:ball.pos.z,net:ball.net},cam:camera.position.toArray(),look:lk.toArray()});
@@ -597,7 +597,7 @@ function finishReplay(){
 $('replayBtn').addEventListener('click',()=>{if(replayPlaying){finishReplay();return}startReplay(false)});
 function triggerPowerImpact(){const el=$('powerImpact');if(!el)return;el.classList.remove('fire');void el.offsetWidth;el.classList.add('fire');clearTimeout(powerImpactTimer);powerImpactTimer=setTimeout(()=>el.classList.remove('fire'),700)}
 let powerImpactTimer=null;
-function beginServe(){if($('replayBtn'))$('replayBtn').hidden=true;suppressPointScore=false;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
+function beginServe(){if($('replayBtn'))$('replayBtn').hidden=true;replayFrames=[];replayRecordT=0;replayAutoPending=false;suppressPointScore=false;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
  $('msg').textContent=server===1?'Spaceでサーブ':'相手のサーブ'}
 let matchIntro=null;
 function introSound(phase){
