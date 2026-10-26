@@ -246,7 +246,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 <div id="menu" class="ov"><div id="topbar"><div id="av">🙂</div><input id="nm" maxlength="6" aria-label="name"><span id="rec"></span></div><div class="home"><div class="logo"><small>RACKET SPORTS</small><h1 id="ttl">RACKET<br>STARS</h1><p>テニス ＆ バドミントン</p></div><div class="modes">
 <button class="mode" data-m="tennis"><span>🎾</span><b>テニス</b><em>PLAY ▶</em></button><button class="mode" data-m="badminton"><span>🏸</span><b>バドミントン</b><em>PLAY ▶</em></button></div>
 <div id="opts"><div class="og"><label>モード</label><div class="seg" data-k="mode"><button data-v="0">対戦</button><button data-v="1">ラリー練習</button></div></div><div class="og"><label>つよさ</label><div class="seg" data-k="diff"><button data-v="0">やさしい</button><button data-v="1">ふつう</button><button data-v="2">つよい</button></div></div><div class="og"><label>試合</label><div class="seg" data-k="mlen"><button data-v="0">短い</button><button data-v="1">標準</button></div></div><div class="og"><label>カラー</label><div id="cols"></div></div></div>
-<details class="set"><summary>⚙ 設定</summary><label>音量<input id="vol" type="range" min="0" max="1" step=".05" value=".5"></label><label>画質<select id="q"><option value="2">高</option><option value="1.5">中</option><option value="1">低</option></select></label></details>
+<details class="set"><summary>⚙ 設定</summary><label>音量<input id="vol" type="range" min="0" max="1" step=".05" value=".5"></label><label>画質<select id="q"><option value="2.5" selected>最高</option><option value="2">高</option><option value="1.5">中</option><option value="1">低</option></select></label></details>
 <small class="hint">PC：キーボード ／ スマホ：横向きで操作</small><button id="fs">⛶ 全画面</button></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -259,7 +259,7 @@ const CFG={
  tennis:{hw:4.1,hl:11.9,netH:.92,g:9.8,k:.02,bounce:true,e:.75,km:7e-4,pSpeed:7.8,cSpeed:6.48,reach:2.4,hMax:2.8,r:.13,th:11,thP:4},
  badminton:{hw:3.05,hl:6.7,netH:1.55,g:9.8,k:.21,bounce:false,e:0,pSpeed:7.2,cSpeed:6.24,reach:2.6,hMax:3.8,r:.06,th:42,thP:-10}};
 const renderer=new THREE.WebGLRenderer({antialias:true});document.body.prepend(renderer.domElement);
-renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;renderer.shadowMap.enabled=!matchMedia('(pointer:coarse)').matches;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const COARSE=matchMedia('(pointer:coarse)').matches;
 function ballTex(){const c=document.createElement('canvas');c.width=128;c.height=64;const g=c.getContext('2d');g.fillStyle='#d4ef3a';g.fillRect(0,0,128,64);g.strokeStyle='#f4f4e8';g.lineWidth=4;g.beginPath();for(let x=0;x<=128;x+=2){const y=32+Math.sin(x/128*Math.PI*2)*16;x?g.lineTo(x,y):g.moveTo(x,y)}g.stroke();return new THREE.CanvasTexture(c)}
 function netTex(w,h){const c=document.createElement('canvas');c.width=c.height=16;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,16,2);g.fillRect(0,0,2,16);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(w*5,h*5);return t}
@@ -281,7 +281,7 @@ const scene=new THREE.Scene();scene.background=new THREE.Color(0x1b2548);scene.f
 const skyM=new THREE.Mesh(new THREE.SphereGeometry(150,24,16),new THREE.MeshBasicMaterial({map:skyTex(),side:THREE.BackSide,fog:false,depthWrite:false}));skyM.renderOrder=-1;scene.add(skyM);
 const camera=new THREE.PerspectiveCamera(60,1,.1,200);
 scene.add(new THREE.HemisphereLight(0xcfe0ff,0x334455,.55));
-const sun=new THREE.DirectionalLight(0xfff4e0,1.1);sun.position.set(8,22,10);sun.castShadow=true;sun.shadow.mapSize.set(COARSE?1024:2048,COARSE?1024:2048);
+const sun=new THREE.DirectionalLight(0xfff4e0,1.1);sun.position.set(8,22,10);sun.castShadow=true;sun.shadow.mapSize.set(COARSE?1536:3072,COARSE?1536:3072);
 const sc=sun.shadow.camera;sc.left=-24;sc.right=24;sc.top=24;sc.bottom=-24;sc.near=1;sc.far=70;sun.shadow.bias=-.0005;scene.add(sun);
 const courtG=new THREE.Group();scene.add(courtG);
 const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c},o||{}));
@@ -492,7 +492,7 @@ function start(m){
     const shirt=P.g.children[0];if(shirt&&shirt.material&&shirt.material.color)shirt.material.color.set(COLS[OPT.col]);
     bgm(false);$('res').hidden=true;score={pts:[0,0],games:[0,0]};over=null;server=1;
     $('ttl').innerHTML='RACKET<br>STARS';updScore();
-    renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value));
+    renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value,2.5));
     rs();
     beginServe();
     camera.position.set(P.x,4.3,P.z+(mode==='tennis'?7.5:6.5));
@@ -669,7 +669,7 @@ $('practiceMode').onclick=()=>{disconnectRoom();netRole='offline';OPT.mode=1;sav
 $('friendMode').onclick=()=>{screenMode='friend';$('modeTitle').textContent=(selectedSport==='tennis'?'🎾 テニス':'🏸 バドミントン')+'｜フレンドとプレイ';$('modeChoices').hidden=true;$('friendPanel').hidden=false;$('modeBack').hidden=true;$('roomStatus').textContent='部屋を作るか、友達の6桁の部屋番号を入力してください。'};
 $('waitingBack').onclick=()=>{disconnectRoom();$('waitingPanel').hidden=true;$('friendPanel').hidden=false;$('modeChoices').hidden=true;$('modeBack').hidden=true;$('startMatch').hidden=true;screenMode='friend'};$('copyRoomCode').onclick=async()=>{try{await navigator.clipboard.writeText($('waitingCode').textContent);roomMessage('部屋コードをコピーしました。友達に共有してください。')}catch(e){roomMessage('部屋コードを長押ししてコピーしてください。')}};$('friendBack').onclick=()=>{screenMode='mode';$('waitingPanel').hidden=true;$('friendPanel').hidden=true;$('modeChoices').hidden=false;$('modeBack').hidden=false;$('roomStatus').textContent='';$('modeTitle').textContent=(selectedSport==='tennis'?'🎾 テニス':'🏸 バドミントン')+'｜モード選択'};
 document.querySelectorAll('.teamPick').forEach(btn=>btn.addEventListener('click',()=>{if(selectedFormat!=='doubles'||!activeRoomRef||(netRole!=='host'&&netRole!=='guest'))return;roomTeams[netRole]=btn.dataset.team;saveTeams();roomMessage('自分をチーム'+btn.dataset.team+'に移動しました。')}));$('randomTeams').onclick=()=>{if(netRole!=='host'||!activeRoomRef)return;roomTeams={host:Math.random()<.5?'A':'B',guest:Math.random()<.5?'A':'B'};activeRoomRef.update({hostTeam:roomTeams.host,guestTeam:roomTeams.guest}).then(()=>{paintTeams();roomMessage('チームをランダムに振り分けました。')}).catch(()=>roomMessage('ランダム振り分けに失敗しました。'))};$('npcStrength').onchange=()=>{const v=Number($('npcStrength').value);if(Number.isInteger(v)&&v>=0&&v<=2){OPT.diff=v;save();paint();if(netRole==='host'&&activeRoomRef)activeRoomRef.child('npcDiff').set(v).catch(()=>{});roomMessage('NPCの強さを「'+$('npcStrength').selectedOptions[0].textContent+'」に設定しました。')}};$('createRoom').onclick=createRoom;$('joinRoom').onclick=joinRoom;$('startMatch').onclick=()=>{if(netRole!=='host'){roomMessage('部屋主のみ開始できます。');return}const hasGuest=!!(activeRoomRef&&activeRoomRef.child('guestId'));if(hasGuest&&(!netConn||!netConn.open)){if(selectedFormat!=='doubles'){roomMessage('フレンドとの接続を確認しています。');return}}if(netConn&&netConn.open){try{netConn.send({type:'start',format:selectedFormat,diff:OPT.diff})}catch(e){}}else if(selectedFormat!=='doubles'){roomMessage('フレンドが参加してから開始できます。');return}$('startMatch').hidden=true;OPT.mode=0;start(selectedSport)};
-$('q').onchange=()=>renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value));
+$('q').onchange=()=>renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value,2.5));
 initMenu();$('ra').onclick=()=>{if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'restart'});$('res').hidden=true;roomMessage('ホストが再戦を開始するまでお待ちください。')}else start(mode)};$('rm').onclick=()=>{$('res').hidden=true;toMenu()};addEventListener('pointerdown',()=>{if(!bgmT&&state==='menu'&&!$('menu').hidden&&!needsNickname){try{audio()}catch(e){}beep(1,.01);bgm(true)}});
 if(COARSE){$('help').hidden=true;$('q').value='1'}
 // モバイルブラウザのダブルタップ／ピンチズームを抑止（操作ボタンは通常どおり利用）
