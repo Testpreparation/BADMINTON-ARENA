@@ -52,6 +52,17 @@ button.mode span{font-size:clamp(30px,9vmin,64px)}button.mode b{font-size:clamp(
 #nickSetup p{margin:0 0 18px;opacity:.8;font-size:14px}
 #nickSetup input{box-sizing:border-box;width:100%;padding:13px;border:1px solid #526579;border-radius:10px;background:#0d1621;color:#fff;font-size:18px;text-align:center}
 #nickSetup button{margin-top:14px}
+/* ニックネーム設定をメインメニューと同じ白・水色・コーラルのデザインに統一 */
+#nickSetup{background:linear-gradient(180deg,rgba(70,160,255,.82),rgba(255,255,255,.72) 58%,rgba(255,200,80,.58));backdrop-filter:blur(8px)}
+#nickSetup .nickCard{width:min(380px,100%);padding:30px 26px;background:linear-gradient(160deg,#fff,#f1f8ff);border:3px solid #d5e8f8;border-radius:28px;color:#16324f;box-shadow:0 10px 0 rgba(20,60,120,.22),0 24px 60px rgba(20,60,120,.25)}
+#nickSetup h2{font-size:clamp(24px,6vw,29px);font-weight:900;color:#16324f;letter-spacing:.02em}
+#nickSetup p{color:#526b84;opacity:1;line-height:1.8}
+#nickSetup input{border:2px solid #c6d7e8;border-radius:14px;background:#fff;color:#16324f;box-shadow:inset 0 2px 4px rgba(20,60,120,.05);font-weight:700;outline:none}
+#nickSetup input:focus{border-color:#70baff;box-shadow:0 0 0 4px rgba(112,186,255,.2)}
+#nickSetup input::placeholder{color:#8ba3ba}
+#nickSetup button{margin-top:16px;background:#ff5a3c;color:#fff;border-radius:20px;box-shadow:0 5px 0 rgba(180,54,35,.22);font-weight:900}
+#nickSetup button:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(180,54,35,.22)}
+
 #rot i{font-size:60px;font-style:normal;display:block;animation:rt 1.6s infinite}@keyframes rt{50%{transform:rotate(90deg)}}
 @media (pointer:coarse) and (orientation:portrait){#rot{display:flex}}
 @media (max-width:640px) and (orientation:portrait){.home{grid-template-columns:1fr}}
@@ -341,7 +352,45 @@ function simLand(p,v,c,w){w=w||{x:0,y:0,z:0};const km=c.km||0;let x=p.x,y=p.y,z=
 let ac;function audio(){ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac}
 function beep(f,d){const v=+$('vol').value;if(!v)return;try{audio();const o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.frequency.value=f;g.gain.value=.25*v;g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d);noise(Math.min(d,.12),f*4,.5*v)}catch(e){}}
 function noise(d,fc,vol){if(!ac||!+$('vol').value)return;const n=Math.max(1,ac.sampleRate*d|0),b=ac.createBuffer(1,n,ac.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=(R()*2-1)*(1-i/n);const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();f.type='bandpass';f.frequency.value=fc;f.Q.value=.8;g.gain.value=vol;s.buffer=b;s.connect(f);f.connect(g);g.connect(ac.destination);s.start()}
-function racketSound(sport,who,speed){const v=+$('vol').value;if(!v)return;try{audio();const t=ac.currentTime,tennis=sport==='tennis',power=Math.min(1,Math.max(.35,(speed||20)/45));const o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter();o.type=tennis?'triangle':'sine';o.frequency.setValueAtTime(tennis?185:620,t);o.frequency.exponentialRampToValueAtTime(tennis?82:260,t+(tennis?.11:.065));f.type='lowpass';f.frequency.value=tennis?1400:3600;g.gain.setValueAtTime((tennis?.42:.28)*v*power,t);g.gain.exponentialRampToValueAtTime(.001,t+(tennis?.14:.085));o.connect(f);f.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+(tennis?.15:.09));noise(tennis?.055:.025,tennis?1700:4200,(tennis?.34:.42)*v*power);const r=ac.createOscillator(),rg=ac.createGain();r.type='sine';r.frequency.setValueAtTime(tennis?460:1250,t);r.frequency.exponentialRampToValueAtTime(tennis?220:600,t+.09);rg.gain.setValueAtTime((tennis?.10:.12)*v*power,t);rg.gain.exponentialRampToValueAtTime(.001,t+.11);r.connect(rg);rg.connect(ac.destination);r.start(t);r.stop(t+.12)}catch(e){}}
+function transientNoise(duration,low,high,volume,decay=0.035){
+ if(!ac||!+$('vol').value||volume<=0)return;
+ const n=Math.max(1,Math.floor(ac.sampleRate*duration)),buf=ac.createBuffer(1,n,ac.sampleRate),data=buf.getChannelData(0);
+ for(let i=0;i<n;i++){const x=i/n;data[i]=(Math.random()*2-1)*Math.exp(-x*duration/Math.max(.001,decay)*5)}
+ const src=ac.createBufferSource(),hp=ac.createBiquadFilter(),lp=ac.createBiquadFilter(),gain=ac.createGain(),t=ac.currentTime;
+ hp.type='highpass';hp.frequency.value=low;hp.Q.value=.7;lp.type='lowpass';lp.frequency.value=high;lp.Q.value=.65;
+ gain.gain.setValueAtTime(Math.max(.0001,volume),t);gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
+ src.buffer=buf;src.connect(hp);hp.connect(lp);lp.connect(gain);gain.connect(ac.destination);src.start(t);src.stop(t+duration);
+}
+function racketSound(sport,who,speed){
+ const v=+$('vol').value;if(!v)return;
+ try{
+  audio();const tennis=sport==='tennis',power=Math.min(1,Math.max(.35,(speed||20)/45));
+  if(tennis){
+   // テニスラケットの短い弦のパチッという音と、ボールの柔らかい打球音
+   transientNoise(.018,900,6500,.42*v*power,.006);
+   transientNoise(.065,130,1250,.20*v*power,.022);
+   transientNoise(.035,2400,9000,.13*v*power,.009);
+  }else{
+   // バドミントンは軽く高いシャトルの打球音。低いドラム状の音を使わない
+   transientNoise(.012,1800,10000,.48*v*power,.004);
+   transientNoise(.028,3200,12000,.20*v*power,.008);
+   transientNoise(.045,700,4200,.055*v*power,.014);
+  }
+ }catch(e){}
+}
+function courtBounceSound(sport,impact){
+ const v=+$('vol').value;if(!v||sport!=='tennis')return;
+ try{
+  audio();const p=Math.min(1,Math.max(.25,impact||.5));
+  // テニスボールがコートに当たる、短く丸い「ポン」という音
+  transientNoise(.055,90,950,.22*v*p,.02);
+  transientNoise(.012,500,3000,.09*v*p,.004);
+ }catch(e){}
+}
+function netSound(){
+ const v=+$('vol').value;if(!v)return;
+ try{audio();transientNoise(.075,500,5200,.18*v,.03);transientNoise(.025,2200,8500,.09*v,.008)}catch(e){}
+}
 function courtBounceSound(sport,impact){const v=+$('vol').value;if(!v)return;try{audio();const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(sport==='tennis'?115:260,t);o.frequency.exponentialRampToValueAtTime(sport==='tennis'?48:110,t+.07);g.gain.setValueAtTime(.18*v*Math.min(1,Math.max(.3,impact||.5)),t);g.gain.exponentialRampToValueAtTime(.001,t+.09);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.1);noise(.018,sport==='tennis'?650:1300,.12*v)}catch(e){}}
 function netSound(){const v=+$('vol').value;if(!v)return;try{audio();noise(.07,900,.28*v);beep(240,.045)}catch(e){}}
 function cheer(){const v=+$('vol').value;if(!v||!ac)return;try{noise(1.4,900,.5*v)}catch(e){}}
