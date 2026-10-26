@@ -104,6 +104,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 <details class="set"><summary>⚙ 設定</summary><label>音量<input id="vol" type="range" min="0" max="1" step=".05" value=".5"></label><label>画質<select id="q"><option value="2">高</option><option value="1.5">中</option><option value="1">低</option></select></label></details>
 <small class="hint">PC：キーボード ／ スマホ：横向きで操作</small><button id="fs">⛶ 全画面</button></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),R=Math.random,DT=1/120,D2R=Math.PI/180;
@@ -162,7 +163,7 @@ function upP(dt){for(let i=0;i<PN;i++){if(plf[i]>0){plf[i]-=dt;pv[i*3+1]-=9*dt;p
 const shadow=new THREE.Mesh(new THREE.CircleGeometry(.22,16),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.35}));shadow.rotation.x=-Math.PI/2;scene.add(shadow);
 const ball={pos:new THREE.Vector3(),vel:new THREE.Vector3(),spin:new THREE.Vector3(),prev:new THREE.Vector3(),net:false,lastHitter:1,bounces:0};
 let cfg=CFG.tennis,mode='tennis',state='menu',server=1,score,msgT=0,acc=0,hitCd=0,serveT=0,aiT=0,aiL=null,over=null,tm=0;const keys={};
-let selectedSport='tennis',netRole='offline',netPeer=null,netConn=null,remoteInput={x:0,z:0,dash:false},netLastSnapshot=0;
+let selectedSport='tennis',netRole='offline',netPeer=null,netConn=null,remoteInput={x:0,z:0,dash:false},netLastSnapshot=0,netInputTimer=0;
 
 function buildCourt(m){mode=m;cfg=CFG[m];courtG.clear();const{hw,hl,netH}=cfg,T=m==='tennis';
  const pl=(w,d,c,y,tx)=>{const mt=M(c,{roughness:.7});if(tx)mt.map=grain(w,d);const p=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mt);p.rotation.x=-Math.PI/2;p.position.y=y;p.receiveShadow=true;courtG.add(p)};
@@ -262,7 +263,7 @@ function update(dt){const c=cfg;hitCd-=dt;const i=inp();
  let tx=0,tz=-(c.hl+1.5);
  if(state==='rally'&&ball.lastHitter===1){const b=ball;if(c.bounce&&b.bounces>0){tx=b.pos.x+b.vel.x*.3;tz=b.pos.z+b.vel.z*.3}else{aiT-=dt;if(aiT<=0||!aiL){aiL=simLand(b.pos,b.vel,c,b.spin);aiT=.15}tx=aiL.x;tz=aiL.z}}
  tz=clamp(tz,-c.hl-3.5,-.8);tx=clamp(tx,-c.hw-2.5,c.hw+2.5);
- if(state!=='point'){const dx=tx-C.x,dz=tz-C.z,d=Math.hypot(dx,dz),kk=1-Math.exp(-7*dt),wn=d>.15?c.cSpeed*SPD[practice?3:OPT.diff]:0;C.vx=(C.vx||0)+((d>.05?dx/d*wn:0)-(C.vx||0))*kk;C.vz=(C.vz||0)+((d>.05?dz/d*wn:0)-(C.vz||0))*kk;C.x+=C.vx*dt;C.z+=C.vz*dt}
+ if(state!=='point'){if(netRole==='host'&&netConn&&netConn.open){const mx=remoteInput.x||0,mz=-(remoteInput.z||0),d=Math.max(1,Math.hypot(mx,mz)),sp=c.pSpeed*(remoteInput.dash?1.5:1);C.vx=mx/d*sp;C.vz=mz/d*sp;C.x=clamp(C.x+C.vx*dt,-c.hw-2.5,c.hw+2.5);C.z=clamp(C.z+C.vz*dt,-c.hl-3.5,-.8)}else{const dx=tx-C.x,dz=tz-C.z,d=Math.hypot(dx,dz),kk=1-Math.exp(-7*dt),wn=d>.15?c.cSpeed*SPD[practice?3:OPT.diff]:0;C.vx=(C.vx||0)+((d>.05?dx/d*wn:0)-(C.vx||0))*kk;C.vz=(C.vz||0)+((d>.05?dz/d*wn:0)-(C.vz||0))*kk;C.x+=C.vx*dt;C.z+=C.vz*dt}}
  if(state==='serveWait'){if(server===1){ball.pos.set(P.x+.5,1.1,P.z)}else{ball.pos.set(C.x+.5,1.1,C.z);serveT+=dt;if(serveT>1)doServe(-1)}}
  if(state==='rally'){acc+=dt;while(acc>=DT&&state==='rally'){stepBall();acc-=DT}tryHit(P);tryHit(C)}
  if(state==='point'){msgT-=dt;if(msgT<=0){if(over){finish()}else beginServe()}}
@@ -289,6 +290,30 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/
  P.g.visible=C.g.visible=ballG.visible=state!=='menu';shadow.visible=ballG.visible;shadow.position.set(ball.pos.x,.03,ball.pos.z);shadow.material.opacity=clamp(.4-ball.pos.y*.06,.08,.4);
  renderer.render(scene,camera);
  }catch(err){console.error('ゲーム描画エラー:',err);if(!$('renderError')){const e=document.createElement('div');e.id='renderError';e.style.cssText='position:fixed;z-index:20;left:12px;right:12px;top:12px;background:#fff;color:#900;padding:12px;border-radius:8px;font:14px system-ui';e.textContent='描画エラー: '+(err&&err.message?err.message:String(err));document.body.appendChild(e)}}}
+function disconnectRoom(){try{if(netConn){netConn.close();netConn=null}if(netPeer){netPeer.destroy();netPeer=null}}catch(e){}netRole='offline';remoteInput={x:0,z:0,dash:false};$('roomStatus').textContent=''}
+function roomMessage(t){$('roomStatus').textContent=t}
+function createRoom(){
+ if(typeof Peer==='undefined'){roomMessage('通信機能を読み込めません。ページを再読み込みしてください。');return}
+ if(roomBusy)return;roomBusy=true;disconnectRoom();const code=String(Math.floor(100000+Math.random()*900000));$('roomCode').value=code;roomMessage('部屋を作成しています…');
+ netRole='host';netPeer=new Peer('rs-'+code);
+ netPeer.on('open',()=>{roomBusy=false;roomMessage('部屋番号 '+code+' を友達に伝えてください。相手の参加を待っています…')});
+ netPeer.on('connection',conn=>{if(netConn){conn.close();return}netConn=conn;conn.on('open',()=>{roomMessage('フレンドが参加しました！対戦を開始します。');OPT.mode=0;start(selectedSport)});conn.on('data',d=>handleNetData(d));conn.on('close',()=>{netConn=null;if(netRole==='host')roomMessage('フレンドとの接続が切れました。')});conn.on('error',()=>roomMessage('通信エラーが発生しました。'))});
+ netPeer.on('error',e=>{roomBusy=false;netRole='offline';roomMessage(e.type==='unavailable-id'?'この部屋番号は使用中です。「部屋を作る」をもう一度押してください。':'部屋を作れませんでした。通信環境を確認してください。')});
+}
+function joinRoom(){
+ if(typeof Peer==='undefined'){roomMessage('通信機能を読み込めません。ページを再読み込みしてください。');return}
+ const code=$('roomCode').value.replace(/\D/g,'').slice(0,6);if(code.length!==6){roomMessage('6桁の部屋番号を入力してください。');return}
+ disconnectRoom();roomBusy=true;netRole='guest';roomMessage('部屋に接続しています…');netPeer=new Peer();
+ netPeer.on('open',()=>{netConn=netPeer.connect('rs-'+code,{reliable:true});netConn.on('open',()=>{roomBusy=false;roomMessage('接続しました。対戦を開始します。');OPT.mode=0;start(selectedSport)});netConn.on('data',d=>handleNetData(d));netConn.on('close',()=>{roomBusy=false;roomMessage('部屋との接続が切れました。')});netConn.on('error',()=>{roomBusy=false;roomMessage('接続できません。部屋番号を確認してください。')})});
+ netPeer.on('error',()=>{roomBusy=false;netRole='offline';roomMessage('接続できません。部屋番号と通信環境を確認してください。')});
+}
+function handleNetData(d){
+ if(!d||typeof d!=='object')return;
+ if(d.type==='input'&&netRole==='host'){remoteInput={x:clamp(+d.input.x||0,-1,1),z:clamp(+d.input.z||0,-1,1),dash:!!d.input.dash};if(d.input.swing){if(state==='serveWait'&&server===-1)doServe(-1);else if(state==='rally'&&C.swingT<=0){C.swingT=.3;tryHit(C)}}}
+ if(d.type==='snapshot'&&netRole==='guest'){const a=d.data;if(!a)return;state=a.state;server=a.server;mode=a.mode;cfg=CFG[mode]||CFG.tennis;P.x=a.P.x;P.z=a.P.z;C.x=a.C.x;C.z=a.C.z;P.swingT=a.P.swingT;C.swingT=a.C.swingT;ball.pos.set(a.ball.p[0],a.ball.p[1],a.ball.p[2]);ball.prev.set(a.ball.p[0],a.ball.p[1],a.ball.p[2]);ball.vel.set(a.ball.v[0],a.ball.v[1],a.ball.v[2]);ball.spin.set(a.ball.s[0],a.ball.s[1],a.ball.s[2]);ball.net=a.ball.net;ball.lastHitter=a.ball.lastHitter;ball.bounces=a.ball.bounces;P.g.visible=C.g.visible=ballG.visible=true;if(a.scoreHtml)$('score').innerHTML=a.scoreHtml;$('msg').textContent=a.msg||'';$('spd').textContent=a.spd||''}
+}
+function sendSnapshot(){try{netConn.send({type:'snapshot',data:{state,server,mode,P:{x:P.x,z:P.z,swingT:P.swingT},C:{x:C.x,z:C.z,swingT:C.swingT},ball:{p:ball.pos.toArray(),v:ball.vel.toArray(),s:ball.spin.toArray(),net:ball.net,lastHitter:ball.lastHitter,bounces:ball.bounces},scoreHtml:$('score').innerHTML,msg:$('msg').textContent,spd:$('spd').textContent}})}catch(e){}}
+function guestFrame(dt){if(netConn&&netConn.open){netInputTimer+=dt;if(netInputTimer>.05){netInputTimer=0;netConn.send({type:'input',input:{...inp(),swing:false}})}}}
 function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=camera.aspect<1?80:60;camera.updateProjectionMatrix()}
 addEventListener('resize',rs);
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;
