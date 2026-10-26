@@ -835,10 +835,10 @@ addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code===
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&serveCharging)releaseServeCharge()});
 function swing(){if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'input',input:{...inp(),swing:true}});return}if(state==='serveWait'&&server===1&&serveT<=0){serveT=.001}else if(state==='rally'&&P.swingT<=0){P.swingT=.3;P.swingReqT=.22;tryHit(P)}}
  function syncTouchActions(){const serving=state==='serveWait'&&server===1,inRally=state==='rally';$('bs').hidden=!serving&&!inRally;$('bp').hidden=!inRally;$('bd').hidden=!inRally;$('bs').textContent=serving?'サーブ':'スイング';if(!serving){serveCharging=false;$('serveMeter').hidden=true}}
- function currentServePower(){const cycle=1.8,elapsed=Math.max(0,(performance.now()-serveChargeStart)/1000),phase=(elapsed%cycle)/cycle,triangle=phase<.5?phase*2:(1-phase)*2;return .25+.75*triangle}
+ function currentServePower(){const cycle=.8,elapsed=Math.max(0,(performance.now()-serveChargeStart)/1000),phase=(elapsed%cycle)/cycle,triangle=phase<.5?phase*2:(1-phase)*2;return .25+.75*triangle}
  function startServeCharge(){if(paused||state!=='serveWait'||server!==1||serveT>0||serveCharging)return false;serveCharging=true;serveChargeStart=performance.now();$('serveMeter').hidden=false;$('serveMeterFill').style.height='8%';updateServeMeter();return true}
  function releaseServeCharge(){if(!serveCharging)return;servePower=currentServePower();serveCharging=false;$('serveMeter').hidden=true;swing()}
- function updateServeMeter(){if(!serveCharging)return;servePower=currentServePower();$('serveMeterFill').style.height=(8+(servePower-.65)/.7*92)+'%'}
+ function updateServeMeter(){if(!serveCharging)return;servePower=currentServePower();$('serveMeterFill').style.height=(8+(servePower-.25)/.75*92)+'%'}
 const joy=$('joy'),kn=$('knob');let jid=null;
 function jm(e){const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const m=Math.hypot(dx,dy),R0=50;if(m>R0){dx*=R0/m;dy*=R0/m}kn.style.transform='translate('+dx+'px,'+dy+'px)';const k=Math.hypot(dx,dy)/R0;tc.x=k<.15?0:dx/R0;tc.z=k<.15?0:dy/R0}
 joy.addEventListener('pointerdown',e=>{jid=e.pointerId;joy.setPointerCapture(jid);jm(e)});
