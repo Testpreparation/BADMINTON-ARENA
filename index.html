@@ -203,8 +203,8 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 @media(max-width:380px){.waitingPanel{width:96vw;padding:8px;border-radius:16px}.waitingTop{font-size:9px}.waitingPanel h2{font-size:17px}.waitingCodeBox{padding:5px}.playerSlots{gap:3px;margin:4px 0}.playerSlot{padding:4px 2px}.playerIcon{font-size:15px}.playerLabel{font-size:7px}.playerSlot b{font-size:9px}}
 
 
-/* Cinematic match intro: original styling restored */
-#matchIntro{position:fixed;inset:0;z-index:40;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(110deg,rgba(5,16,35,.05),rgba(5,16,35,.62) 65%,rgba(5,16,35,.08));opacity:1;transition:opacity .55s ease}
+/* Nintendo Switch Sports-inspired match introduction (original assets and UI) */
+#matchIntro{position:fixed;inset:0;z-index:40;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;opacity:1;background:linear-gradient(135deg,rgba(16,38,72,.20),rgba(5,15,32,.58) 55%,rgba(14,41,74,.22));transition:opacity .45s ease}
 #matchIntro.out{opacity:0}
 /* Instant replay controls */
 #replayBadge{position:fixed;z-index:58;top:calc(env(safe-area-inset-top,0px) + 16px);left:50%;transform:translateX(-50%);padding:8px 15px;border:1px solid rgba(255,255,255,.65);border-radius:999px;background:rgba(3,17,35,.88);color:#fff;font:900 13px system-ui;letter-spacing:.12em;pointer-events:none;box-shadow:0 0 24px rgba(55,190,255,.45)}
@@ -235,18 +235,27 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 @keyframes mtCardIn{from{opacity:0;transform:translateY(28px) scale(.88);filter:blur(6px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
 @keyframes resultEnter{0%{opacity:0;transform:scale(.82) translateY(24px);filter:blur(8px)}65%{opacity:1;transform:scale(1.035) translateY(0);filter:blur(0)}100%{opacity:1;transform:scale(1)}}
 @keyframes resultTitle{from{opacity:0;transform:translateY(24px) scale(.8)}to{opacity:1;transform:translateY(0) scale(1)}}
-#matchIntro:before{content:"";position:absolute;inset:-20%;background:repeating-linear-gradient(115deg,transparent 0 70px,rgba(255,255,255,.055) 71px 73px,transparent 74px 150px);animation:introLines 1.4s linear infinite;transform:translateX(-10%)}
-#matchIntro .mi-glow{position:absolute;width:60vmin;height:60vmin;border-radius:50%;background:radial-gradient(circle,rgba(82,190,255,.28),transparent 68%);filter:blur(5px);animation:introGlow 2s ease-in-out infinite alternate}
-#matchIntro .mi-top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8vh);left:0;right:0;text-align:center;color:#fff;font-size:clamp(10px,2vw,14px);font-weight:900;letter-spacing:.42em;text-shadow:0 3px 14px #00152c;animation:introFade .45s both}
-#matchIntro .mi-main{position:relative;max-width:94vw;text-align:center;transform:skewX(-7deg);filter:drop-shadow(0 8px 0 rgba(0,0,0,.22));animation:introSlam .58s cubic-bezier(.15,.8,.2,1.15) both}
-#matchIntro .mi-title{font-size:clamp(48px,13vw,130px);font-weight:1000;font-style:italic;line-height:.88;letter-spacing:-.055em;color:#fff;-webkit-text-stroke:1px rgba(255,255,255,.35);text-shadow:0 4px 0 #2479c7,0 9px 0 #123d78,0 16px 28px rgba(0,0,0,.5)}
-#matchIntro .mi-sub{margin-top:16px;padding:8px 20px;display:inline-block;background:#ff5a3c;color:white;border-radius:30px;font-size:clamp(12px,3vw,20px);font-weight:900;letter-spacing:.22em;box-shadow:0 5px 0 #a82f24;animation:introFade .35s .18s both}
-#matchIntro .mi-bottom{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 8vh);left:0;right:0;text-align:center;color:#fff;font-size:clamp(10px,2.4vw,14px);letter-spacing:.25em;font-weight:800;text-shadow:0 2px 8px #00152c;animation:introFade .5s .2s both}
-#matchIntro .mi-bar{position:absolute;left:0;right:0;height:5px;background:linear-gradient(90deg,transparent,#8fe5ff,#fff,#ff5a3c,transparent);box-shadow:0 0 22px #55c8ff;animation:introBar .8s ease-out both}
-#matchIntro .mi-bar.top{top:20%}#matchIntro .mi-bar.bottom{bottom:20%;animation-delay:.12s}
-#matchIntro .mi-dots{display:flex;justify-content:center;gap:8px;margin-top:18px}.mi-dots i{display:block;width:7px;height:7px;border-radius:50%;background:#fff;opacity:.35;animation:introDot .8s ease-in-out infinite}.mi-dots i:nth-child(2){animation-delay:.12s}.mi-dots i:nth-child(3){animation-delay:.24s}
-@keyframes introLines{to{transform:translateX(10%)}}@keyframes introGlow{to{transform:scale(1.25);opacity:.55}}@keyframes introSlam{from{opacity:0;transform:skewX(-7deg) scale(1.65) translateY(24px)}to{opacity:1;transform:skewX(-7deg) scale(1) translateY(0)}}@keyframes introFade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}@keyframes introBar{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}@keyframes introDot{50%{opacity:1;transform:scale(1.5)}}
-@media(prefers-reduced-motion:reduce){#matchIntro:before,#matchIntro .mi-glow,#matchIntro .mi-main,#matchIntro .mi-top,#matchIntro .mi-bottom,#matchIntro .mi-sub,#matchIntro .mi-bar,#matchIntro .mi-dots i{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+#matchIntro:before{content:"";position:absolute;inset:-25%;background:repeating-linear-gradient(125deg,transparent 0 92px,rgba(255,255,255,.12) 93px 96px,transparent 97px 184px);animation:introLines 2.8s linear infinite}
+#matchIntro:after{content:"";position:absolute;width:clamp(220px,58vw,760px);aspect-ratio:1;border:clamp(8px,2vw,22px) solid rgba(255,255,255,.13);border-radius:50%;box-shadow:0 0 0 20px rgba(46,174,255,.08),0 0 0 54px rgba(255,255,255,.05);animation:introOrbit 5.8s ease-in-out infinite}
+#matchIntro .mi-glow{position:absolute;width:65vmin;height:65vmin;border-radius:50%;background:radial-gradient(circle,rgba(45,174,255,.48),rgba(87,220,255,.12) 42%,transparent 70%);filter:blur(4px);animation:introGlow 2.4s ease-in-out infinite alternate}
+#matchIntro .mi-top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 6vh);left:0;right:0;text-align:center;color:#fff;font-size:clamp(10px,2vw,14px);font-weight:900;letter-spacing:.3em;text-shadow:0 2px 12px #00152c;animation:introFade .5s both}
+#matchIntro .mi-main{position:relative;z-index:2;max-width:94vw;text-align:center;animation:introSlam .55s cubic-bezier(.18,.85,.25,1.12) both}
+#matchIntro .mi-title{font-size:clamp(58px,15vw,142px);font-weight:1000;line-height:.92;letter-spacing:-.045em;color:#fff;-webkit-text-stroke:1px rgba(255,255,255,.65);text-shadow:0 4px 0 #248bd4,0 8px 0 #1464a7,0 14px 28px rgba(0,0,0,.42)}
+#matchIntro .mi-title.changing{animation:introTitlePop .36s cubic-bezier(.15,.8,.2,1.2) both}
+#matchIntro .mi-sub{margin-top:17px;padding:9px 22px;display:inline-block;background:#fff;color:#124c80;border:2px solid rgba(255,255,255,.9);border-radius:999px;font-size:clamp(12px,3vw,20px);font-weight:950;letter-spacing:.12em;box-shadow:0 5px 0 rgba(0,36,75,.35);animation:introFade .35s .1s both}
+#matchIntro .mi-bottom{position:absolute;z-index:2;bottom:calc(env(safe-area-inset-bottom,0px) + 7vh);left:0;right:0;text-align:center;color:#fff;font-size:clamp(10px,2.4vw,14px);letter-spacing:.22em;font-weight:900;text-shadow:0 2px 8px #00152c;animation:introFade .5s .2s both}
+#matchIntro .mi-bar{position:absolute;z-index:1;left:0;right:0;height:clamp(3px,.6vh,7px);background:linear-gradient(90deg,transparent,#fff,#62dfff,#fff,transparent);box-shadow:0 0 24px #55c8ff;animation:introBar .7s ease-out both}
+#matchIntro .mi-bar.top{top:22%}#matchIntro .mi-bar.bottom{bottom:22%;animation-delay:.12s}
+#matchIntro .mi-dots{display:flex;justify-content:center;gap:8px;margin-top:18px}.mi-dots i{display:block;width:8px;height:8px;border-radius:50%;background:#fff;opacity:.35;animation:introDot .8s ease-in-out infinite}.mi-dots i:nth-child(2){animation-delay:.12s}.mi-dots i:nth-child(3){animation-delay:.24s}
+@keyframes introLines{to{transform:translateX(8%)}}
+@keyframes introGlow{to{transform:scale(1.22);opacity:.72}}
+@keyframes introOrbit{0%,100%{transform:rotate(-12deg) scale(.94)}50%{transform:rotate(12deg) scale(1.06)}}
+@keyframes introSlam{from{opacity:0;transform:scale(1.42) translateY(22px);filter:blur(5px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
+@keyframes introFade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes introTitlePop{0%{opacity:.35;transform:scale(.65) rotate(-3deg)}75%{opacity:1;transform:scale(1.12) rotate(1deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes introBar{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}
+@keyframes introDot{50%{opacity:1;transform:scale(1.5)}}
+@media(prefers-reduced-motion:reduce){#matchIntro:before,#matchIntro:after,#matchIntro .mi-glow,#matchIntro .mi-main,#matchIntro .mi-top,#matchIntro .mi-bottom,#matchIntro .mi-sub,#matchIntro .mi-bar,#matchIntro .mi-dots i{animation-duration:.01ms!important;animation-iteration-count:1!important}}
 </style></head><body>
 <div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
@@ -632,14 +641,17 @@ function updateMatchIntro(dt){
  if(!matchIntro)return false;
  matchIntro.t+=dt;const t=matchIntro.t,el=matchIntro.el,title=$('miTitle'),sub=$('miSub'),bottom=$('miBottom');
  let phase='';
- if(t<1.15){phase='player';title.textContent='PLAYER 1';sub.textContent='YOUR COURT. YOUR MOMENT.';bottom.textContent='INTRODUCING YOU';}
- else if(t<2.3){phase='opponent';title.textContent='CHALLENGER';sub.textContent=netRole==='guest'?'PLAYER 1 VS YOU':'PLAYER 1 VS CPU';bottom.textContent='MEET YOUR OPPONENT';}
- else if(t<3.35){phase='match';title.textContent=mode==='tennis'?'TENNIS':'BADMINTON';sub.textContent=selectedFormat==='doubles'?'DOUBLES MATCH':'SINGLES MATCH';bottom.textContent='ONE COURT · ONE WINNER';}
- else if(t<4.15){phase='ready';title.textContent='READY';sub.textContent='SET YOUR POSITION';bottom.textContent='';}
- else if(t<4.8){phase='play';title.textContent='PLAY!';sub.textContent='LET THE MATCH BEGIN';bottom.textContent='';}
+ if(t<1.05){phase='player';title.textContent='PLAYER 1';sub.textContent='YOUR COURT. YOUR MOMENT.';bottom.textContent='INTRODUCING YOU';}
+ else if(t<2.1){phase='opponent';title.textContent='CHALLENGER';sub.textContent=netRole==='guest'?'PLAYER 1 VS YOU':'PLAYER 1 VS CPU';bottom.textContent='MEET YOUR OPPONENT';}
+ else if(t<3.05){phase='match';title.textContent=mode==='tennis'?'TENNIS':'BADMINTON';sub.textContent=selectedFormat==='doubles'?'DOUBLES MATCH':'SINGLES MATCH';bottom.textContent='GET INTO POSITION';}
+ else if(t<3.7){phase='ready';title.textContent='READY?';sub.textContent='';bottom.textContent='GET READY';}
+ else if(t<4.15){phase='three';title.textContent='3';sub.textContent='';bottom.textContent='';}
+ else if(t<4.6){phase='two';title.textContent='2';sub.textContent='';bottom.textContent='';}
+ else if(t<5.05){phase='one';title.textContent='1';sub.textContent='';bottom.textContent='';}
+ else if(t<5.85){phase='play';title.textContent='PLAY!';sub.textContent='LET THE MATCH BEGIN';bottom.textContent='';}
  else{
   el.classList.add('out');matchIntro=null;
-  setTimeout(()=>{if(el.isConnected)el.remove()},750);
+  setTimeout(()=>{if(el.isConnected)el.remove()},600);
   if(netRole!=='guest')beginServe();
   return false;
  }
