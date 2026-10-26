@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0b111a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b111a"><meta name="apple-mobile-web-app-title" content="RACKET STARS"><link rel="manifest" href="./manifest.json"><link rel="apple-touch-icon" href="./icon.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <title>ラケットスポーツ：テニス＆バドミントン</title>
 <style>
 :root{--bg:#0f1720;--fg:#f2f6fa;--ac:#ffd23f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -296,9 +296,29 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 /* 保存容量のお知らせ：既存ゲーム画面には影響させない */
 #cacheNotice{position:fixed;z-index:100000;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);width:min(calc(100% - 28px),360px);box-sizing:border-box;padding:16px;background:#18222e;color:#f2f6fa;border:1px solid #ffd23f;border-radius:16px;box-shadow:0 10px 36px rgba(0,0,0,.45);text-align:center}
 #cacheNotice[hidden]{display:none!important}#cacheNotice h2{margin:0 0 8px;font-size:18px}#cacheNotice p{margin:0 0 10px;font-size:13px;line-height:1.6}#cacheNotice button{margin:7px 0 0;padding:10px;font-size:15px}#cacheNotice .cacheLater{background:#344354;color:#fff}
+
+/* 選択した追加機能：画面遷移・実績・優勝演出・結果画面 */
+#screenFade{position:fixed;inset:0;z-index:200000;background:#07111e;opacity:0;pointer-events:none;transition:opacity .22s ease}
+#screenFade.active{opacity:.32}
+#achievementNav{background:linear-gradient(135deg,#fff4c7,#ffe08a);color:#4d3510;border:2px solid rgba(255,255,255,.8)}
+#achievementPanel,#championCeremony{position:fixed;inset:0;z-index:150000;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:rgba(4,12,24,.82);backdrop-filter:blur(12px)}
+#achievementPanel[hidden],#championCeremony[hidden]{display:none!important}
+.extraCard{width:min(440px,94vw);max-height:82vh;overflow:auto;box-sizing:border-box;padding:24px;background:linear-gradient(160deg,#fff,#edf6ff);border:3px solid #cfe5f9;border-radius:24px;color:#16324f;box-shadow:0 18px 60px rgba(0,0,0,.35);text-align:center}
+.extraCard h2{margin:0 0 8px;font-size:26px}.extraCard p{line-height:1.6;color:#526b84}
+#achievementList{display:grid;gap:9px;margin:18px 0;text-align:left}
+.achievementItem{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #d4e4f2;border-radius:14px;background:#f6fbff}
+.achievementItem .achIcon{font-size:28px}.achievementItem b{display:block}.achievementItem small{display:block;margin-top:3px;color:#627991}.achievementItem.locked{opacity:.5;filter:grayscale(1)}
+#championCeremony{background:radial-gradient(ellipse at 50% 30%,rgba(255,209,72,.35),rgba(4,12,24,.94) 65%);z-index:160000}
+#championCeremony .extraCard{background:linear-gradient(160deg,#fff9df,#ffe7a0);border-color:#ffd34e;animation:championPop .7s cubic-bezier(.2,.8,.2,1) both}
+.championTrophy{font-size:clamp(70px,20vw,112px);filter:drop-shadow(0 8px 12px rgba(178,112,0,.25));animation:trophyFloat 2s ease-in-out infinite}
+#championName{font-size:clamp(24px,7vw,36px);font-weight:950;color:#a46600;overflow-wrap:anywhere}
+@keyframes championPop{from{opacity:0;transform:translateY(24px) scale(.8)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes trophyFloat{50%{transform:translateY(-8px) rotate(-3deg)}}
+#resultSummary{font-size:14px;line-height:1.8;opacity:.9;margin:10px 0 16px}
+.resultBadge{display:inline-block;padding:5px 12px;margin-bottom:8px;border-radius:999px;background:rgba(255,210,63,.16);border:1px solid rgba(255,210,63,.45);font-size:12px;font-weight:900;letter-spacing:.12em}
+@media(prefers-reduced-motion:reduce){#screenFade,.extraCard,.championTrophy{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
-<div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
+<div id="res" class="ov" hidden><div class="rc"><div class="resultBadge" id="resultBadge">MATCH RESULT</div><h2 id="rt"></h2><p id="rs"></p><div id="resultSummary"></div><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
 <div id="powerImpact" aria-hidden="true"><div class="pi-burst"></div><div class="pi-ring"></div></div>
 <div id="rot"><i>📱</i>横向きにしてください</div>
 <div id="nickSetup" role="dialog" aria-modal="true" aria-labelledby="nickTitle"><div class="nickCard"><h2 id="nickTitle">ニックネーム設定</h2><p>ゲームで使用する名前を設定してください。<br>あとからメニュー上部で変更できます。</p><input id="nickInput" maxlength="12" autocomplete="nickname" placeholder="12文字以内" aria-label="ニックネーム"><button id="nickConfirm">この名前で始める</button></div></div>
@@ -344,7 +364,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 </div>
 
 <div id="menu" class="ov"><div id="topbar"><div id="av">🙂</div><input id="nm" maxlength="12" aria-label="name"><span id="rec"></span></div><div class="home"><div class="logo"><small>RACKET SPORTS</small><h1 id="ttl">RACKET<br>STARS</h1><p>テニス ＆ バドミントン</p></div>
-<div id="homeActions" class="modes"><button id="playNav" class="mode"><span>🎮</span><b>プレイ</b><em>PLAY ▶</em></button><button id="friendNav" class="mode"><span>👥</span><b>フレンド対戦</b><em>PLAY ▶</em></button><button id="tournamentNav" class="mode"><span>🏆</span><b>トーナメント</b><em>PLAY ▶</em></button></div>
+<div id="homeActions" class="modes"><button id="playNav" class="mode"><span>🎮</span><b>プレイ</b><em>PLAY ▶</em></button><button id="friendNav" class="mode"><span>👥</span><b>フレンド対戦</b><em>PLAY ▶</em></button><button id="tournamentNav" class="mode"><span>🏆</span><b>トーナメント</b><em>PLAY ▶</em></button><button id="achievementNav" class="mode"><span>🎖️</span><b>実績・称号</b><em>COLLECTION</em></button></div>
 <div id="playPanel" hidden><h2 class="navHeading">競技を選択</h2><div class="modes"><button class="mode" data-m="tennis"><span>🎾</span><b>テニス</b><em>PLAY ▶</em></button><button class="mode" data-m="badminton"><span>🏸</span><b>バドミントン</b><em>PLAY ▶</em></button></div>
 <button id="playBack" class="navBack secondary">← メインメニューへ戻る</button></div>
 <details class="set"><summary>⚙ 設定</summary><label>音量<input id="vol" type="range" min="0" max="1" step=".05" value=".5"></label><label>画質<select id="q"><option value="2.5" selected>最高</option><option value="2">高</option><option value="1.5">中</option><option value="1">低</option></select></label></details><small class="hint">PC：キーボード ／ スマホ：横向きで操作</small><button id="fs">⛶ 全画面</button></div></div>
@@ -355,7 +375,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 <div id="tournamentLobbyPanel" hidden><h3 id="tournamentLobbyTitle">参加者待機中</h3><p>大会コード：<b id="tournamentLobbyCode">------</b> <button id="copyTournamentCode" class="secondary">コピー</button></p><p id="tournamentLobbyInfo"></p><div id="tournamentParticipants" class="tournamentList"></div><button id="startTournament">大会を開始</button><button id="cancelTournament" class="secondary">大会を取り消す</button><button id="tournamentLobbyBack" class="navBack secondary">トーナメントメニューへ</button></div>
 <div id="tournamentBracketPanel" hidden><h3 id="tournamentBracketTitle">トーナメント表</h3><p id="tournamentBracketInfo"></p><div id="tournamentBracket" class="tournamentBracket"></div><button id="tournamentBracketBack" class="navBack secondary">大会メニューへ戻る</button></div>
 <div id="tournamentMatchPanel" hidden><h3 id="tournamentMatchTitle">試合情報</h3><div id="tournamentMatchInfo"></div><button id="tournamentPlayMatch">試合に参加</button><button id="tournamentWatchMatch" class="secondary">観戦する</button><button id="tournamentMatchBack" class="navBack secondary">トーナメント表へ戻る</button></div></div></div>
-<div id="spectatorBar" hidden><div><b id="spectatorTitle">トーナメント観戦</b><span id="spectatorScore"></span></div><button id="spectatorPlayerView">プレイヤー視点</button><button id="spectatorStandView">観客席視点</button><button id="spectatorBack">トーナメント表へ戻る</button></div><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<div id="achievementPanel" hidden role="dialog" aria-modal="true" aria-labelledby="achievementTitle"><div class="extraCard"><h2 id="achievementTitle">🎖️ 実績・称号</h2><p id="achievementProgress">獲得した実績を確認できます。</p><div id="achievementList"></div><button id="achievementClose">メインメニューへ戻る</button></div></div><div id="championCeremony" hidden role="dialog" aria-modal="true" aria-labelledby="championTitle"><div class="extraCard"><div class="championTrophy">🏆</div><h2 id="championTitle">TOURNAMENT CHAMPION</h2><p id="championName">優勝おめでとう！</p><p id="championDetail">大会を制覇しました！</p><button id="championClose">結果画面へ戻る</button></div></div><div id="screenFade" aria-hidden="true"></div><div id="spectatorBar" hidden><div><b id="spectatorTitle">トーナメント観戦</b><span id="spectatorScore"></span></div><button id="spectatorPlayerView">プレイヤー視点</button><button id="spectatorStandView">観客席視点</button><button id="spectatorBack">トーナメント表へ戻る</button></div><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
