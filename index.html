@@ -46,6 +46,12 @@ button.mode span{font-size:clamp(30px,9vmin,64px)}button.mode b{font-size:clamp(
 .hint{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);opacity:.6;font-size:11px}
 #fs{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;width:auto;margin:0;padding:8px 12px;font-size:14px;background:rgba(255,255,255,.15);color:var(--fg)}
 #rot{position:fixed;inset:0;z-index:9;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#0b111a;font-size:18px;text-align:center}
+#nickSetup{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(5,10,18,.96);padding:20px;box-sizing:border-box}
+#nickSetup .nickCard{width:min(340px,100%);padding:26px 22px;background:#18222e;border:1px solid #2c3b4c;border-radius:18px;text-align:center;box-sizing:border-box}
+#nickSetup h2{margin:0 0 8px;font-size:23px}
+#nickSetup p{margin:0 0 18px;opacity:.8;font-size:14px}
+#nickSetup input{box-sizing:border-box;width:100%;padding:13px;border:1px solid #526579;border-radius:10px;background:#0d1621;color:#fff;font-size:18px;text-align:center}
+#nickSetup button{margin-top:14px}
 #rot i{font-size:60px;font-style:normal;display:block;animation:rt 1.6s infinite}@keyframes rt{50%{transform:rotate(90deg)}}
 @media (pointer:coarse) and (orientation:portrait){#rot{display:flex}}
 @media (max-width:640px) and (orientation:portrait){.home{grid-template-columns:1fr}}
@@ -159,6 +165,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 <div id="hud" hidden><div id="score"></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
 <div id="rot"><i>📱</i>横向きにしてください</div>
+<div id="nickSetup" role="dialog" aria-modal="true" aria-labelledby="nickTitle"><div class="nickCard"><h2 id="nickTitle">ニックネーム設定</h2><p>ゲームで使用する名前を設定してください。<br>あとからメニュー上部で変更できます。</p><input id="nickInput" maxlength="6" autocomplete="nickname" placeholder="6文字以内" aria-label="ニックネーム"><button id="nickConfirm">この名前で始める</button></div></div>
 <div id="formatMenu" class="ov" hidden><div class="modecard"><h2 id="formatTitle">🎾 テニス｜試合形式</h2><p>試合形式を選んでください</p><button id="singlesMode">👤 シングルス（1対1）</button><button id="doublesMode">👥 ダブルス（2対2）</button><button id="formatBack" class="secondary">← 競技選択へ戻る</button></div></div>
 <div id="modeMenu" class="ov" hidden><div class="modecard">
 <h2 id="modeTitle">🎾 テニス</h2>
@@ -354,11 +361,11 @@ function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>
 function doServe(who){const c=cfg;ball.lastHitter=who;state='rally';(who===1?P:C).q=0;hit(who,(R()*2-1)*c.hw*.6,-who*c.hl*.5,mode==='tennis'?12:45,mode==='tennis'?120:0);$('msg').textContent=''}
 const T4=[0,15,30,40];
 const OPT={mode:0,diff:1,mlen:1,col:0},COLS=['#3b82f6','#ef4444','#22c55e','#f59e0b','#a855f7','#ec4899'],ERR=[.28,.12,.04,.03],SPD=[.8,1,1.2,1],GW=[1,2],BP=[7,11];
-let practice=false,rally=0,best=0,pname='プレイヤー',REC={tennis:[0,0],badminton:[0,0]},bgmT=null;
-try{const sv=JSON.parse(localStorage.getItem('rs1')||'{}');if(sv.REC)REC=sv.REC;if(sv.name)pname=sv.name;if(sv.col!=null)OPT.col=sv.col;Object.assign(OPT,sv.opt||{})}catch(e){}
+let practice=false,rally=0,best=0,pname='プレイヤー',REC={tennis:[0,0],badminton:[0,0]},bgmT=null,needsNickname=true;
+try{const sv=JSON.parse(localStorage.getItem('rs1')||'{}');if(sv.REC)REC=sv.REC;if(typeof sv.name==='string'&&sv.name.trim()){pname=sv.name;needsNickname=false}if(sv.col!=null)OPT.col=sv.col;Object.assign(OPT,sv.opt||{})}catch(e){}
 function save(){try{localStorage.setItem('rs1',JSON.stringify({REC,name:pname,col:OPT.col,opt:{mode:OPT.mode,diff:OPT.diff,mlen:OPT.mlen}}))}catch(e){}}
 function paint(){document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===OPT[sg.dataset.k])));document.querySelectorAll('.sw').forEach((b,i)=>b.classList.toggle('on',i===OPT.col));$('av').style.background=COLS[OPT.col];const t=REC.tennis,bd=REC.badminton;$('rec').textContent='🎾 '+t[0]+'勝'+t[1]+'敗　🏸 '+bd[0]+'勝'+bd[1]+'敗'}
-function initMenu(){const cs=$('cols');COLS.forEach((c,i)=>{const b=document.createElement('button');b.className='sw';b.style.background=c;b.onclick=()=>{OPT.col=i;paint();save();beep(700,.05)};cs.appendChild(b)});document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>{OPT[sg.dataset.k]=+b.dataset.v;paint();save();beep(600,.05)}));$('nm').value=pname;$('nm').oninput=()=>{pname=$('nm').value.slice(0,6)||'プレイヤー';save()};paint()}
+function initMenu(){const cs=$('cols');COLS.forEach((c,i)=>{const b=document.createElement('button');b.className='sw';b.style.background=c;b.onclick=()=>{OPT.col=i;paint();save();beep(700,.05)};cs.appendChild(b)});document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>{OPT[sg.dataset.k]=+b.dataset.v;paint();save();beep(600,.05)}));$('nm').value=pname;$('nm').oninput=()=>{pname=$('nm').value.slice(0,6)||'プレイヤー';save()};$('nickInput').value=needsNickname?'':pname;$('nickConfirm').onclick=()=>{const n=$('nickInput').value.trim().slice(0,6);if(!n){$('nickInput').focus();$('nickInput').placeholder='名前を入力してください';return}pname=n;$('nm').value=n;needsNickname=false;save();$('nickSetup').style.display='none';beep(660,.08)};$('nickInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('nickConfirm').click()});if(needsNickname){$('nickSetup').style.display='flex';setTimeout(()=>$('nickInput').focus(),100)}paint()}
 function bgm(on){clearInterval(bgmT);bgmT=null;if(!on)return;const N=[523,659,784,659,587,740,880,740];let i=0;bgmT=setInterval(()=>{const v=+$('vol').value;if(!v||!ac)return;try{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=N[i++%8];g.gain.value=.08*v;g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.35);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.35)}catch(e){}},320)}
 function finish(){const w=over===1,s=score;if(!practice){REC[mode][w?0:1]++;save();paint()}$('rt').textContent=w?'WIN!':'LOSE…';$('rt').className=w?'win':'lose';$('rs').textContent=mode==='tennis'?'ゲーム '+s.games[0]+' - '+s.games[1]:'スコア '+s.pts[0]+' - '+s.pts[1];state='menu';$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;beep(w?880:200,.4);if(w)cheer()}
 function updScore(){const s=score;let t;
