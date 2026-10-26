@@ -95,6 +95,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 <button id="createRoom">＋ 部屋を作る</button>
 <div class="roomrow"><input id="roomCode" maxlength="6" inputmode="numeric" placeholder="部屋番号（6桁）" aria-label="部屋番号"><button id="joinRoom">参加する</button></div>
 <p id="roomStatus" role="status"></p>
+<button id="startMatch" hidden>▶ 対戦を開始する</button>
 <button id="friendBack" class="secondary">← モード選択へ戻る</button></div>
 <button id="modeBack" class="secondary">← 競技選択へ戻る</button>
 </div></div>
@@ -299,24 +300,40 @@ function showModeMenu(sport){selectedSport=sport;screenMode='mode';$('menu').hid
 function createRoom(){
  if(typeof Peer==='undefined'){roomMessage('通信機能を読み込めません。ページを再読み込みしてください。');return}
  if(roomBusy)return;
- disconnectRoom();roomBusy=true;const code=String(Math.floor(100000+Math.random()*900000));$('roomCode').value=code;roomMessage('部屋を作成しています…');netRole='host';
- try{netPeer=new Peer('rs-'+code,{debug:0})}catch(e){roomBusy=false;netRole='offline';roomMessage('部屋を作れませんでした。少し待って再試行してください。');return}
- roomTimeout=setTimeout(()=>{if(roomBusy&&netRole==='host'){roomBusy=false;roomMessage('部屋の作成がタイムアウトしました。通信環境を確認して、もう一度お試しください。');try{if(netPeer){netPeer.destroy();netPeer=null}}catch(e){}netRole='offline'}},15000);
- netPeer.on('open',()=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;roomMessage('部屋番号：'+code+'\nこの番号を友達に伝えてください。参加を待っています…')});
- netPeer.on('connection',conn=>{if(netConn){conn.close();return}netConn=conn;conn.on('open',()=>{roomBusy=false;roomMessage('フレンドが参加しました！対戦を開始します。');OPT.mode=0;start(selectedSport)});conn.on('data',d=>handleNetData(d));conn.on('close',()=>{netConn=null;if(netRole==='host')roomMessage('フレンドとの接続が切れました。')});conn.on('error',()=>roomMessage('通信エラーが発生しました。もう一度部屋を作成してください。'))});
- netPeer.on('error',e=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;netRole='offline';roomMessage(e&&e.type==='unavailable-id'?'部屋番号が重複しました。「部屋を作る」をもう一度押してください。':'部屋を作成できませんでした（'+((e&&e.type)||'通信エラー')+'）。通信環境を確認して再試行してください。')});
+ disconnectRoom();$('startMatch').hidden=true;roomBusy=true;
+ const code=String(Math.floor(100000+Math.random()*900000));$('roomCode').value=code;
+ roomMessage('部屋を作成しています…');netRole='host';
+ try{netPeer=new Peer('rs-'+code,{debug:0})}catch(e){roomBusy=false;netRole='offline';roomMessage('部屋を作れませんでした。ページを再読み込みして再試行してください。');return}
+ roomTimeout=setTimeout(()=>{if(roomBusy&&netRole==='host'){roomBusy=false;roomMessage('部屋の作成がタイムアウトしました。通信環境を確認して、もう一度お試しください。');try{if(netPeer){netPeer.destroy();netPeer=null}}catch(e){}netRole='offline'}},20000);
+ netPeer.on('open',()=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;roomMessage('部屋番号：'+code+'\n友達にこの6桁の番号を伝えてください。参加者が来るまでお待ちください。');});
+ netPeer.on('connection',conn=>{
+   if(netConn){try{conn.close()}catch(e){}return}
+   netConn=conn;
+   conn.on('open',()=>{roomBusy=false;roomMessage('フレンドが参加しました！準備ができたら「対戦を開始する」を押してください。');$('startMatch').hidden=false;});
+   conn.on('data',d=>handleNetData(d));
+   conn.on('close',()=>{netConn=null;$('startMatch').hidden=true;if(netRole==='host')roomMessage('フレンドとの接続が切れました。参加を待っています…')});
+   conn.on('error',()=>roomMessage('通信エラーが発生しました。部屋を作り直してください。'));
+ });
+ netPeer.on('error',e=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;netRole='offline';$('startMatch').hidden=true;roomMessage(e&&e.type==='unavailable-id'?'部屋番号が重複しました。「部屋を作る」をもう一度押してください。':'部屋を作成できませんでした（'+((e&&e.type)||'通信エラー')+'）。少し待って再試行してください。')});
 }
 function joinRoom(){
  if(typeof Peer==='undefined'){roomMessage('通信機能を読み込めません。ページを再読み込みしてください。');return}
  const code=$('roomCode').value.replace(/[^0-9]/g,'').slice(0,6);if(code.length!==6){roomMessage('6桁の部屋番号を入力してください。');return}
- disconnectRoom();roomBusy=true;netRole='guest';roomMessage('部屋に接続しています…');
- try{netPeer=new Peer()}catch(e){roomBusy=false;netRole='offline';roomMessage('通信を開始できません。再読み込みしてください。');return}
- roomTimeout=setTimeout(()=>{if(roomBusy&&netRole==='guest'){roomBusy=false;roomMessage('接続がタイムアウトしました。部屋番号を確認して再試行してください。');try{if(netPeer){netPeer.destroy();netPeer=null}}catch(e){}netRole='offline'}},15000);
- netPeer.on('open',()=>{netConn=netPeer.connect('rs-'+code,{reliable:true});netConn.on('open',()=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;roomMessage('接続しました。対戦を開始します。');OPT.mode=0;start(selectedSport)});netConn.on('data',d=>handleNetData(d));netConn.on('close',()=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;roomMessage('部屋との接続が切れました。')});netConn.on('error',()=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;roomMessage('接続できません。部屋番号を確認してください。')})});
- netPeer.on('error',e=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;netRole='offline';roomMessage('接続できません（'+((e&&e.type)||'通信エラー')+'）。部屋番号と通信環境を確認してください。')});
+ disconnectRoom();$('startMatch').hidden=true;roomBusy=true;netRole='guest';roomMessage('部屋に接続しています…');
+ try{netPeer=new Peer()}catch(e){roomBusy=false;netRole='offline';roomMessage('通信を開始できません。ページを再読み込みしてください。');return}
+ roomTimeout=setTimeout(()=>{if(roomBusy&&netRole==='guest'){roomBusy=false;roomMessage('接続がタイムアウトしました。部屋番号を確認してください。ホストが部屋を開いた状態かも確認してください。');try{if(netPeer){netPeer.destroy();netPeer=null}}catch(e){}netRole='offline'}},20000);
+ netPeer.on('open',()=>{
+   try{netConn=netPeer.connect('rs-'+code,{reliable:true})}catch(e){roomBusy=false;netRole='offline';roomMessage('接続を開始できません。部屋番号を確認してください。');return}
+   netConn.on('open',()=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;roomMessage('部屋に参加しました。ホストが「対戦を開始する」を押すまでお待ちください。')});
+   netConn.on('data',d=>handleNetData(d));
+   netConn.on('close',()=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;roomMessage('部屋との接続が切れました。部屋番号を確認して再参加してください。')});
+   netConn.on('error',()=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;roomMessage('接続できません。ホストが部屋を作成済みか、部屋番号が正しいか確認してください。')});
+ });
+ netPeer.on('error',e=>{if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}roomBusy=false;netRole='offline';roomMessage('接続できません（'+((e&&e.type)||'通信エラー')+'）。ホストが待機中か、部屋番号・通信環境を確認してください。')});
 }
 function handleNetData(d){
  if(!d||typeof d!=='object')return;
+ if(d.type==='start'&&netRole==='guest'){OPT.mode=0;start(selectedSport);return}
  if(d.type==='restart'&&netRole==='host'){start(selectedSport);return}
  if(d.type==='input'&&netRole==='host'){remoteInput={x:clamp(+d.input.x||0,-1,1),z:clamp(+d.input.z||0,-1,1),dash:!!d.input.dash};if(d.input.swing){if(state==='serveWait'&&server===-1)doServe(-1);else if(state==='rally'&&C.swingT<=0){C.swingT=.3;tryHit(C)}}}
  if(d.type==='snapshot'&&netRole==='guest'){const a=d.data;if(!a)return;state=a.state;server=a.server;mode=a.mode;cfg=CFG[mode]||CFG.tennis;P.x=a.P.x;P.z=a.P.z;C.x=a.C.x;C.z=a.C.z;P.swingT=a.P.swingT;C.swingT=a.C.swingT;ball.pos.set(a.ball.p[0],a.ball.p[1],a.ball.p[2]);ball.prev.set(a.ball.p[0],a.ball.p[1],a.ball.p[2]);ball.vel.set(a.ball.v[0],a.ball.v[1],a.ball.v[2]);ball.spin.set(a.ball.s[0],a.ball.s[1],a.ball.s[2]);ball.net=a.ball.net;ball.lastHitter=a.ball.lastHitter;ball.bounces=a.ball.bounces;P.g.visible=C.g.visible=ballG.visible=true;if(a.scoreHtml)$('score').innerHTML=a.scoreHtml;$('msg').textContent=a.msg||'';$('spd').textContent=a.spd||'';if(a.finished){$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;$('rt').textContent=a.rt||'試合終了';$('rt').className=a.rtClass||'';$('rs').textContent=a.rs||''}else{$('res').hidden=true;$('hud').hidden=false;$('touch').hidden=!COARSE;$('mb').hidden=false}}
@@ -344,7 +361,7 @@ $('cpuMode').onclick=()=>{disconnectRoom();netRole='offline';OPT.mode=0;save();s
 $('practiceMode').onclick=()=>{disconnectRoom();netRole='offline';OPT.mode=1;save();start(selectedSport)};
 $('friendMode').onclick=()=>{screenMode='friend';$('modeTitle').textContent=(selectedSport==='tennis'?'🎾 テニス':'🏸 バドミントン')+'｜フレンドとプレイ';$('modeChoices').hidden=true;$('friendPanel').hidden=false;$('modeBack').hidden=true;$('roomStatus').textContent='部屋を作るか、友達の6桁の部屋番号を入力してください。'};
 $('friendBack').onclick=()=>{screenMode='mode';$('friendPanel').hidden=true;$('modeChoices').hidden=false;$('modeBack').hidden=false;$('roomStatus').textContent='';$('modeTitle').textContent=(selectedSport==='tennis'?'🎾 テニス':'🏸 バドミントン')+'｜モード選択'};
-$('createRoom').onclick=createRoom;$('joinRoom').onclick=joinRoom;
+$('createRoom').onclick=createRoom;$('joinRoom').onclick=joinRoom;$('startMatch').onclick=()=>{if(netRole!=='host'||!netConn||!netConn.open){roomMessage('フレンドが参加してから開始できます。');return}try{netConn.send({type:'start'})}catch(e){}$('startMatch').hidden=true;OPT.mode=0;start(selectedSport)};
 $('q').onchange=()=>renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value));
 initMenu();$('ra').onclick=()=>{if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'restart'});$('res').hidden=true;roomMessage('ホストが再戦を開始するまでお待ちください。')}else start(mode)};$('rm').onclick=()=>{$('res').hidden=true;toMenu()};addEventListener('pointerdown',()=>{if(!bgmT&&state==='menu'&&!$('menu').hidden){beep(1,.01);bgm(true)}});
 if(COARSE){$('help').hidden=true;$('q').value='1.5'}renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value));rs();buildCourt('tennis');camera.position.set(0,7,16);requestAnimationFrame(loop);
