@@ -227,7 +227,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),R=Math.random,DT=1/120,D2R=Math.PI/180;
 const CFG={
  tennis:{hw:4.1,hl:11.9,netH:.92,g:9.8,k:.02,bounce:true,e:.75,km:7e-4,pSpeed:6.5,cSpeed:5.4,reach:2.4,hMax:2.8,r:.13,th:11,thP:4},
- badminton:{hw:2.6,hl:6.7,netH:1.55,g:9.8,k:.21,bounce:false,e:0,pSpeed:6,cSpeed:5.2,reach:2.6,hMax:3.8,r:.06,th:42,thP:-10}};
+ badminton:{hw:3.05,hl:6.7,netH:1.55,g:9.8,k:.21,bounce:false,e:0,pSpeed:6,cSpeed:5.2,reach:2.6,hMax:3.8,r:.06,th:42,thP:-10}};
 const renderer=new THREE.WebGLRenderer({antialias:true});document.body.prepend(renderer.domElement);
 renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;renderer.shadowMap.enabled=!matchMedia('(pointer:coarse)').matches;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const COARSE=matchMedia('(pointer:coarse)').matches;
@@ -330,7 +330,7 @@ function buildCourt(m){mode=m;cfg=CFG[m];courtG.clear();const{hw,hl,netH}=cfg,T=
  pl(160,160,T?0x1d3a2a:0x2a2f3a,0);pl(2*hw+8,2*hl+10,T?0x2f7a4a:0x8b5a2b,.004,1);pl(2*hw,2*hl,T?0x2b6cb0:0x2e8b57,.008,1);
  const ln=(a,b,c,d)=>box(Math.abs(c-a)+.08,.02,Math.abs(d-b)+.08,0xffffff,(a+c)/2,.015,(b+d)/2);
  ln(-hw,-hl,hw,-hl);ln(-hw,hl,hw,hl);ln(-hw,-hl,-hw,hl);ln(hw,-hl,hw,hl);
- if(T){ln(-hw,6.4,hw,6.4);ln(-hw,-6.4,hw,-6.4);ln(0,-6.4,0,6.4)}else{ln(-hw,1.98,hw,1.98);ln(-hw,-1.98,hw,-1.98);ln(0,1.98,0,hl);ln(0,-hl,0,-1.98)}
+ if(T){ln(-hw,6.4,hw,6.4);ln(-hw,-6.4,hw,-6.4);ln(0,-6.4,0,6.4)}else{const sw=2.59;ln(-sw,-hl, -sw,hl);ln(sw,-hl,sw,hl);ln(-hw,hl-.76,hw,hl-.76);ln(-hw,-hl+.76,hw,-hl+.76);ln(-hw,1.98,hw,1.98);ln(-hw,-1.98,hw,-1.98);ln(0,1.98,0,hl-.76);ln(0,-hl+.76,0,-1.98)}
  box(2*hw+.6,netH,.03,0xffffff,0,netH/2,0,{transparent:true,map:netTex(2*hw+.6,netH),alphaTest:.4,side:THREE.DoubleSide});box(2*hw+.6,.08,.05,0xffffff,0,netH,0);
  [-1,1].forEach(s=>box(.08,netH+.1,.08,0xdddddd,s*(hw+.3),(netH+.1)/2,0));
  const pts=[];
@@ -366,40 +366,50 @@ const REAL_SFX={
  badmintonHit:'https://bigsoundbank.com/UPLOAD/mp3/0537.mp3',
  tennisBall:'https://bigsoundbank.com/UPLOAD/mp3/0584.mp3'
 };
-let hitAudio=null,lastHitAudioAt=0;
-function playRealSound(url,volume,maxMs,startAt=0,allowOverlap=false){
+let lastHitAudioAt=0;
+const REAL_AUDIO={};
+function prepareRealAudio(url){
+ if(REAL_AUDIO[url])return REAL_AUDIO[url];
+ try{const a=new Audio(url);a.preload='auto';a.volume=1;REAL_AUDIO[url]=a;return a}catch(e){return null}
+}
+function playRealSound(url,volume,maxMs,startAt=0,allowOverlap=false,kind='hit'){
  const v=+$('vol').value;if(!v)return;
  const now=performance.now();
- // 同じ打球イベントが短時間に重なって複数回鳴るのを防ぐ
- if(!allowOverlap&&now-lastHitAudioAt<180)return;
- if(!allowOverlap)lastHitAudioAt=now;
+ if(kind==='hit'&&!allowOverlap&&now-lastHitAudioAt<180)return;
+ if(kind==='hit'&&!allowOverlap)lastHitAudioAt=now;
  try{
-  if(hitAudio){hitAudio.pause();try{hitAudio.currentTime=0}catch(e){}}
-  hitAudio=new Audio(url);const a=hitAudio;a.preload='auto';a.volume=Math.max(0,Math.min(1,v));
+  const a=prepareRealAudio(url);if(!a)return;
+  a.volume=Math.max(0,Math.min(1,v));
+  try{a.currentTime=startAt||0}catch(e){}
   const stop=()=>{try{a.pause();a.currentTime=0}catch(e){}};
-  a.addEventListener('loadedmetadata',()=>{try{if(startAt>0&&startAt<a.duration)a.currentTime=startAt}catch(e){}},{once:true});
-  a.play().then(()=>{if(maxMs>0)setTimeout(()=>{if(hitAudio===a)stop()},maxMs)}).catch(()=>{});
+  a.play().then(()=>{if(maxMs>0)setTimeout(()=>{if(!a.paused)stop()},maxMs)}).catch(()=>{});
  }catch(e){}
 }
 function racketSound(sport,who,speed){
  const v=+$('vol').value;if(!v)return;
- if(sport==='badminton'){
-  // 実際のバドミントン打球音を短く再生
-  playRealSound(REAL_SFX.badmintonHit,v,180,0);
- }else{
-  // テニスの打球音
-  playRealSound(REAL_SFX.tennisBall,v,150,0);
- }
+ if(sport==='badminton')playRealSound(REAL_SFX.badmintonHit,v,180,0,false,'hit');
+ else playRealSound(REAL_SFX.tennisBall,v,150,0,false,'hit');
 }
-function courtBounceSound(sport,impact){
- // 打球音と同じ録音が重なって二重に聞こえないよう、ここでは再生しない
-}
+function courtBounceSound(sport,impact){}
 function netSound(){
  const v=+$('vol').value;if(!v)return;
- // ネット接触音のみ控えめな短い効果音にする
  try{audio();transientNoise(.055,700,5200,.12*v,.02)}catch(e){}
 }
-function cheer(){const v=+$('vol').value;if(!v)return;playRealSound('https://sfxmint.com/dl/crowd-cheer-44.mp3',v,2800,0)}
+function cheer(){const v=+$('vol').value;if(!v)return;playRealSound('https://sfxmint.com/dl/crowd-cheer-44.mp3',v,2800,0,true,'cheer')}
+function missReaction(){
+ const v=+$('vol').value;if(!v)return;
+ try{
+  if('speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined'){
+   speechSynthesis.cancel();
+   const u=new SpeechSynthesisUtterance('あぁ……');u.lang='ja-JP';u.rate=.78;u.pitch=.72;u.volume=Math.max(0,Math.min(1,v));
+   const vs=speechSynthesis.getVoices();const ja=vs.find(x=>/^ja/i.test(x.lang));if(ja)u.voice=ja;
+   speechSynthesis.speak(u);return;
+  }
+ }catch(e){}
+ try{audio();const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter();o.type='sawtooth';o.frequency.setValueAtTime(190,t);o.frequency.exponentialRampToValueAtTime(105,t+.48);f.type='lowpass';f.frequency.value=480;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.18*v,t+.07);g.gain.exponentialRampToValueAtTime(.0001,t+.52);o.connect(f);f.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.53)}catch(e){}
+}
+// 効果音を事前に準備して、打球・得点時の読み込み待ちを減らす
+[REAL_SFX.badmintonHit,REAL_SFX.tennisBall,'https://sfxmint.com/dl/crowd-cheer-44.mp3'].forEach(prepareRealAudio);
 function hit(who,tx,tz,deg,sp){sp=sp||0;const p=ball.pos,c=cfg,th=deg*D2R;ball.lastHitter=who;ball.bounces=0;ball.net=false;aiL=null;hitCd=.25;const q=(who===1?P:C).q||0;tx+=(R()-.5)*q*3;tz+=(R()-.5)*q*2;
  let dx=tx-p.x,dz=tz-p.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let s=Math.max(10,L*1.4);const v={x:0,y:0,z:0},w={x:dz*sp,y:0,z:-dx*sp};
  for(let i=0;i<16;i++){v.x=dx*s*Math.cos(th);v.z=dz*s*Math.cos(th);v.y=s*Math.sin(th);const l=simLand(p,v,c,w),Ld=Math.hypot(l.x-p.x,l.z-p.z)||.1;s=clamp(s*Math.pow(L/Ld,.6),3,70)}
@@ -437,7 +447,7 @@ function point(w,why){if(practice){state='point';msgT=1.4;best=Math.max(best,ral
  s.pts[i]++;
  if(mode==='tennis'){if(s.pts[i]>=4&&s.pts[i]-s.pts[o]>=2){s.games[i]++;s.pts=[0,0];m=(w===1?'ゲーム獲得！':'相手がゲーム獲得');if(s.games[i]>=GW[OPT.mlen])over=w}server=(s.games[0]!==oldGames0||s.games[1]!==oldGames1)?-serving:serving}
  else{server=w;if(s.pts[i]>=BP[OPT.mlen]&&s.pts[i]-s.pts[o]>=2||s.pts[i]>=BP[OPT.mlen]+4)over=w}
- updScore();$('msg').textContent=m;beep(w===1?760:240,.25);cheer()}
+ updScore();$('msg').textContent=m;beep(w===1?760:240,.25);if(w===1)cheer();else missReaction()}
 function beginServe(){state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
  $('msg').textContent=server===1?'Spaceでサーブ':'相手のサーブ'}
 function start(m){
