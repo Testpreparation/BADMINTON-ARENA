@@ -564,7 +564,7 @@ function startReplay(auto=false){
  if(replayPlaying||replayFrames.length<2)return false;
  const endLimit=auto?Math.min(replayFrames[replayFrames.length-1].t,replayPointT+.55):replayFrames[replayFrames.length-1].t;
  const endFrameIndex=replayFrames.findLastIndex?replayFrames.findLastIndex(f=>f.t<=endLimit):(()=>{let n=-1;for(let i=0;i<replayFrames.length;i++)if(replayFrames[i].t<=endLimit)n=i;return n})();
- const end=endFrameIndex>=0?replayFrames[endFrameIndex].t:replayFrames[replayFrames.length-1].t,start=Math.max(replayFrames[0].t,end-REPLAY_MAX);
+ const end=endFrameIndex>=0?replayFrames[endFrameIndex].t:replayFrames[replayFrames.length-1].t,start=Math.max(replayFrames[0].t,end-(auto?6:REPLAY_MAX));
  const frames=replayFrames.filter(f=>f.t>=start&&f.t<=end);
  if(frames.length<2)return false;
  replaySaved={P:{x:P.x,z:P.z},C:{x:C.x,z:C.z},P2:{x:P2.x,z:P2.z},C2:{x:C2.x,z:C2.z},ball:{x:ball.pos.x,y:ball.pos.y,z:ball.pos.z},camera:camera.position.toArray(),look:lk.toArray()};
