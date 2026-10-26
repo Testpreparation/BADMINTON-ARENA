@@ -330,7 +330,7 @@ function buildCourt(m){mode=m;cfg=CFG[m];courtG.clear();const{hw,hl,netH}=cfg,T=
  pl(160,160,T?0x1d3a2a:0x2a2f3a,0);pl(2*hw+8,2*hl+10,T?0x2f7a4a:0x8b5a2b,.004,1);pl(2*hw,2*hl,T?0x2b6cb0:0x2e8b57,.008,1);
  const ln=(a,b,c,d)=>box(Math.abs(c-a)+.08,.02,Math.abs(d-b)+.08,0xffffff,(a+c)/2,.015,(b+d)/2);
  ln(-hw,-hl,hw,-hl);ln(-hw,hl,hw,hl);ln(-hw,-hl,-hw,hl);ln(hw,-hl,hw,hl);
- if(T){ln(-hw,6.4,hw,6.4);ln(-hw,-6.4,hw,-6.4);ln(0,-6.4,0,6.4)}else{const sw=2.59;ln(-sw,-hl, -sw,hl);ln(sw,-hl,sw,hl);ln(-hw,hl-.76,hw,hl-.76);ln(-hw,-hl+.76,hw,-hl+.76);ln(-hw,1.98,hw,1.98);ln(-hw,-1.98,hw,-1.98);ln(0,1.98,0,hl-.76);ln(0,-hl+.76,0,-1.98)}
+ if(T){ln(-hw,6.4,hw,6.4);ln(-hw,-6.4,hw,-6.4);ln(0,-6.4,0,6.4)}else{const sw=2.59;ln(-sw,-hl, -sw,hl);ln(sw,-hl,sw,hl);ln(-hw,hl-.76,hw,hl-.76);ln(-hw,-hl+.76,hw,-hl+.76);ln(-hw,1.98,hw,1.98);ln(-hw,-1.98,hw,-1.98);ln(0,1.98,0,hl);ln(0,-hl,0,-1.98)}
  box(2*hw+.6,netH,.03,0xffffff,0,netH/2,0,{transparent:true,map:netTex(2*hw+.6,netH),alphaTest:.4,side:THREE.DoubleSide});box(2*hw+.6,.08,.05,0xffffff,0,netH,0);
  [-1,1].forEach(s=>box(.08,netH+.1,.08,0xdddddd,s*(hw+.3),(netH+.1)/2,0));
  const pts=[];
