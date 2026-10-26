@@ -316,7 +316,35 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 #resultSummary{font-size:14px;line-height:1.8;opacity:.9;margin:10px 0 16px}
 .resultBadge{display:inline-block;padding:5px 12px;margin-bottom:8px;border-radius:999px;background:rgba(255,210,63,.16);border:1px solid rgba(255,210,63,.45);font-size:12px;font-weight:900;letter-spacing:.12em}
 @media(prefers-reduced-motion:reduce){#screenFade,.extraCard,.championTrophy{animation:none!important;transition:none!important}}
+
+/* アプリ起動スプラッシュ：既存画面のデザイン・ゲーム処理には影響させない */
+#appSplash{position:fixed;inset:0;z-index:250000;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:24px;box-sizing:border-box;background:radial-gradient(ellipse at 50% 38%,#183653 0%,#0b1523 48%,#060b12 100%);color:#f5f9ff;text-align:center;opacity:1;transition:opacity .36s ease,visibility .36s ease}
+#appSplash[hidden]{display:none!important}
+#appSplash.leaving{opacity:0;visibility:hidden;pointer-events:none}
+#appSplash:before,#appSplash:after{content:'';position:absolute;border:1px solid rgba(255,210,63,.18);border-radius:50%;width:min(78vw,620px);aspect-ratio:1;pointer-events:none}
+#appSplash:after{width:min(58vw,440px);border-color:rgba(116,196,255,.14)}
+.splashContent{position:relative;z-index:1;width:min(460px,100%);animation:splashEnter .7s cubic-bezier(.2,.8,.2,1) both}
+.splashMark{display:inline-flex;align-items:center;justify-content:center;width:66px;height:66px;margin-bottom:18px;border:1px solid rgba(255,210,63,.65);border-radius:20px;background:linear-gradient(145deg,rgba(255,210,63,.2),rgba(255,255,255,.04));box-shadow:0 0 34px rgba(255,190,50,.12);font-size:34px}
+.splashEyebrow{margin:0 0 9px;color:#ffd23f;font-size:11px;font-weight:900;letter-spacing:.34em}
+#appSplash h1{margin:0;font-size:clamp(42px,9vw,68px);font-weight:1000;font-style:italic;line-height:.94;letter-spacing:-.055em;text-shadow:0 8px 32px rgba(0,0,0,.35)}
+.splashSub{margin:18px 0 30px;color:#c3d3e5;font-size:13px;letter-spacing:.12em}
+#splashStart{width:min(300px,100%);margin:0 auto;padding:15px 20px;border:1px solid rgba(255,255,255,.65);border-radius:999px;background:linear-gradient(110deg,#ffe47a,#ffc52f);color:#142033;font-size:15px;font-weight:950;letter-spacing:.08em;box-shadow:0 8px 28px rgba(255,190,40,.2);transition:transform .16s ease,filter .16s ease}
+#splashStart:active{transform:scale(.97);filter:brightness(.96)}
+.splashHint{margin:17px 0 0;color:rgba(222,235,248,.62);font-size:11px;letter-spacing:.08em}
+@keyframes splashEnter{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){#appSplash,.splashContent,#splashStart{animation:none!important;transition:none!important}}
 </style></head><body>
+<div id="appSplash" role="dialog" aria-modal="true" aria-labelledby="splashHeading">
+ <div class="splashContent">
+  <div class="splashMark" aria-hidden="true">🏸</div>
+  <p class="splashEyebrow">SPORTS GAME</p>
+  <h1 id="splashHeading">RACKET<br>STARS</h1>
+  <p class="splashSub">TENNIS · BADMINTON</p>
+  <button id="splashStart" type="button">タップしてスタート　▶</button>
+  <p class="splashHint">横画面でのプレイがおすすめです</p>
+ </div>
+</div>
+
 <div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><div class="resultBadge" id="resultBadge">MATCH RESULT</div><h2 id="rt"></h2><p id="rs"></p><div id="resultSummary"></div><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
 <div id="powerImpact" aria-hidden="true"><div class="pi-burst"></div><div class="pi-ring"></div></div>
@@ -1018,5 +1046,32 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value,3));rs();buildCou
  setInterval(checkSiteStorage,60000);
  if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
+</script>
+<script>
+
+// 起動画面から既存のメインメニューへ接続。試合処理・設定は変更しない。
+(()=>{
+ const splash=document.getElementById('appSplash');
+ const start=document.getElementById('splashStart');
+ if(!splash||!start)return;
+ let started=false;
+ function enterApp(){
+  if(started)return;
+  started=true;
+  splash.classList.add('leaving');
+  start.disabled=true;
+  const finish=()=>{splash.hidden=true;splash.setAttribute("aria-hidden","true")};
+  splash.addEventListener("transitionend",finish,{once:true});
+  window.setTimeout(finish,420);
+ }
+ start.addEventListener("click",enterApp);
+ document.addEventListener("keydown",function(e){
+  if(!splash.hidden&&(e.key==="Enter"||e.key===" ")){
+   if(e.target===start||e.target===document.body){e.preventDefault();enterApp()}
+  }
+ });
+ start.focus({preventScroll:true});
+})();
+
 </script>
 </body></html>
