@@ -309,6 +309,7 @@ function joinRoom(){
 }
 function handleNetData(d){
  if(!d||typeof d!=='object')return;
+ if(d.type==='restart'&&netRole==='host'){start(selectedSport);return}
  if(d.type==='input'&&netRole==='host'){remoteInput={x:clamp(+d.input.x||0,-1,1),z:clamp(+d.input.z||0,-1,1),dash:!!d.input.dash};if(d.input.swing){if(state==='serveWait'&&server===-1)doServe(-1);else if(state==='rally'&&C.swingT<=0){C.swingT=.3;tryHit(C)}}}
  if(d.type==='snapshot'&&netRole==='guest'){const a=d.data;if(!a)return;state=a.state;server=a.server;mode=a.mode;cfg=CFG[mode]||CFG.tennis;P.x=a.P.x;P.z=a.P.z;C.x=a.C.x;C.z=a.C.z;P.swingT=a.P.swingT;C.swingT=a.C.swingT;ball.pos.set(a.ball.p[0],a.ball.p[1],a.ball.p[2]);ball.prev.set(a.ball.p[0],a.ball.p[1],a.ball.p[2]);ball.vel.set(a.ball.v[0],a.ball.v[1],a.ball.v[2]);ball.spin.set(a.ball.s[0],a.ball.s[1],a.ball.s[2]);ball.net=a.ball.net;ball.lastHitter=a.ball.lastHitter;ball.bounces=a.ball.bounces;P.g.visible=C.g.visible=ballG.visible=true;if(a.scoreHtml)$('score').innerHTML=a.scoreHtml;$('msg').textContent=a.msg||'';$('spd').textContent=a.spd||'';if(a.finished){$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;$('rt').textContent=a.rt||'試合終了';$('rt').className=a.rtClass||'';$('rs').textContent=a.rs||''}else{$('res').hidden=true;$('hud').hidden=false;$('touch').hidden=!COARSE;$('mb').hidden=false}}
 }
@@ -336,7 +337,7 @@ $('practiceMode').onclick=()=>{disconnectRoom();netRole='offline';OPT.mode=1;sav
 $('friendMode').onclick=()=>{$('friendPanel').hidden=false;$('roomStatus').textContent='部屋を作るか、番号を入力してください。'};
 $('createRoom').onclick=createRoom;$('joinRoom').onclick=joinRoom;
 $('q').onchange=()=>renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value));
-initMenu();$('ra').onclick=()=>start(mode);$('rm').onclick=()=>{$('res').hidden=true;toMenu()};addEventListener('pointerdown',()=>{if(!bgmT&&state==='menu'&&!$('menu').hidden){beep(1,.01);bgm(true)}});
+initMenu();$('ra').onclick=()=>{if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'restart'});$('res').hidden=true;roomMessage('ホストが再戦を開始するまでお待ちください。')}else start(mode)};$('rm').onclick=()=>{$('res').hidden=true;toMenu()};addEventListener('pointerdown',()=>{if(!bgmT&&state==='menu'&&!$('menu').hidden){beep(1,.01);bgm(true)}});
 if(COARSE){$('help').hidden=true;$('q').value='1.5'}renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value));rs();buildCourt('tennis');camera.position.set(0,7,16);requestAnimationFrame(loop);
 })();
 </script></body></html>
