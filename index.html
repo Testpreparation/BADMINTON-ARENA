@@ -202,11 +202,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 #matchIntro{position:fixed;inset:0;z-index:40;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(110deg,rgba(5,16,35,.05),rgba(5,16,35,.62) 65%,rgba(5,16,35,.08));opacity:1;transition:opacity .55s ease}
 #matchIntro.out{opacity:0}
 /* Instant replay controls */
-#replayBtn{position:fixed;z-index:12;left:50%;top:calc(38% + 54px);transform:translateX(-50%);pointer-events:auto;border:1px solid rgba(180,230,255,.85);border-radius:999px;padding:9px 17px;background:linear-gradient(135deg,#102b4d,#0879b9);color:#fff;font:800 13px system-ui;letter-spacing:.04em;box-shadow:0 4px 16px rgba(0,0,0,.45);white-space:nowrap}
-#replayBtn[hidden]{display:none}
-#replayBtn:disabled{opacity:.55}
 #replayBadge{position:fixed;z-index:58;top:calc(env(safe-area-inset-top,0px) + 16px);left:50%;transform:translateX(-50%);padding:8px 15px;border:1px solid rgba(255,255,255,.65);border-radius:999px;background:rgba(3,17,35,.88);color:#fff;font:900 13px system-ui;letter-spacing:.12em;pointer-events:none;box-shadow:0 0 24px rgba(55,190,255,.45)}
-@media(max-height:500px){#replayBtn{top:calc(38% + 42px);padding:6px 12px;font-size:11px}}
 /* Power-shot impact effect */
 #powerImpact{position:fixed;inset:0;z-index:55;pointer-events:none;display:grid;place-items:center;overflow:hidden;opacity:0}
 #powerImpact.fire{animation:powerFlash .62s ease-out both}
@@ -247,7 +243,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 @keyframes introLines{to{transform:translateX(10%)}}@keyframes introGlow{to{transform:scale(1.25);opacity:.55}}@keyframes introSlam{from{opacity:0;transform:skewX(-7deg) scale(1.65) translateY(24px)}to{opacity:1;transform:skewX(-7deg) scale(1) translateY(0)}}@keyframes introFade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}@keyframes introBar{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}@keyframes introDot{50%{opacity:1;transform:scale(1.5)}}
 @media(prefers-reduced-motion:reduce){#matchIntro:before,#matchIntro .mi-glow,#matchIntro .mi-main,#matchIntro .mi-top,#matchIntro .mi-bottom,#matchIntro .mi-sub,#matchIntro .mi-bar,#matchIntro .mi-dots i{animation-duration:.01ms!important;animation-iteration-count:1!important}}
 </style></head><body>
-<div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><button id="replayBtn" hidden>↻ リプレイ（最大10秒）</button><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
+<div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
 <div id="powerImpact" aria-hidden="true"><div class="pi-burst"></div><div class="pi-ring"></div><div class="pi-label">SUPER SMASH!</div></div>
 <div id="rot"><i>📱</i>横向きにしてください</div>
@@ -520,7 +516,7 @@ try{const sv=JSON.parse(localStorage.getItem('rs1')||'{}');if(sv.REC)REC=sv.REC;
 function save(){try{localStorage.setItem('rs1',JSON.stringify({REC,name:pname,col:OPT.col,opt:{mode:OPT.mode,diff:OPT.diff,mlen:OPT.mlen}}))}catch(e){}}
 function paint(){document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===OPT[sg.dataset.k])));document.querySelectorAll('.sw').forEach((b,i)=>b.classList.toggle('on',i===OPT.col));$('av').style.background=COLS[OPT.col];const t=REC.tennis,bd=REC.badminton;$('rec').textContent='🎾 '+t[0]+'勝'+t[1]+'敗　🏸 '+bd[0]+'勝'+bd[1]+'敗'}
 function initMenu(){const cs=$('cols');COLS.forEach((c,i)=>{const b=document.createElement('button');b.className='sw';b.style.background=c;b.onclick=()=>{OPT.col=i;paint();save();beep(700,.05)};cs.appendChild(b)});document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>{OPT[sg.dataset.k]=+b.dataset.v;paint();save();beep(600,.05)}));$('nm').value=pname;$('nm').maxLength=12;$('nm').oninput=()=>{pname=$('nm').value.slice(0,12)||'プレイヤー';save()};$('nickInput').value=needsNickname?'':pname;$('nickConfirm').onclick=()=>{const n=$('nickInput').value.trim().slice(0,12);if(!n){$('nickInput').focus();$('nickInput').placeholder='名前を入力してください';return}pname=n;$('nm').value=n;needsNickname=false;save();$('nickSetup').style.display='none';beep(660,.08)};$('nickInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('nickConfirm').click()});if(needsNickname){$('nickSetup').style.display='flex';setTimeout(()=>$('nickInput').focus(),100)}paint()}
-function bgm(on){clearInterval(bgmT);bgmT=null;if(!on)return;const N=[523,659,784,659,587,740,880,740];let i=0;bgmT=setInterval(()=>{const v=+$('vol').value;if(!v||!ac)return;try{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=N[i++%8];g.gain.value=.08*v;g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.35);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.35)}catch(e){}},320)}
+const bgmNodes=new Set();function bgm(on){clearInterval(bgmT);bgmT=null;if(!on){for(const n of bgmNodes){try{n.stop()}catch(e){}}bgmNodes.clear();return}if(bgmT)return;const N=[523,659,784,659,587,740,880,740];let i=0;bgmT=setInterval(()=>{if(state!=='menu'||$('menu').hidden||!$('res').hidden||!ac)return;const v=+$('vol').value;if(!v)return;try{const o=ac.createOscillator(),g=ac.createGain();bgmNodes.add(o);o.type='sine';o.frequency.value=N[i++%8];g.gain.setValueAtTime(.08*v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.35);o.connect(g);g.connect(ac.destination);o.onended=()=>bgmNodes.delete(o);o.start();o.stop(ac.currentTime+.35)}catch(e){}},320)}
 function finish(){const w=over===1,s=score;if(!practice){REC[mode][w?0:1]++;save();paint()}$('rt').textContent=w?'WIN!':'LOSE…';$('rt').className=w?'win':'lose';$('rs').textContent=mode==='tennis'?'ゲーム '+s.games[0]+' - '+s.games[1]:'スコア '+s.pts[0]+' - '+s.pts[1];state='menu';$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;$('res').classList.remove('result-enter');void $('res').offsetWidth;$('res').classList.add('result-enter');beep(w?880:200,.4);try{if(w)cheer()}catch(e){}}
 function updScore(){const s=score;let t;
  if(mode==='tennis'){let a=s.pts[0],b=s.pts[1],x,y;if(a>=3&&b>=3){x=a===b?'40':a>b?'Ad':'40';y=a===b?'40':b>a?'Ad':'40'}else{x=T4[a];y=T4[b]}t=`あなた ${x} - ${y} CPU ｜ ゲーム ${s.games[0]}-${s.games[1]}`}
@@ -539,7 +535,7 @@ function showMatchTransition(kicker,title,sub,duration=1350){
  try{audio();const t=ac.currentTime,v=+$('vol').value;if(v){const o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(760,t+.22);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.12*v,t+.035);g.gain.exponentialRampToValueAtTime(.0001,t+.42);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.45)}}catch(e){}
  transitionTimer=setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),260);transitionTimer=null},duration);
 }
-function point(w,why){const replayDuration=replayFrames.length>1?replayFrames[replayFrames.length-1].t-replayFrames[0].t:0;if(!practice&&replayFrames.length>1&&replayDuration>=3){replayAutoPending=true;replayPointT=tm;replayAutoAt=tm+.85;$('replayBtn').hidden=true;}else{replayAutoPending=false;if($('replayBtn'))$('replayBtn').hidden=true;}if(practice){state='point';msgT=1.4;best=Math.max(best,rally);$('msg').textContent='ラリー '+rally+'回！（'+why+'）';rally=0;server=1;updScore();$('pointScore').hidden=true;beep(300,.2);return}state='point';msgT=2.4;pointScoreShown=false;pointWinner=w;$('pointScore').hidden=true;$('msg').textContent=why;const i=w===1?0:1,o=1-i,s=score,serving=server,oldGames0=s.games[0],oldGames1=s.games[1];let m=(w===1?'ポイント！':'相手のポイント')+'（'+why+'）';
+function point(w,why){const replayDuration=replayFrames.length>1?replayFrames[replayFrames.length-1].t-replayFrames[0].t:0;if(!practice&&replayFrames.length>1&&replayDuration>=3){replayAutoPending=true;replayPointT=tm;replayAutoAt=tm+.85;}else{replayAutoPending=false;}if(practice){state='point';msgT=1.4;best=Math.max(best,rally);$('msg').textContent='ラリー '+rally+'回！（'+why+'）';rally=0;server=1;updScore();$('pointScore').hidden=true;beep(300,.2);return}state='point';msgT=2.4;pointScoreShown=false;pointWinner=w;$('pointScore').hidden=true;$('msg').textContent=why;const i=w===1?0:1,o=1-i,s=score,serving=server,oldGames0=s.games[0],oldGames1=s.games[1];let m=(w===1?'ポイント！':'相手のポイント')+'（'+why+'）';
  s.pts[i]++;
  if(mode==='tennis'){if(s.pts[i]>=4&&s.pts[i]-s.pts[o]>=2){s.games[i]++;s.pts=[0,0];suppressPointScore=true;m=(w===1?'ゲーム獲得！':'相手がゲーム獲得');if(s.games[i]>=GW[OPT.mlen])over=w}server=(s.games[0]!==oldGames0||s.games[1]!==oldGames1)?-serving:serving}
  else{server=w;if(s.pts[i]>=BP[OPT.mlen]&&s.pts[i]-s.pts[o]>=2||s.pts[i]>=BP[OPT.mlen]+4)over=w}
@@ -558,7 +554,7 @@ function captureReplayFrame(){
  const pack=p=>({x:p.x,z:p.z,swingT:p.swingT||0,jumpT:p.jumpT||0,diveT:p.diveT||0,diveX:p.diveX||0,diveZ:p.diveZ||0,rot:p.g.rotation.z||0});
  replayFrames.push({t:now,state,P:pack(P),C:pack(C),P2:pack(P2),C2:pack(C2),ball:{x:ball.pos.x,y:ball.pos.y,z:ball.pos.z,net:ball.net},cam:camera.position.toArray(),look:lk.toArray()});
  while(replayFrames.length>2&&now-replayFrames[0].t>REPLAY_MAX)replayFrames.shift();
- const btn=$('replayBtn');if(btn)btn.hidden=!(state==='rally'&&replayFrames.length>1&&!replayPlaying);
+ 
 }
 function startReplay(auto=false){
  if(replayPlaying||replayFrames.length<2)return false;
@@ -569,7 +565,7 @@ function startReplay(auto=false){
  if(frames.length<2)return false;
  replaySaved={P:{x:P.x,z:P.z},C:{x:C.x,z:C.z},P2:{x:P2.x,z:P2.z},C2:{x:C2.x,z:C2.z},ball:{x:ball.pos.x,y:ball.pos.y,z:ball.pos.z},camera:camera.position.toArray(),look:lk.toArray()};
  replayPlaying=true;replayPlayT=0;replayAutoPending=false;
- const btn=$('replayBtn');if(btn){btn.hidden=true;btn.textContent='⏭ リプレイをスキップ';}
+ 
  replayBadge=document.createElement('div');replayBadge.id='replayBadge';replayBadge.textContent='REPLAY  ·  '+Math.min(REPLAY_MAX,frames[frames.length-1].t-frames[0].t).toFixed(1)+'秒';document.body.appendChild(replayBadge);
  replayActiveFrames=frames;return true;
 }
@@ -592,12 +588,12 @@ function updateReplay(dt){
 function finishReplay(){
  replayPlaying=false;replayActiveFrames=[];if(replayBadge){replayBadge.remove();replayBadge=null}
  if(replaySaved){[[P,replaySaved.P],[C,replaySaved.C],[P2,replaySaved.P2],[C2,replaySaved.C2]].forEach(([p,d])=>{p.x=d.x;p.z=d.z;p.g.position.set(p.x,0,p.z)});ball.pos.set(replaySaved.ball.x,replaySaved.ball.y,replaySaved.ball.z);ball.prev.copy(ball.pos);ballG.position.copy(ball.pos);camera.position.fromArray(replaySaved.camera);lk.fromArray(replaySaved.look);replaySaved=null}
- const btn=$('replayBtn');if(btn){btn.hidden=state!=='rally'||replayFrames.length<2;btn.textContent='↻ リプレイ（最大10秒）'}
+ 
 }
-$('replayBtn').addEventListener('click',()=>{if(replayPlaying){finishReplay();return}startReplay(false)});
+
 function triggerPowerImpact(){const el=$('powerImpact');if(!el)return;el.classList.remove('fire');void el.offsetWidth;el.classList.add('fire');clearTimeout(powerImpactTimer);powerImpactTimer=setTimeout(()=>el.classList.remove('fire'),700)}
 let powerImpactTimer=null;
-function beginServe(){if($('replayBtn'))$('replayBtn').hidden=true;replayFrames=[];replayRecordT=0;replayAutoPending=false;suppressPointScore=false;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
+function beginServe(){replayFrames=[];replayRecordT=0;replayAutoPending=false;suppressPointScore=false;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
  $('msg').textContent=server===1?'Spaceでサーブ':'相手のサーブ'}
 let matchIntro=null;
 function introSound(phase){
@@ -661,13 +657,14 @@ function updateMatchIntroCamera(){
  const target=new THREE.Vector3(x,y,z),look=new THREE.Vector3(tx,ty,tz);camera.position.lerp(target,1-Math.exp(-8*fdt));lk.lerp(look,1-Math.exp(-9*fdt));camera.lookAt(lk);
 }
 function start(m){
+  bgm(false);
   // 先に画面を切り替え、コート構築時のエラーでPLAYが無反応に見える状態を防ぐ
   const menu=$('menu'),hud=$('hud');
   paused=false;$('pauseMenu').hidden=true;menu.hidden=true;$('formatMenu').hidden=true;$('modeMenu').hidden=true;$('res').hidden=true;hud.hidden=false;$('touch').hidden=!COARSE;$('mb').hidden=false;
   try{
     buildCourt(m);practice=OPT.mode===1&&netRole==='offline';rally=0;best=0;
     const shirt=P.g.children[0];if(shirt&&shirt.material&&shirt.material.color)shirt.material.color.set(COLS[OPT.col]);
-    bgm(false);$('res').hidden=true;score={pts:[0,0],games:[0,0]};over=null;server=1;
+    $('res').hidden=true;score={pts:[0,0],games:[0,0]};over=null;server=1;
     $('ttl').innerHTML='RACKET<br>STARS';updScore();
     renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value,2.5));
     rs();
@@ -684,7 +681,7 @@ function start(m){
   }
 }
 function togglePause(force){if(state==='menu'||!$('res').hidden)return;paused=typeof force==='boolean'?force:!paused;$('pauseMenu').hidden=!paused;if(paused){Object.keys(keys).forEach(k=>keys[k]=false);tc.x=tc.z=0;tc.dash=tc.drop=false;if($('chatPanel'))$('chatPanel').classList.remove('open')} }
-function toMenu(){if(replayPlaying)finishReplay();replayFrames=[];replayAutoPending=false;replayAutoAt=0;if($('replayBtn'))$('replayBtn').hidden=true;if(matchIntro){matchIntro.el.remove();matchIntro=null}paused=false;$('pauseMenu').hidden=true;state='menu';$('modeMenu').hidden=true;$('menu').hidden=false;$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=true;disconnectRoom();bgm(true);paint()}
+function toMenu(){if(replayPlaying)finishReplay();replayFrames=[];replayAutoPending=false;replayAutoAt=0;if(matchIntro){matchIntro.el.remove();matchIntro=null}paused=false;$('pauseMenu').hidden=true;state='menu';$('modeMenu').hidden=true;$('menu').hidden=false;$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=true;disconnectRoom();bgm(true);paint()}
 function stepBall(){const b=ball,c=cfg,v=b.vel,s=v.length();b.prev.copy(b.pos);
  const sw=b.spin,km=c.km||0,ax=-c.k*s*v.x+km*(sw.y*v.z-sw.z*v.y),az=-c.k*s*v.z+km*(sw.x*v.y-sw.y*v.x),ay=-c.g-c.k*s*v.y+km*(sw.z*v.x-sw.x*v.z);v.x+=ax*DT;v.y+=ay*DT;v.z+=az*DT;sw.multiplyScalar(1-.08*DT);const pz=b.pos.z;b.pos.addScaledVector(v,DT);
  if(!b.net&&pz*b.pos.z<0&&b.pos.y<c.netH){b.net=true;v.z*=-.12;v.x*=.3;v.y=Math.max(v.y,0)*.2;netSound();b.pos.z=pz}
@@ -848,7 +845,7 @@ $('friendMode').onclick=()=>{screenMode='friend';$('modeTitle').textContent=(sel
 $('waitingBack').onclick=()=>{disconnectRoom();$('waitingPanel').hidden=true;$('friendPanel').hidden=false;$('modeChoices').hidden=true;$('modeBack').hidden=true;$('startMatch').hidden=true;screenMode='friend'};$('copyRoomCode').onclick=async()=>{try{await navigator.clipboard.writeText($('waitingCode').textContent);roomMessage('部屋コードをコピーしました。友達に共有してください。')}catch(e){roomMessage('部屋コードを長押ししてコピーしてください。')}};$('friendBack').onclick=()=>{screenMode='mode';$('waitingPanel').hidden=true;$('friendPanel').hidden=true;$('modeChoices').hidden=false;$('modeBack').hidden=false;$('roomStatus').textContent='';$('modeTitle').textContent=(selectedSport==='tennis'?'🎾 テニス':'🏸 バドミントン')+'｜モード選択'};
 document.querySelectorAll('.teamPick').forEach(btn=>btn.addEventListener('click',()=>{if(selectedFormat!=='doubles'||!activeRoomRef||(netRole!=='host'&&netRole!=='guest'))return;roomTeams[netRole]=btn.dataset.team;saveTeams();roomMessage('自分をチーム'+btn.dataset.team+'に移動しました。')}));$('randomTeams').onclick=()=>{if(netRole!=='host'||!activeRoomRef)return;roomTeams={host:Math.random()<.5?'A':'B',guest:Math.random()<.5?'A':'B'};activeRoomRef.update({hostTeam:roomTeams.host,guestTeam:roomTeams.guest}).then(()=>{paintTeams();roomMessage('チームをランダムに振り分けました。')}).catch(()=>roomMessage('ランダム振り分けに失敗しました。'))};$('npcStrength').onchange=()=>{const v=Number($('npcStrength').value);if(Number.isInteger(v)&&v>=0&&v<=2){OPT.diff=v;save();paint();if(netRole==='host'&&activeRoomRef)activeRoomRef.child('npcDiff').set(v).catch(()=>{});roomMessage('NPCの強さを「'+$('npcStrength').selectedOptions[0].textContent+'」に設定しました。')}};$('createRoom').onclick=createRoom;$('joinRoom').onclick=joinRoom;$('startMatch').onclick=()=>{if(netRole!=='host'){roomMessage('部屋主のみ開始できます。');return}const hasGuest=!!(activeRoomRef&&activeRoomRef.child('guestId'));if(hasGuest&&(!netConn||!netConn.open)){if(selectedFormat!=='doubles'){roomMessage('フレンドとの接続を確認しています。');return}}if(netConn&&netConn.open){try{netConn.send({type:'start',format:selectedFormat,diff:OPT.diff})}catch(e){}}else if(selectedFormat!=='doubles'){roomMessage('フレンドが参加してから開始できます。');return}$('startMatch').hidden=true;OPT.mode=0;start(selectedSport)};
 $('q').onchange=()=>renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value,2.5));
-initMenu();$('ra').onclick=()=>{if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'restart'});$('res').hidden=true;roomMessage('ホストが再戦を開始するまでお待ちください。')}else start(mode)};$('rm').onclick=()=>{$('res').hidden=true;toMenu()};addEventListener('pointerdown',()=>{if(!bgmT&&state==='menu'&&!$('menu').hidden&&!needsNickname){try{audio()}catch(e){}beep(1,.01);bgm(true)}});
+initMenu();$('ra').onclick=()=>{if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'restart'});$('res').hidden=true;roomMessage('ホストが再戦を開始するまでお待ちください。')}else start(mode)};$('rm').onclick=()=>{$('res').hidden=true;toMenu()};addEventListener('pointerdown',()=>{if(!bgmT&&state==='menu'&&!$('menu').hidden&&$('res').hidden&&!needsNickname){try{audio()}catch(e){}beep(1,.01);bgm(true)}});
 if(COARSE){$('help').hidden=true;$('q').value='1'}
 // モバイルブラウザのダブルタップ／ピンチズームを抑止（操作ボタンは通常どおり利用）
 ['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
