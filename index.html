@@ -256,6 +256,23 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 @keyframes introBar{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}
 @keyframes introDot{50%{opacity:1;transform:scale(1.5)}}
 @media(prefers-reduced-motion:reduce){#matchIntro:before,#matchIntro:after,#matchIntro .mi-glow,#matchIntro .mi-main,#matchIntro .mi-top,#matchIntro .mi-bottom,#matchIntro .mi-sub,#matchIntro .mi-bar,#matchIntro .mi-dots i{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
+/* スコアボード：高さを抑え、列の意味が分かりやすいシンプル表示 */
+#score{padding:4px 7px!important;min-width:138px!important;font-size:12px!important;line-height:1.15;border-radius:8px;background:rgba(8,12,18,.88);box-shadow:0 2px 7px rgba(0,0,0,.24)}
+#score .sr{grid-template-columns:minmax(62px,1fr) 24px 34px!important;gap:3px!important;padding:2px 2px!important;min-height:0;line-height:1.2}
+#score .sr:first-child{border-bottom:1px solid rgba(255,255,255,.14)}
+#score .sr.summary{grid-template-columns:1fr auto!important;padding:2px 2px!important;background:transparent!important;color:#fff}
+#score .sr b{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#score .sr i{font-size:11px;white-space:nowrap}
+#score .sr u{font-size:11px!important;padding:0!important;background:transparent!important;color:#fff!important;font-weight:800}
+#score .sr.summary u{display:none}
+@media (pointer:coarse) and (max-width:900px){
+ #score{padding:3px 6px!important;min-width:126px!important;font-size:11px!important}
+ #score .sr{grid-template-columns:minmax(54px,1fr) 20px 30px!important;gap:2px!important;padding:2px 1px!important}
+ #score .sr b,#score .sr i,#score .sr u{font-size:10px!important}
+}
+/* スコア表示に黄色いセット背景を使わない */
+#score .set,#score .sr.set,#score .sr.summary{background:transparent!important;box-shadow:none!important}
 </style></head><body>
 <div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
@@ -651,7 +668,7 @@ function startMatchIntro(){
 }
 function updateMatchIntro(dt){
  if(!matchIntro)return false;
- matchIntro.t+=dt*0.92;const t=matchIntro.t,el=matchIntro.el,title=$('miTitle'),sub=$('miSub'),bottom=$('miBottom');
+ matchIntro.t+=dt*0.84;const t=matchIntro.t,el=matchIntro.el,title=$('miTitle'),sub=$('miSub'),bottom=$('miBottom');
  let phase='';
  if(t<1.24){phase='player';title.textContent='PLAYER 1';sub.textContent='YOUR COURT. YOUR MOMENT.';bottom.textContent='INTRODUCING YOU';}
  else if(t<2.50){phase='opponent';title.textContent='CHALLENGER';sub.textContent=netRole==='guest'?'PLAYER 1 VS YOU':'PLAYER 1 VS CPU';bottom.textContent='MEET YOUR OPPONENT';}
