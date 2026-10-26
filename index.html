@@ -215,7 +215,13 @@ function start(m){
     const shirt=P.g.children[0];if(shirt&&shirt.material&&shirt.material.color)shirt.material.color.set(COLS[OPT.col]);
     bgm(false);$('res').hidden=true;score={pts:[0,0],games:[0,0]};over=null;server=1;
     $('ttl').innerHTML='RACKET<br>STARS';updScore();
-    renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value));beginServe();
+    renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value));
+    rs();
+    beginServe();
+    camera.position.set(P.x,4.3,P.z+(mode==='tennis'?7.5:6.5));
+    lk.set(P.x*.4,1.2+ball.pos.y*.12,P.z-9+(ball.pos.z-P.z+9)*.1);
+    camera.lookAt(lk);
+    renderer.clear();
   }catch(err){
     state='menu';hud.hidden=true;$('touch').hidden=true;$('mb').hidden=true;menu.hidden=false;
     console.error('ゲーム開始エラー:',err);
@@ -244,11 +250,13 @@ function update(dt){const c=cfg;hitCd-=dt;const i=inp();
 function cam(){const p=P,t=new THREE.Vector3(p.x*.7,4.3,p.z+(mode==='tennis'?7.5:6.5));camera.position.lerp(t,1-Math.exp(-7*fdt));const bp=state==='rally'||state==='serveWait'?ball.pos:p;lk.lerp(new THREE.Vector3(p.x*.4+(bp.x-p.x)*.2,1.2+bp.y*.12,p.z-9+(bp.z-p.z+9)*.1),1-Math.exp(-8*fdt));camera.lookAt(lk)}
 let last=performance.now(),fdt=.016;const lk=new THREE.Vector3(0,1,0);
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;tm+=dt;fdt=dt;
+ try{
  if(state==='menu'){camera.position.set(Math.sin(tm*.25)*16,7,Math.cos(tm*.25)*16);camera.lookAt(0,1,0)}else{update(dt);cam()}
  if(state==='rally')ballG.position.lerpVectors(ball.prev,ball.pos,clamp(acc/DT,0,1));else{ballG.position.copy(ball.pos);ball.prev.copy(ball.pos)}if(mode==='tennis'){const sl=ball.spin.length();if(sl>1)tb.rotateOnWorldAxis(ball.spin.clone().normalize(),sl*dt*.12)}
  for(let i=TN-1;i>0;i--){tpos[i*3]=tpos[i*3-3];tpos[i*3+1]=tpos[i*3-2];tpos[i*3+2]=tpos[i*3-1]}tpos[0]=ball.pos.x;tpos[1]=ball.pos.y;tpos[2]=ball.pos.z;tg.attributes.position.needsUpdate=true;trail.visible=state==='rally';upP(dt);if(mode==='badminton'&&ball.vel.lengthSq()>.01)sh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),ball.vel.clone().normalize());
  P.g.visible=C.g.visible=ballG.visible=state!=='menu';shadow.visible=ballG.visible;shadow.position.set(ball.pos.x,.03,ball.pos.z);shadow.material.opacity=clamp(.4-ball.pos.y*.06,.08,.4);
- renderer.render(scene,camera)}
+ renderer.render(scene,camera);
+ }catch(err){console.error('ゲーム描画エラー:',err);if(!$('renderError')){const e=document.createElement('div');e.id='renderError';e.style.cssText='position:fixed;z-index:20;left:12px;right:12px;top:12px;background:#fff;color:#900;padding:12px;border-radius:8px;font:14px system-ui';e.textContent='描画エラー: '+(err&&err.message?err.message:String(err));document.body.appendChild(e)}}}
 function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=camera.aspect<1?80:60;camera.updateProjectionMatrix()}
 addEventListener('resize',rs);
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;
