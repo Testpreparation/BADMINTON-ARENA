@@ -539,7 +539,7 @@ function showMatchTransition(kicker,title,sub,duration=1350){
  try{audio();const t=ac.currentTime,v=+$('vol').value;if(v){const o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(760,t+.22);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.12*v,t+.035);g.gain.exponentialRampToValueAtTime(.0001,t+.42);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.45)}}catch(e){}
  transitionTimer=setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),260);transitionTimer=null},duration);
 }
-function point(w,why){if(!practice&&replayFrames.length>1)replayAutoPending=true;if(practice){state='point';msgT=1.4;best=Math.max(best,rally);$('msg').textContent='ラリー '+rally+'回！（'+why+'）';rally=0;server=1;updScore();$('pointScore').hidden=true;beep(300,.2);return}state='point';msgT=2.4;pointScoreShown=false;pointWinner=w;$('pointScore').hidden=true;$('msg').textContent=why;const i=w===1?0:1,o=1-i,s=score,serving=server,oldGames0=s.games[0],oldGames1=s.games[1];let m=(w===1?'ポイント！':'相手のポイント')+'（'+why+'）';
+function point(w,why){if(!practice&&replayFrames.length>1){replayAutoPending=true;replayPointT=tm;replayAutoAt=tm+.65;$('replayBtn').hidden=true;}if(practice){state='point';msgT=1.4;best=Math.max(best,rally);$('msg').textContent='ラリー '+rally+'回！（'+why+'）';rally=0;server=1;updScore();$('pointScore').hidden=true;beep(300,.2);return}state='point';msgT=2.4;pointScoreShown=false;pointWinner=w;$('pointScore').hidden=true;$('msg').textContent=why;const i=w===1?0:1,o=1-i,s=score,serving=server,oldGames0=s.games[0],oldGames1=s.games[1];let m=(w===1?'ポイント！':'相手のポイント')+'（'+why+'）';
  s.pts[i]++;
  if(mode==='tennis'){if(s.pts[i]>=4&&s.pts[i]-s.pts[o]>=2){s.games[i]++;s.pts=[0,0];suppressPointScore=true;m=(w===1?'ゲーム獲得！':'相手がゲーム獲得');if(s.games[i]>=GW[OPT.mlen])over=w}server=(s.games[0]!==oldGames0||s.games[1]!==oldGames1)?-serving:serving}
  else{server=w;if(s.pts[i]>=BP[OPT.mlen]&&s.pts[i]-s.pts[o]>=2||s.pts[i]>=BP[OPT.mlen]+4)over=w}
@@ -551,23 +551,25 @@ function point(w,why){if(!practice&&replayFrames.length>1)replayAutoPending=true
 function announcePoint(w,result){if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window))return;const s=score,T=mode==='tennis';let call=w===1?'あなたのポイント。':'CPUのポイント。';if(T){const names=['ラブ','フィフティーン','サーティ','フォーティ'];let a=s.pts[0],b=s.pts[1],x,y;if(a>=3&&b>=3){x=a===b?'フォーティ':a>b?'アドバンテージ あなた':'フォーティ';y=a===b?'フォーティ':b>a?'アドバンテージ CPU':'フォーティ'}else{x=names[a]||'フォーティ';y=names[b]||'フォーティ'}call+='スコア、'+x+'、'+y+'。ゲームスコア、'+s.games[0]+'対'+s.games[1]+'。'}else{call+='スコア、あなた '+s.pts[0]+'、CPU '+s.pts[1]+'。'}if(result.includes('ゲーム獲得'))call+='ゲーム。';if(over)call+='マッチポイント。試合終了。';try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(call);u.lang='ja-JP';u.rate=.92;u.pitch=1;u.volume=Math.max(.35,Math.min(1,+$('vol').value||.8));window.speechSynthesis.speak(u)}catch(e){}}
 function showPointScore(w){const s=score,T=mode==='tennis',p=(n)=>T?(n>=3&&s.pts[0]>=3&&s.pts[1]>=3?(s.pts[0]===s.pts[1]?'40':n===s.pts[0]?(s.pts[0]>s.pts[1]?'Ad':'40'):(s.pts[1]>s.pts[0]?'Ad':'40')):T4[n]):String(n),a=T?p(s.pts[0]):String(s.pts[0]),b=T?p(s.pts[1]):String(s.pts[1]);let sub=T?'ゲーム '+s.games[0]+' - '+s.games[1]:'得点 '+s.pts[0]+' - '+s.pts[1];if(over)sub+=' ｜ 試合終了';$('pointScore').innerHTML='<div class="ps-title">'+(over?'MATCH POINT':'LIVE SCORE')+'</div><div class="ps-main"><span>'+a+'</span><span>－</span><span>'+b+'</span></div><div class="ps-sub"><span class="ps-names">'+pname.replace(/[<>&"]/g,'')+'</span> 対 <span class="ps-names">CPU</span>　'+sub+'</div>';$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=false}
 // 直近10秒の試合状態を記録し、物理進行を止めて再生する
-const REPLAY_MAX=10,REPLAY_STEP=.08;let replayFrames=[],replayRecordT=0,replayPlaying=false,replayAutoPending=false,replayPlayT=0,replaySaved=null,replayBadge=null;
+const REPLAY_MAX=10,REPLAY_STEP=.08;let replayFrames=[],replayRecordT=0,replayPlaying=false,replayAutoPending=false,replayAutoAt=0,replayPointT=0,replayPlayT=0,replaySaved=null,replayBadge=null;
 function captureReplayFrame(){
  if(replayPlaying||state==='menu'||paused||netRole==='guest')return;
  const now=tm;if(now-replayRecordT<REPLAY_STEP)return;replayRecordT=now;
  const pack=p=>({x:p.x,z:p.z,swingT:p.swingT||0,jumpT:p.jumpT||0,diveT:p.diveT||0,diveX:p.diveX||0,diveZ:p.diveZ||0,rot:p.g.rotation.z||0});
  replayFrames.push({t:now,state,P:pack(P),C:pack(C),P2:pack(P2),C2:pack(C2),ball:{x:ball.pos.x,y:ball.pos.y,z:ball.pos.z,net:ball.net},cam:camera.position.toArray(),look:lk.toArray()});
  while(replayFrames.length>2&&now-replayFrames[0].t>REPLAY_MAX)replayFrames.shift();
- const btn=$('replayBtn');if(btn&&replayFrames.length>1)btn.hidden=false;
+ const btn=$('replayBtn');if(btn)btn.hidden=!(state==='rally'&&replayFrames.length>1&&!replayPlaying);
 }
 function startReplay(auto=false){
  if(replayPlaying||replayFrames.length<2)return false;
- const end=replayFrames[replayFrames.length-1].t,start=Math.max(replayFrames[0].t,end-REPLAY_MAX);
- const frames=replayFrames.filter(f=>f.t>=start);
+ const endLimit=auto?Math.min(replayFrames[replayFrames.length-1].t,replayPointT+.55):replayFrames[replayFrames.length-1].t;
+ const endFrameIndex=replayFrames.findLastIndex?replayFrames.findLastIndex(f=>f.t<=endLimit):(()=>{let n=-1;for(let i=0;i<replayFrames.length;i++)if(replayFrames[i].t<=endLimit)n=i;return n})();
+ const end=endFrameIndex>=0?replayFrames[endFrameIndex].t:replayFrames[replayFrames.length-1].t,start=Math.max(replayFrames[0].t,end-REPLAY_MAX);
+ const frames=replayFrames.filter(f=>f.t>=start&&f.t<=end);
  if(frames.length<2)return false;
  replaySaved={P:{x:P.x,z:P.z},C:{x:C.x,z:C.z},P2:{x:P2.x,z:P2.z},C2:{x:C2.x,z:C2.z},ball:{x:ball.pos.x,y:ball.pos.y,z:ball.pos.z},camera:camera.position.toArray(),look:lk.toArray()};
  replayPlaying=true;replayPlayT=0;replayAutoPending=false;
- const btn=$('replayBtn');if(btn){btn.hidden=false;btn.textContent='⏭ リプレイをスキップ';}
+ const btn=$('replayBtn');if(btn){btn.hidden=true;btn.textContent='⏭ リプレイをスキップ';}
  replayBadge=document.createElement('div');replayBadge.id='replayBadge';replayBadge.textContent='REPLAY  ·  '+Math.min(REPLAY_MAX,frames[frames.length-1].t-frames[0].t).toFixed(1)+'秒';document.body.appendChild(replayBadge);
  replayActiveFrames=frames;return true;
 }
@@ -590,12 +592,12 @@ function updateReplay(dt){
 function finishReplay(){
  replayPlaying=false;replayActiveFrames=[];if(replayBadge){replayBadge.remove();replayBadge=null}
  if(replaySaved){[[P,replaySaved.P],[C,replaySaved.C],[P2,replaySaved.P2],[C2,replaySaved.C2]].forEach(([p,d])=>{p.x=d.x;p.z=d.z;p.g.position.set(p.x,0,p.z)});ball.pos.set(replaySaved.ball.x,replaySaved.ball.y,replaySaved.ball.z);ball.prev.copy(ball.pos);ballG.position.copy(ball.pos);camera.position.fromArray(replaySaved.camera);lk.fromArray(replaySaved.look);replaySaved=null}
- const btn=$('replayBtn');if(btn){btn.hidden=state==='menu';btn.textContent='↻ リプレイ（最大10秒）'}
+ const btn=$('replayBtn');if(btn){btn.hidden=state!=='rally'||replayFrames.length<2;btn.textContent='↻ リプレイ（最大10秒）'}
 }
 $('replayBtn').addEventListener('click',()=>{if(replayPlaying){finishReplay();return}startReplay(false)});
 function triggerPowerImpact(){const el=$('powerImpact');if(!el)return;el.classList.remove('fire');void el.offsetWidth;el.classList.add('fire');clearTimeout(powerImpactTimer);powerImpactTimer=setTimeout(()=>el.classList.remove('fire'),700)}
 let powerImpactTimer=null;
-function beginServe(){suppressPointScore=false;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
+function beginServe(){if($('replayBtn'))$('replayBtn').hidden=true;suppressPointScore=false;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
  $('msg').textContent=server===1?'Spaceでサーブ':'相手のサーブ'}
 let matchIntro=null;
 function introSound(phase){
@@ -682,7 +684,7 @@ function start(m){
   }
 }
 function togglePause(force){if(state==='menu'||!$('res').hidden)return;paused=typeof force==='boolean'?force:!paused;$('pauseMenu').hidden=!paused;if(paused){Object.keys(keys).forEach(k=>keys[k]=false);tc.x=tc.z=0;tc.dash=tc.drop=false;if($('chatPanel'))$('chatPanel').classList.remove('open')} }
-function toMenu(){if(replayPlaying)finishReplay();replayFrames=[];replayAutoPending=false;if($('replayBtn'))$('replayBtn').hidden=true;if(matchIntro){matchIntro.el.remove();matchIntro=null}paused=false;$('pauseMenu').hidden=true;state='menu';$('modeMenu').hidden=true;$('menu').hidden=false;$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=true;disconnectRoom();bgm(true);paint()}
+function toMenu(){if(replayPlaying)finishReplay();replayFrames=[];replayAutoPending=false;replayAutoAt=0;if($('replayBtn'))$('replayBtn').hidden=true;if(matchIntro){matchIntro.el.remove();matchIntro=null}paused=false;$('pauseMenu').hidden=true;state='menu';$('modeMenu').hidden=true;$('menu').hidden=false;$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=true;disconnectRoom();bgm(true);paint()}
 function stepBall(){const b=ball,c=cfg,v=b.vel,s=v.length();b.prev.copy(b.pos);
  const sw=b.spin,km=c.km||0,ax=-c.k*s*v.x+km*(sw.y*v.z-sw.z*v.y),az=-c.k*s*v.z+km*(sw.x*v.y-sw.y*v.x),ay=-c.g-c.k*s*v.y+km*(sw.z*v.x-sw.x*v.z);v.x+=ax*DT;v.y+=ay*DT;v.z+=az*DT;sw.multiplyScalar(1-.08*DT);const pz=b.pos.z;b.pos.addScaledVector(v,DT);
  if(!b.net&&pz*b.pos.z<0&&b.pos.y<c.netH){b.net=true;v.z*=-.12;v.x*=.3;v.y=Math.max(v.y,0)*.2;netSound();b.pos.z=pz}
@@ -740,7 +742,7 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/
  if(state==='rally')ballG.position.lerpVectors(ball.prev,ball.pos,clamp(acc/DT,0,1));else{ballG.position.copy(ball.pos);ball.prev.copy(ball.pos)}if(mode==='tennis'){const sl=ball.spin.length();if(sl>1)tb.rotateOnWorldAxis(ball.spin.clone().normalize(),sl*dt*.12)}
  for(let i=TN-1;i>0;i--){tpos[i*3]=tpos[i*3-3];tpos[i*3+1]=tpos[i*3-2];tpos[i*3+2]=tpos[i*3-1]}tpos[0]=ball.pos.x;tpos[1]=ball.pos.y;tpos[2]=ball.pos.z;tg.attributes.position.needsUpdate=true;trail.visible=state==='rally';upP(dt);if(mode==='badminton'&&ball.vel.lengthSq()>.01)sh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),ball.vel.clone().normalize());
  P.g.visible=C.g.visible=state!=='menu';P2.g.visible=C2.g.visible=state!=='menu'&&selectedFormat==='doubles';if(state!=='menu'){if(!Number.isFinite(P.x)||!Number.isFinite(P.z)){P.x=0;P.z=cfg.hl+1.5}if(!Number.isFinite(C.x)||!Number.isFinite(C.z)){C.x=0;C.z=-(cfg.hl+1.5)}[P,C,P2,C2].forEach(p=>{p.g.position.set(p.x,0,p.z);p.g.rotation.x=0;if(p.diveT>0){const u=clamp(1-p.diveT/1.2,0,1),smooth=x=>x*x*(3-2*x),fly=smooth(clamp(u/.17,0,1)),fall=smooth(clamp((u-.17)/.11,0,1)),rise=smooth(clamp((u-.45)/.55,0,1));p.g.position.x+=p.diveX*fly;p.g.position.z+=p.diveZ*fly;p.g.position.y=0;p.g.rotation.x=0;p.g.rotation.z=(p.diveX<0?1:-1)*(u<.28?.85:u<.45?.2*(1-fall):.2*(1-rise))}else if(mode==='badminton'&&p.jumpT>0){const ju=1-p.jumpT/.48;p.g.position.y=Math.sin(clamp(ju,0,1)*Math.PI)*.72;p.g.rotation.x=-.18*Math.sin(ju*Math.PI)}})}ballG.visible=state!=='menu';shadow.visible=ballG.visible;shadow.position.set(ball.pos.x,.03,ball.pos.z);shadow.material.opacity=clamp(.4-ball.pos.y*.06,.08,.4);
- if(!replayPlaying)captureReplayFrame();if(replayAutoPending&&!replayPlaying){startReplay(true)}if(netRole==='host'&&netConn&&netConn.open&&now-netLastSnapshot>50){sendSnapshot();netLastSnapshot=now}renderer.render(scene,camera);
+ if(!replayPlaying)captureReplayFrame();if(replayAutoPending&&!replayPlaying&&tm>=replayAutoAt){if(!startReplay(true))replayAutoPending=false}if(netRole==='host'&&netConn&&netConn.open&&now-netLastSnapshot>50){sendSnapshot();netLastSnapshot=now}renderer.render(scene,camera);
  }catch(err){console.error('ゲーム描画エラー:',err);if(!$('renderError')){const e=document.createElement('div');e.id='renderError';e.style.cssText='position:fixed;z-index:20;left:12px;right:12px;top:12px;background:#fff;color:#900;padding:12px;border-radius:8px;font:14px system-ui';e.textContent='描画エラー: '+(err&&err.message?err.message:String(err));document.body.appendChild(e)}}}
 function disconnectRoom(){
  if(roomTimeout){clearTimeout(roomTimeout);roomTimeout=null}
