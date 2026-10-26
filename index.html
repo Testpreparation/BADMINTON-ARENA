@@ -515,7 +515,7 @@ function stepBall(){const b=ball,c=cfg,v=b.vel,s=v.length();b.prev.copy(b.pos);
   if(b.bounces>=1){point(b.lastHitter,'ツーバウンド');return}
   if(!ok){point(-b.lastHitter,inb?'自コート':'アウト');return}
   const sp0=Math.hypot(v.x,v.z)||1,tp=(b.spin.x*v.z-b.spin.z*v.x)/sp0,m=clamp(.78+tp*.0007,.55,1);v.y=-v.y*c.e*(1-clamp(sp0*.003,0,.2));v.x*=m;v.z*=m;b.spin.multiplyScalar(.55);b.bounces++;spawn(b.pos,12,2.5);courtBounceSound(mode,Math.abs(v.y)/12)}}
-function moveCpuToward(p,tx,tz,dt,c,speedFactor,deadZone,smoothing){const dx=tx-p.x,dz=tz-p.z,d=Math.hypot(dx,dz),k=1-Math.exp(-smoothing*dt),speed=d>deadZone?c.cSpeed*speedFactor:0;p.vx=(p.vx||0)+((d>0.05?dx/d*speed:0)-(p.vx||0))*k;p.vz=(p.vz||0)+((d>0.05?dz/d*speed:0)-(p.vz||0))*k;p.x+=p.vx*dt;p.z+=p.vz*dt}
+function moveCpuToward(p,tx,tz,dt,c,speedFactor,deadZone,smoothing){const dx=tx-p.x,dz=tz-p.z,d=Math.hypot(dx,dz),k=1-Math.exp(-smoothing*dt),speed=d>deadZone?c.cSpeed*speedFactor:0;p.vx=(p.vx||0)+((d>deadZone?dx/d*speed:0)-(p.vx||0))*k;p.vz=(p.vz||0)+((d>deadZone?dz/d*speed:0)-(p.vz||0))*k;p.x+=p.vx*dt;p.z+=p.vz*dt}
 function update(dt){const c=cfg;hitCd-=dt;const i=inp();
  if(state!=='point'){if(P.diveT>0){P.vx=0;P.vz=0}else{const d=Math.max(1,Math.hypot(i.x,i.z)),mx=c.pSpeed*(i.dash?1.5:1),k=1-Math.exp(-8*dt);P.vx=(P.vx||0)+(i.x/d*mx-(P.vx||0))*k;P.vz=(P.vz||0)+(i.z/d*mx-(P.vz||0))*k;P.x=clamp(P.x+P.vx*dt,-c.hw-2.5,c.hw+2.5);P.z=clamp(P.z+P.vz*dt,state==='serveWait'&&mode==='tennis'&&server===1?c.hl+.15:.8,c.hl+3.5)}}
  let tx=0,tz=mode==='badminton'?-c.hl*.25:-c.hl*.55;
