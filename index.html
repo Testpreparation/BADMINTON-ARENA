@@ -28,6 +28,11 @@ button,input,summary{touch-action:manipulation}
 #joy{position:absolute;left:calc(env(safe-area-inset-left,0px) + 22px);bottom:calc(env(safe-area-inset-bottom,0px) + 22px);width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);pointer-events:auto}
 #knob{position:absolute;left:35px;top:35px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.45)}
 .tb{position:absolute;pointer-events:auto;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#111;background:rgba(255,210,63,.85);margin:0;padding:0}
+ #serveMeter{position:absolute;right:calc(env(safe-area-inset-right,0px) + 132px);bottom:calc(env(safe-area-inset-bottom,0px) + 24px);width:24px;height:142px;padding:4px;border:2px solid rgba(255,255,255,.9);border-radius:14px;background:rgba(7,20,38,.78);box-shadow:0 0 16px rgba(50,180,255,.35);box-sizing:border-box;pointer-events:none}
+ #serveMeter[hidden]{display:none}
+ #serveMeterTrack{position:relative;width:100%;height:100%;overflow:hidden;border-radius:8px;background:linear-gradient(to top,#39d9ff,#20d17c 52%,#ffe45c 78%,#ff5268)}
+ #serveMeterFill{position:absolute;left:0;right:0;bottom:0;height:8%;background:rgba(255,255,255,.96);box-shadow:0 0 8px #fff;transition:none}
+ @media(pointer:coarse) and (max-width:900px){#serveMeter{right:calc(env(safe-area-inset-right,0px) + 3vw + clamp(68px,14vw,96px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 3vh);height:clamp(100px,24vh,142px)}}
 #bs{right:calc(env(safe-area-inset-right,0px) + 24px);bottom:calc(env(safe-area-inset-bottom,0px) + 40px);width:96px;height:96px;font-size:18px}
 #bp,#bd{width:64px;height:64px;font-size:13px;background:rgba(255,255,255,.6)}
 #bp{right:calc(env(safe-area-inset-right,0px) + 132px);bottom:calc(env(safe-area-inset-bottom,0px) + 30px)}
@@ -245,7 +250,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 </style></head><body>
 <div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
-<div id="powerImpact" aria-hidden="true"><div class="pi-burst"></div><div class="pi-ring"></div><div class="pi-label">SUPER SMASH!</div></div>
+<div id="powerImpact" aria-hidden="true"><div class="pi-burst"></div><div class="pi-ring"></div></div>
 <div id="rot"><i>📱</i>横向きにしてください</div>
 <div id="nickSetup" role="dialog" aria-modal="true" aria-labelledby="nickTitle"><div class="nickCard"><h2 id="nickTitle">ニックネーム設定</h2><p>ゲームで使用する名前を設定してください。<br>あとからメニュー上部で変更できます。</p><input id="nickInput" maxlength="12" autocomplete="nickname" placeholder="12文字以内" aria-label="ニックネーム"><button id="nickConfirm">この名前で始める</button></div></div>
 <div id="formatMenu" class="ov" hidden><div class="modecard"><h2 id="formatTitle">🎾 テニス｜試合形式</h2><p>試合形式を選んでください</p><button id="singlesMode">👤 シングルス（1対1）</button><button id="doublesMode">👥 ダブルス（2対2）</button><button id="formatBack" class="secondary">← 競技選択へ戻る</button></div></div>
@@ -278,7 +283,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 </div>
 <button id="modeBack" class="secondary">← 競技選択へ戻る</button>
 </div></div>
-<div id="touch" hidden><div id="joy"><div id="knob"></div></div><button class="tb" id="bs">スイング</button><button class="tb" id="bp">強打</button><button class="tb" id="bd">ドロップ</button></div>
+<div id="touch" hidden><div id="joy"><div id="knob"></div></div><button class="tb" id="bs">スイング</button><div id="serveMeter" hidden aria-label="サーブ威力"><div id="serveMeterTrack"><div id="serveMeterFill"></div></div></div><button class="tb" id="bp">強打</button><button class="tb" id="bd">ドロップ</button></div>
 <button id="mb" hidden aria-label="ポーズメニュー">☰</button>
 <div id="pauseMenu" class="ov" hidden><div class="modecard"><h2>⏸ ポーズ</h2><p>試合を一時停止しています</p><button id="resumeMatch">▶ 試合に戻る</button><button id="quitMatch" class="secondary">■ 試合をやめてメインメニューへ</button></div></div>
 <div id="chatTicker" aria-live="polite"><div id="chatTickerText"></div></div>
@@ -355,7 +360,7 @@ function spawn(p,n,sp){for(let k=0;k<n;k++){const i=pix++%PN;pp[i*3]=p.x;pp[i*3+
 function upP(dt){for(let i=0;i<PN;i++){if(plf[i]>0){plf[i]-=dt;pv[i*3+1]-=9*dt;pp[i*3]+=pv[i*3]*dt;pp[i*3+1]=Math.max(0,pp[i*3+1]+pv[i*3+1]*dt);pp[i*3+2]+=pv[i*3+2]*dt}else pp[i*3+1]=-5}pg.attributes.position.needsUpdate=true}
 const shadow=new THREE.Mesh(new THREE.CircleGeometry(.22,16),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.35}));shadow.rotation.x=-Math.PI/2;scene.add(shadow);
 const ball={pos:new THREE.Vector3(),vel:new THREE.Vector3(),spin:new THREE.Vector3(),prev:new THREE.Vector3(),net:false,lastHitter:1,bounces:0};
-let cfg=CFG.tennis,mode='tennis',state='menu',server=1,score,msgT=0,acc=0,hitCd=0,serveT=0,aiT=0,aiL=null,over=null,tm=0,paused=false,pointScoreShown=false,pointWinner=1,suppressPointScore=false;const keys={};
+let cfg=CFG.tennis,mode='tennis',state='menu',server=1,score,msgT=0,acc=0,hitCd=0,serveT=0,aiT=0,aiL=null,over=null,tm=0,paused=false,pointScoreShown=false,pointWinner=1,suppressPointScore=false;const keys={};let serveCharging=false,serveChargeStart=0,servePower=.65;
 let selectedSport='tennis',selectedFormat='singles',netRole='offline',netPeer=null,netConn=null,roomBusy=false,roomTimeout=null,screenMode='sport',remoteInput={x:0,z:0,dash:false},netLastSnapshot=0,netInputTimer=0;
 let fbAuth=null,fbDb=null,activeRoomRef=null,roomListeners=[],roomDisconnectRef=null,lastHostNonce='',lastGuestNonce='';
 const FIREBASE_CONFIG={apiKey:'AIzaSyB85NfBhRRSLsLxhwewaJYJjWSPxLzaJ'+'KE',authDomain:'sports-app-2e1bb.firebaseapp.com',databaseURL:'https://sports-app-2e1bb-default-rtdb.firebaseio.com',projectId:'sports-app-2e1bb',storageBucket:'sports-app-2e1bb.firebasestorage.app',messagingSenderId:'614670493916',appId:'1:614670493916:web:2bc45bf2fc2fce2af2ec19'};
@@ -508,7 +513,7 @@ function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>
   if(powerShot)triggerPowerImpact();
  if(diveShot){p.diveT=1.2;p.diveX=clamp((b.x-p.x)*.42,-.85,.85);p.diveZ=clamp((b.z-p.z)*.35,-.65,.65);p.vx=0;p.vz=0}
  p.q=Math.max(0,hd/hitReach-.4)+(b.y<.4?.3:0);p.swingReqT=0;if(p===P)playerShot(1);else if(p===C&&netRole==='host'&&netConn&&netConn.open)playerShot(-1);else cpuShotFor(p.who,p);p.swingT=.3}
-function doServe(who){const c=cfg;ball.lastHitter=who;state='rally';(who===1?P:C).q=0;hit(who,(R()*2-1)*c.hw*.6,-who*c.hl*.5,mode==='tennis'?12:45,mode==='tennis'?120:0);$('msg').textContent=''}
+function doServe(who){const c=cfg;ball.lastHitter=who;state='rally';(who===1?P:C).q=0;const power=who===1?servePower:1;hit(who,(R()*2-1)*c.hw*.6,-who*c.hl*.5,mode==='tennis'?12:45,mode==='tennis'?120:0);if(who===1){ball.vel.multiplyScalar(.72+power*.52);$('spd').textContent=Math.round(ball.vel.length()*3.6)+' km/h'}syncTouchActions();servePower=.65;$('msg').textContent=''}
 const T4=[0,15,30,40];
 const OPT={mode:0,diff:1,mlen:1,col:0},COLS=['#3b82f6','#ef4444','#22c55e','#f59e0b','#a855f7','#ec4899'],ERR=[.28,.12,.04,.03],SPD=[.8,1,1.2,1],GW=[1,2],BP=[7,11];
 let practice=false,rally=0,best=0,pname='プレイヤー',REC={tennis:[0,0],badminton:[0,0]},bgmT=null,needsNickname=true;
@@ -593,8 +598,8 @@ function finishReplay(){
 
 function triggerPowerImpact(){const el=$('powerImpact');if(!el)return;el.classList.remove('fire');void el.offsetWidth;el.classList.add('fire');clearTimeout(powerImpactTimer);powerImpactTimer=setTimeout(()=>el.classList.remove('fire'),700)}
 let powerImpactTimer=null;
-function beginServe(){replayFrames=[];replayRecordT=0;replayAutoPending=false;suppressPointScore=false;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
- $('msg').textContent=server===1?'Spaceでサーブ':'相手のサーブ'}
+function beginServe(){replayFrames=[];replayRecordT=0;replayAutoPending=false;suppressPointScore=false;serveCharging=false;servePower=.65;$('serveMeter').hidden=true;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
+ $('msg').textContent=server===1?'サーブ：Space長押しで威力調整':'相手のサーブ';syncTouchActions()}
 let matchIntro=null;
 function introSound(phase){
  const v=+$('vol').value;if(!v)return;
@@ -736,7 +741,7 @@ let last=performance.now(),fdt=.016;const lk=new THREE.Vector3(0,1,0);
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;tm+=dt;fdt=dt;
  try{
  if(matchIntro){updateMatchIntro(dt);updateMatchIntroCamera()}else if(replayPlaying){updateReplay(dt)}else if(paused){cam()}else if(state==='menu'||!$('modeMenu').hidden){camera.position.set(Math.sin(tm*.25)*16,7,Math.cos(tm*.25)*16);camera.lookAt(0,1,0)}else if(netRole==='guest'){guestFrame(dt);cam()}else{update(dt);cam()}
- if(state==='rally')ballG.position.lerpVectors(ball.prev,ball.pos,clamp(acc/DT,0,1));else{ballG.position.copy(ball.pos);ball.prev.copy(ball.pos)}if(mode==='tennis'){const sl=ball.spin.length();if(sl>1)tb.rotateOnWorldAxis(ball.spin.clone().normalize(),sl*dt*.12)}
+ if(state==='rally')ballG.position.lerpVectors(ball.prev,ball.pos,clamp(acc/DT,0,1));else{ballG.position.copy(ball.pos);ball.prev.copy(ball.pos)}if(serveCharging)updateServeMeter();if(state==='rally'){const speed=ball.vel.length();trail.material.color.set(speed>24?0xa855f7:speed<7?0x38bdf8:0xffffff);trail.material.opacity=speed>24?.85:speed<7?.72:.38}if(mode==='tennis'){const sl=ball.spin.length();if(sl>1)tb.rotateOnWorldAxis(ball.spin.clone().normalize(),sl*dt*.12)}
  for(let i=TN-1;i>0;i--){tpos[i*3]=tpos[i*3-3];tpos[i*3+1]=tpos[i*3-2];tpos[i*3+2]=tpos[i*3-1]}tpos[0]=ball.pos.x;tpos[1]=ball.pos.y;tpos[2]=ball.pos.z;tg.attributes.position.needsUpdate=true;trail.visible=state==='rally';upP(dt);if(mode==='badminton'&&ball.vel.lengthSq()>.01)sh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),ball.vel.clone().normalize());
  P.g.visible=C.g.visible=state!=='menu';P2.g.visible=C2.g.visible=state!=='menu'&&selectedFormat==='doubles';if(state!=='menu'){if(!Number.isFinite(P.x)||!Number.isFinite(P.z)){P.x=0;P.z=cfg.hl+1.5}if(!Number.isFinite(C.x)||!Number.isFinite(C.z)){C.x=0;C.z=-(cfg.hl+1.5)}[P,C,P2,C2].forEach(p=>{p.g.position.set(p.x,0,p.z);p.g.rotation.x=0;if(p.diveT>0){const u=clamp(1-p.diveT/1.2,0,1),smooth=x=>x*x*(3-2*x),fly=smooth(clamp(u/.17,0,1)),fall=smooth(clamp((u-.17)/.11,0,1)),rise=smooth(clamp((u-.45)/.55,0,1));p.g.position.x+=p.diveX*fly;p.g.position.z+=p.diveZ*fly;p.g.position.y=0;p.g.rotation.x=0;p.g.rotation.z=(p.diveX<0?1:-1)*(u<.28?.85:u<.45?.2*(1-fall):.2*(1-rise))}else if(mode==='badminton'&&p.jumpT>0){const ju=1-p.jumpT/.48;p.g.position.y=Math.sin(clamp(ju,0,1)*Math.PI)*.72;p.g.rotation.x=-.18*Math.sin(ju*Math.PI)}})}ballG.visible=state!=='menu';shadow.visible=ballG.visible;shadow.position.set(ball.pos.x,.03,ball.pos.z);shadow.material.opacity=clamp(.4-ball.pos.y*.06,.08,.4);
  if(!replayPlaying)captureReplayFrame();if(replayAutoPending&&!replayPlaying&&tm>=replayAutoAt){if(!startReplay(true))replayAutoPending=false}if(netRole==='host'&&netConn&&netConn.open&&now-netLastSnapshot>50){sendSnapshot();netLastSnapshot=now}renderer.render(scene,camera);
@@ -826,16 +831,21 @@ function sendSnapshot(){try{if(netConn&&netConn.open)netConn.send({type:'snapsho
 function guestFrame(dt){if(netConn&&netConn.open){netInputTimer+=dt;if(netInputTimer>.05){netInputTimer=0;netConn.send({type:'input',input:{...inp(),swing:false}})}}}
 function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=camera.aspect<1?80:(mode==='badminton'?68:60);camera.updateProjectionMatrix()}
 addEventListener('resize',rs);
-addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Escape'&&state!=='menu'){e.preventDefault();togglePause();return}if(paused)return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;swing()}});
-addEventListener('keyup',e=>{keys[e.code]=false});
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Escape'&&state!=='menu'){e.preventDefault();togglePause();return}if(paused)return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;if(state==='serveWait'&&server===1){startServeCharge();return}swing()}});
+addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&serveCharging)releaseServeCharge()});
 function swing(){if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'input',input:{...inp(),swing:true}});return}if(state==='serveWait'&&server===1&&serveT<=0){serveT=.001}else if(state==='rally'&&P.swingT<=0){P.swingT=.3;P.swingReqT=.22;tryHit(P)}}
+ function syncTouchActions(){const serving=state==='serveWait'&&server===1,waiting=state==='serveWait';$('bs').hidden=waiting&&!serving;$('bp').hidden=waiting;$('bd').hidden=waiting;$('bs').textContent=serving?'サーブ':'スイング';if(!serving){serveCharging=false;$('serveMeter').hidden=true}}
+ function currentServePower(){const cycle=1.6,elapsed=Math.max(0,(performance.now()-serveChargeStart)/1000);return .65+.7*((elapsed%cycle)/cycle)}
+ function startServeCharge(){if(paused||state!=='serveWait'||server!==1||serveT>0||serveCharging)return false;serveCharging=true;serveChargeStart=performance.now();$('serveMeter').hidden=false;updateServeMeter();return true}
+ function releaseServeCharge(){if(!serveCharging)return;servePower=currentServePower();serveCharging=false;$('serveMeter').hidden=true;swing()}
+ function updateServeMeter(){if(!serveCharging)return;servePower=currentServePower();$('serveMeterFill').style.height=(8+(servePower-.65)/.7*92)+'%'}
 const joy=$('joy'),kn=$('knob');let jid=null;
 function jm(e){const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const m=Math.hypot(dx,dy),R0=50;if(m>R0){dx*=R0/m;dy*=R0/m}kn.style.transform='translate('+dx+'px,'+dy+'px)';const k=Math.hypot(dx,dy)/R0;tc.x=k<.15?0:dx/R0;tc.z=k<.15?0:dy/R0}
 joy.addEventListener('pointerdown',e=>{jid=e.pointerId;joy.setPointerCapture(jid);jm(e)});
 joy.addEventListener('pointermove',e=>{if(e.pointerId===jid)jm(e)});
 const je=e=>{if(e.pointerId===jid){jid=null;tc.x=tc.z=0;kn.style.transform=''}};joy.addEventListener('pointerup',je);joy.addEventListener('pointercancel',je);
-const shotButton=(id,k)=>{const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();if(paused)return;tc[k]=true;b.setPointerCapture(e.pointerId);swing()});['pointerup','pointercancel','lostpointercapture'].forEach(t=>b.addEventListener(t,()=>{tc[k]=false}))};shotButton('bp','dash');shotButton('bd','drop');
-$('bs').addEventListener('pointerdown',e=>{e.preventDefault();if(!paused)swing()});$('mb').onclick=()=>togglePause(true);$('resumeMatch').onclick=()=>togglePause(false);$('quitMatch').onclick=toMenu;
+const shotButton=(id,k)=>{const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();if(paused||b.hidden)return;tc[k]=true;b.setPointerCapture(e.pointerId);swing()});['pointerup','pointercancel','lostpointercapture'].forEach(t=>b.addEventListener(t,()=>{tc[k]=false}))};shotButton('bp','dash');shotButton('bd','drop');
+let servePointerId=null;$('bs').addEventListener('pointerdown',e=>{e.preventDefault();if(state==='serveWait'&&server===1){servePointerId=e.pointerId;$('bs').setPointerCapture(e.pointerId);startServeCharge()}else if(!paused&&!$('bs').hidden)swing()});['pointerup','pointercancel','lostpointercapture'].forEach(t=>$('bs').addEventListener(t,e=>{if(servePointerId===e.pointerId){servePointerId=null;releaseServeCharge()}}));$('mb').onclick=()=>togglePause(true);$('resumeMatch').onclick=()=>togglePause(false);$('quitMatch').onclick=toMenu;
 function goFS(){try{const el=document.documentElement;(el.requestFullscreen?el.requestFullscreen():Promise.resolve()).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape')).catch(()=>{})}catch(e){}}
 document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{showFormatMenu(b.dataset.m);if(COARSE)goFS()});$('fs').onclick=goFS;
 $('singlesMode').onclick=()=>{selectedFormat='singles';showModeMenu(selectedSport)};$('doublesMode').onclick=()=>{selectedFormat='doubles';showModeMenu(selectedSport)};$('formatBack').onclick=showSportMenu;$('modeBack').onclick=()=>showFormatMenu(selectedSport);
