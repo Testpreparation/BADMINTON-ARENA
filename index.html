@@ -124,6 +124,37 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 #chatInput{flex:1;min-width:0;box-sizing:border-box;padding:11px;border:1px solid #52677e;border-radius:10px;background:#fff;color:#17202a;font-size:16px}
 #chatSend{border:0;border-radius:10px;padding:0 14px;background:#ffd23f;color:#17202a;font-weight:800}
 #chatHint{font-size:11px;color:#b8c6d5;margin-top:7px}
+/* スマホ・小型画面のみのレスポンシブ調整。PC表示は変更しない */
+@media (pointer:coarse) and (max-width:900px){
+  #score{font-size:clamp(11px,2.2vw,15px);left:max(8px,env(safe-area-inset-left));top:max(8px,env(safe-area-inset-top));}
+  .sr{grid-template-columns:minmax(40px,auto) 22px 34px;gap:3px;padding:4px 7px}
+  #spd{font-size:clamp(13px,2.8vw,18px);top:calc(env(safe-area-inset-top,0px) + 68px)}
+  #mb{top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);padding:clamp(6px,1.5vw,9px) clamp(9px,2vw,12px);font-size:clamp(12px,2.2vw,14px)}
+  #joy{left:calc(env(safe-area-inset-left,0px) + 2vw);bottom:calc(env(safe-area-inset-bottom,0px) + 2vh);width:clamp(88px,19vw,130px);height:clamp(88px,19vw,130px)}
+  #knob{left:27%;top:27%;width:46%;height:46%}
+  #bs{right:calc(env(safe-area-inset-right,0px) + 3vw);bottom:calc(env(safe-area-inset-bottom,0px) + 4vh);width:clamp(68px,14vw,96px);height:clamp(68px,14vw,96px);font-size:clamp(13px,2.5vw,18px)}
+  #bp,#bd{width:clamp(48px,9.5vw,64px);height:clamp(48px,9.5vw,64px);font-size:clamp(10px,1.8vw,13px)}
+  #bp{right:calc(env(safe-area-inset-right,0px) + 20vw);bottom:calc(env(safe-area-inset-bottom,0px) + 3vh)}
+  #bd{right:calc(env(safe-area-inset-right,0px) + 4vw);bottom:calc(env(safe-area-inset-bottom,0px) + 20vh)}
+  #chatFab{left:calc(env(safe-area-inset-left,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:clamp(42px,8vw,54px);height:clamp(42px,8vw,54px);font-size:clamp(20px,3.5vw,25px)}
+  #help{font-size:clamp(9px,1.5vw,12px)}
+}
+@media (pointer:coarse) and (max-width:900px) and (orientation:landscape){
+  .home{width:min(92vw,920px);gap:2vw}
+  .logo h1{font-size:clamp(38px,9vw,80px)}
+  .modes{gap:1.5vh}
+  button.mode{padding:clamp(8px,1.7vh,16px) clamp(12px,2.5vw,24px);gap:clamp(8px,1.5vw,16px)}
+  button.mode span{font-size:clamp(26px,6vw,48px)}
+  button.mode b{font-size:clamp(17px,3.5vw,28px)}
+  #opts{gap:5px 10px;padding:6px 10px}
+  .set{width:clamp(150px,25vw,200px);padding:6px 9px}
+}
+@media (pointer:coarse) and (max-width:380px){
+  .modecard{padding:14px;max-height:86vh}
+  .modecard h2{font-size:24px}
+  .modecard button{padding:10px;font-size:15px}
+  #chatPanel{left:8px;bottom:calc(58px + env(safe-area-inset-bottom,0px));width:min(320px,calc(100vw - 16px))}
+}
 </style></head><body>
 <div id="hud" hidden><div id="score"></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
