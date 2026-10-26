@@ -395,7 +395,7 @@ function netSound(){
  // ネット接触音のみ控えめな短い効果音にする
  try{audio();transientNoise(.055,700,5200,.12*v,.02)}catch(e){}
 }
-function cheer(){const v=+$('vol').value;if(!v||!ac)return;try{noise(1.4,900,.5*v)}catch(e){}}
+function cheer(){const v=+$('vol').value;if(!v)return;playRealSound('https://sfxmint.com/dl/crowd-cheer-44.mp3',v,2800,0)}
 function hit(who,tx,tz,deg,sp){sp=sp||0;const p=ball.pos,c=cfg,th=deg*D2R;ball.lastHitter=who;ball.bounces=0;ball.net=false;aiL=null;hitCd=.25;const q=(who===1?P:C).q||0;tx+=(R()-.5)*q*3;tz+=(R()-.5)*q*2;
  let dx=tx-p.x,dz=tz-p.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let s=Math.max(10,L*1.4);const v={x:0,y:0,z:0},w={x:dz*sp,y:0,z:-dx*sp};
  for(let i=0;i<16;i++){v.x=dx*s*Math.cos(th);v.z=dz*s*Math.cos(th);v.y=s*Math.sin(th);const l=simLand(p,v,c,w),Ld=Math.hypot(l.x-p.x,l.z-p.z)||.1;s=clamp(s*Math.pow(L/Ld,.6),3,70)}
@@ -421,7 +421,7 @@ function save(){try{localStorage.setItem('rs1',JSON.stringify({REC,name:pname,co
 function paint(){document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===OPT[sg.dataset.k])));document.querySelectorAll('.sw').forEach((b,i)=>b.classList.toggle('on',i===OPT.col));$('av').style.background=COLS[OPT.col];const t=REC.tennis,bd=REC.badminton;$('rec').textContent='🎾 '+t[0]+'勝'+t[1]+'敗　🏸 '+bd[0]+'勝'+bd[1]+'敗'}
 function initMenu(){const cs=$('cols');COLS.forEach((c,i)=>{const b=document.createElement('button');b.className='sw';b.style.background=c;b.onclick=()=>{OPT.col=i;paint();save();beep(700,.05)};cs.appendChild(b)});document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>{OPT[sg.dataset.k]=+b.dataset.v;paint();save();beep(600,.05)}));$('nm').value=pname;$('nm').maxLength=12;$('nm').oninput=()=>{pname=$('nm').value.slice(0,12)||'プレイヤー';save()};$('nickInput').value=needsNickname?'':pname;$('nickConfirm').onclick=()=>{const n=$('nickInput').value.trim().slice(0,12);if(!n){$('nickInput').focus();$('nickInput').placeholder='名前を入力してください';return}pname=n;$('nm').value=n;needsNickname=false;save();$('nickSetup').style.display='none';beep(660,.08)};$('nickInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('nickConfirm').click()});if(needsNickname){$('nickSetup').style.display='flex';setTimeout(()=>$('nickInput').focus(),100)}paint()}
 function bgm(on){clearInterval(bgmT);bgmT=null;if(!on)return;const N=[523,659,784,659,587,740,880,740];let i=0;bgmT=setInterval(()=>{const v=+$('vol').value;if(!v||!ac)return;try{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=N[i++%8];g.gain.value=.08*v;g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.35);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.35)}catch(e){}},320)}
-function finish(){const w=over===1,s=score;if(!practice){REC[mode][w?0:1]++;save();paint()}$('rt').textContent=w?'WIN!':'LOSE…';$('rt').className=w?'win':'lose';$('rs').textContent=mode==='tennis'?'ゲーム '+s.games[0]+' - '+s.games[1]:'スコア '+s.pts[0]+' - '+s.pts[1];state='menu';$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;beep(w?880:200,.4);if(w)cheer()}
+function finish(){const w=over===1,s=score;if(!practice){REC[mode][w?0:1]++;save();paint()}$('rt').textContent=w?'WIN!':'LOSE…';$('rt').className=w?'win':'lose';$('rs').textContent=mode==='tennis'?'ゲーム '+s.games[0]+' - '+s.games[1]:'スコア '+s.pts[0]+' - '+s.pts[1];state='menu';$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;beep(w?880:200,.4);}
 function updScore(){const s=score;let t;
  if(mode==='tennis'){let a=s.pts[0],b=s.pts[1],x,y;if(a>=3&&b>=3){x=a===b?'40':a>b?'Ad':'40';y=a===b?'40':b>a?'Ad':'40'}else{x=T4[a];y=T4[b]}t=`あなた ${x} - ${y} CPU ｜ ゲーム ${s.games[0]}-${s.games[1]}`}
  else t=`あなた ${s.pts[0]} - ${s.pts[1]} CPU`;$('score').innerHTML=sbHtml()}
@@ -430,7 +430,7 @@ function point(w,why){if(practice){state='point';msgT=1.4;best=Math.max(best,ral
  s.pts[i]++;
  if(mode==='tennis'){if(s.pts[i]>=4&&s.pts[i]-s.pts[o]>=2){s.games[i]++;s.pts=[0,0];m=(w===1?'ゲーム獲得！':'相手がゲーム獲得');if(s.games[i]>=GW[OPT.mlen])over=w}server=(s.games[0]!==oldGames0||s.games[1]!==oldGames1)?-serving:serving}
  else{server=w;if(s.pts[i]>=BP[OPT.mlen]&&s.pts[i]-s.pts[o]>=2||s.pts[i]>=BP[OPT.mlen]+4)over=w}
- updScore();$('msg').textContent=m;beep(w===1?760:240,.25);if(w===1)cheer()}
+ updScore();$('msg').textContent=m;beep(w===1?760:240,.25);cheer()}
 function beginServe(){state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
  $('msg').textContent=server===1?'Spaceでサーブ':'相手のサーブ'}
 function start(m){
