@@ -141,7 +141,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 #chatInput{flex:1;min-width:0;box-sizing:border-box;padding:11px;border:1px solid #52677e;border-radius:10px;background:#fff;color:#17202a;font-size:16px}
 #chatSend{border:0;border-radius:10px;padding:0 14px;background:#ffd23f;color:#17202a;font-weight:800}
 #chatHint{font-size:11px;color:#b8c6d5;margin-top:7px}
-/* スマホ・小型画面のみのレスポンシブ調整。PC表示は変更しない */
+/* レスポンシブデザイン：基本レイアウトの後に、タッチ端末・横画面・小型画面の順で上書き */
 @media (pointer:coarse) and (max-width:900px){
   #score{font-size:clamp(11px,2.2vw,15px);left:max(8px,env(safe-area-inset-left));top:max(8px,env(safe-area-inset-top));}
   .sr{grid-template-columns:minmax(40px,auto) 22px 34px;gap:3px;padding:4px 7px}
@@ -173,7 +173,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
   #chatPanel{left:8px;bottom:calc(58px + env(safe-area-inset-bottom,0px));width:min(320px,calc(100vw - 16px))}
 }
 
-/* Compact mobile waiting-room layout */
+/* 待機ルームのレスポンシブ調整：共通設定 → 640px以下 → 380px以下 */
 .waitingPanel{width:min(560px,96vw);max-width:96vw;max-height:calc(100dvh - 16px);padding:12px;overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box}
 #playerSlots{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:6px 0}
 #playerSlots .playerSlot{padding:6px 3px}
@@ -515,13 +515,14 @@ function stepBall(){const b=ball,c=cfg,v=b.vel,s=v.length();b.prev.copy(b.pos);
   if(b.bounces>=1){point(b.lastHitter,'ツーバウンド');return}
   if(!ok){point(-b.lastHitter,inb?'自コート':'アウト');return}
   const sp0=Math.hypot(v.x,v.z)||1,tp=(b.spin.x*v.z-b.spin.z*v.x)/sp0,m=clamp(.78+tp*.0007,.55,1);v.y=-v.y*c.e*(1-clamp(sp0*.003,0,.2));v.x*=m;v.z*=m;b.spin.multiplyScalar(.55);b.bounces++;spawn(b.pos,12,2.5);courtBounceSound(mode,Math.abs(v.y)/12)}}
+function moveCpuToward(p,tx,tz,dt,c,speedFactor,deadZone,smoothing){const dx=tx-p.x,dz=tz-p.z,d=Math.hypot(dx,dz),k=1-Math.exp(-smoothing*dt),speed=d>deadZone?c.cSpeed*speedFactor:0;p.vx=(p.vx||0)+((d>0.05?dx/d*speed:0)-(p.vx||0))*k;p.vz=(p.vz||0)+((d>0.05?dz/d*speed:0)-(p.vz||0))*k;p.x+=p.vx*dt;p.z+=p.vz*dt}
 function update(dt){const c=cfg;hitCd-=dt;const i=inp();
  if(state!=='point'){if(P.diveT>0){P.vx=0;P.vz=0}else{const d=Math.max(1,Math.hypot(i.x,i.z)),mx=c.pSpeed*(i.dash?1.5:1),k=1-Math.exp(-8*dt);P.vx=(P.vx||0)+(i.x/d*mx-(P.vx||0))*k;P.vz=(P.vz||0)+(i.z/d*mx-(P.vz||0))*k;P.x=clamp(P.x+P.vx*dt,-c.hw-2.5,c.hw+2.5);P.z=clamp(P.z+P.vz*dt,state==='serveWait'&&mode==='tennis'&&server===1?c.hl+.15:.8,c.hl+3.5)}}
  let tx=0,tz=mode==='badminton'?-c.hl*.25:-c.hl*.55;
  if(state==='rally'&&ball.lastHitter===1){const b=ball;if(c.bounce&&b.bounces>0){tx=b.pos.x+b.vel.x*.3;tz=b.pos.z+b.vel.z*.3}else{aiT-=dt;if(aiT<=0||!aiL){aiL=simLand(b.pos,b.vel,c,b.spin);aiT=.15}tx=aiL.x;tz=aiL.z}}
  tz=clamp(tz,-c.hl-3.5,-.8);tx=clamp(tx,-c.hw-2.5,c.hw+2.5);
- if(state!=='point'){if(C.diveT>0){C.vx=0;C.vz=0}else if(netRole==='host'&&netConn&&netConn.open){const mx=remoteInput.x||0,mz=-(remoteInput.z||0),d=Math.max(1,Math.hypot(mx,mz)),sp=c.pSpeed*(remoteInput.dash?1.5:1);C.vx=mx/d*sp;C.vz=mz/d*sp;C.x=clamp(C.x+C.vx*dt,-c.hw-2.5,c.hw+2.5);C.z=clamp(C.z+C.vz*dt,-c.hl-3.5,state==='serveWait'&&mode==='tennis'&&server===-1?-c.hl-.15:-.8)}else{const dx=tx-C.x,dz=tz-C.z,d=Math.hypot(dx,dz),kk=1-Math.exp(-7*dt),wn=d>.15?c.cSpeed*SPD[practice?3:OPT.diff]:0;C.vx=(C.vx||0)+((d>.05?dx/d*wn:0)-(C.vx||0))*kk;C.vz=(C.vz||0)+((d>.05?dz/d*wn:0)-(C.vz||0))*kk;C.x+=C.vx*dt;C.z+=C.vz*dt}}
- if(selectedFormat==='doubles'&&state!=='point'){[[P2,1,P],[C2,-1,C]].forEach(([p,side,human])=>{const homeX=side===1?-c.hw*.48:c.hw*.48,homeZ=side*c.hl*.32;let tx2=homeX,tz2=homeZ;if(state==='rally'&&ball.lastHitter!==side){const land=simLand(ball.pos,ball.vel,c,ball.spin);const interceptT=clamp(land.t*.72,.08,.9),ix=ball.pos.x+ball.vel.x*interceptT,iz=ball.pos.z+ball.vel.z*interceptT;const npcDist=Math.hypot(ix-p.x,iz-p.z),humanDist=Math.hypot(ix-human.x,iz-human.z);if(npcDist+0.35<humanDist){tx2=ix;tz2=iz}else{const away=Math.sign(human.x-homeX)||1;tx2=clamp(homeX-away*.8,-c.hw*.85,c.hw*.85);tz2=side===1?c.hl*.22:-c.hl*.22}}tx2=clamp(tx2,-c.hw+0.35,c.hw-0.35);tz2=clamp(tz2,side===1?.8:-c.hl-3.5,side===1?c.hl+3.5:-.8);const dx=tx2-p.x,dz=tz2-p.z,d=Math.hypot(dx,dz),sp=c.cSpeed*SPD[OPT.diff],k2=1-Math.exp(-5.5*dt);p.vx=(p.vx||0)+((d>.1?dx/d*sp:0)-(p.vx||0))*k2;p.vz=(p.vz||0)+((d>.1?dz/d*sp:0)-(p.vz||0))*k2;p.x=clamp(p.x+p.vx*dt,-c.hw+0.35,c.hw-0.35);p.z=clamp(p.z+p.vz*dt,side===1?.8:-c.hl-3.5,side===1?c.hl+3.5:-.8)})}
+ if(state!=='point'){if(C.diveT>0){C.vx=0;C.vz=0}else if(netRole==='host'&&netConn&&netConn.open){const mx=remoteInput.x||0,mz=-(remoteInput.z||0),d=Math.max(1,Math.hypot(mx,mz)),sp=c.pSpeed*(remoteInput.dash?1.5:1);C.vx=mx/d*sp;C.vz=mz/d*sp;C.x=clamp(C.x+C.vx*dt,-c.hw-2.5,c.hw+2.5);C.z=clamp(C.z+C.vz*dt,-c.hl-3.5,state==='serveWait'&&mode==='tennis'&&server===-1?-c.hl-.15:-.8)}else{moveCpuToward(C,tx,tz,dt,c,SPD[practice?3:OPT.diff],.15,7)}}
+ if(selectedFormat==='doubles'&&state!=='point'){[[P2,1,P],[C2,-1,C]].forEach(([p,side,human])=>{const homeX=side===1?-c.hw*.48:c.hw*.48,homeZ=side*c.hl*.32;let tx2=homeX,tz2=homeZ;if(state==='rally'&&ball.lastHitter!==side){const land=simLand(ball.pos,ball.vel,c,ball.spin);const interceptT=clamp(land.t*.72,.08,.9),ix=ball.pos.x+ball.vel.x*interceptT,iz=ball.pos.z+ball.vel.z*interceptT;const npcDist=Math.hypot(ix-p.x,iz-p.z),humanDist=Math.hypot(ix-human.x,iz-human.z);if(npcDist+0.35<humanDist){tx2=ix;tz2=iz}else{const away=Math.sign(human.x-homeX)||1;tx2=clamp(homeX-away*.8,-c.hw*.85,c.hw*.85);tz2=side===1?c.hl*.22:-c.hl*.22}}tx2=clamp(tx2,-c.hw+0.35,c.hw-0.35);tz2=clamp(tz2,side===1?.8:-c.hl-3.5,side===1?c.hl+3.5:-.8);moveCpuToward(p,tx2,tz2,dt,c,SPD[OPT.diff],.1,5.5);p.x=clamp(p.x,-c.hw+0.35,c.hw-0.35);p.z=clamp(p.z,side===1?.8:-c.hl-3.5,side===1?c.hl+3.5:-.8)})}
  if(state==='serveWait'){if(server===1){if(serveT>0){serveT+=dt;ball.pos.set(P.x+.5,1.1+2.1*Math.sin(Math.PI/2*clamp(serveT/.42,0,1))-Math.max(0,serveT-.55)*1.4,P.z);if(serveT>=.72)doServe(1)}else ball.pos.set(P.x+.5,1.1,P.z)}else{serveT+=dt;ball.pos.set(C.x+.5,1.1+2.1*Math.sin(Math.PI/2*clamp(serveT/.42,0,1))-Math.max(0,serveT-.55)*1.4,C.z);if(!(netRole==='host'&&netConn&&netConn.open)&&serveT>=.72)doServe(-1)}}
  if(state==='rally'){acc+=dt;while(acc>=DT&&state==='rally'){stepBall();acc-=DT}tryHit(P);tryHit(C);if(selectedFormat==='doubles'){tryHit(P2);tryHit(C2)}}
  if(state==='point'){msgT-=dt;if(!practice&&msgT<=1.7&&!pointScoreShown){pointScoreShown=true;$('msg').textContent='';showPointScore(pointWinner)}if(msgT<=.4&&$('pointScore')&&!$('pointScore').hidden)$('pointScore').classList.add('fadeOut');if(msgT<=0){if(over){finish()}else beginServe()}}
