@@ -424,7 +424,7 @@ function cpuShot(){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=
  if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)C.jumpT=.48;if(R()<.35){deg=-8;dz=c.hl-1}}hit(-1,tx,dz,deg,mode==='tennis'?(R()<.25?-100:160):0)}
 function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>0)return;const b=ball.pos;
  const controlled=p===P||(p===C&&netRole==='host'&&netConn&&netConn.open);if(mode==='badminton'&&controlled&&p.swingReqT<=0)return;
- const hd=Math.hypot(b.x-p.x,b.z-p.z),reach=cfg.reach*(mode==='badminton'?.98:.9),lowBadminton=mode==='badminton'&&b.y<1.1,hitReach=mode==='badminton'?1.7+(lowBadminton?.15:0):reach,diveShot=mode==='tennis'&&p.swingT>0&&hd>reach*1.25;
+ const hd=Math.hypot(b.x-p.x,b.z-p.z),reach=cfg.reach*(mode==='badminton'?.98:.9),lowBadminton=mode==='badminton'&&b.y<1.1,hitReach=mode==='badminton'?1.7+(lowBadminton?.15:0):reach,diveShot=mode==='tennis'&&p.swingT>0&&Math.abs(b.z-p.z)<=.8&&Math.abs(b.x-p.x)>reach;
   // バドミントンは低いシャトルも拾えるようにし、床に触れる直前まで打てるようにする
   if(b.z*p.who<-.3||b.y>cfg.hMax||b.y<.07||hd>hitReach)return;
  if(diveShot){p.diveT=1.8;p.diveX=clamp((b.x-p.x)*.42,-.85,.85);p.diveZ=0;p.vx=0;p.vz=0}
