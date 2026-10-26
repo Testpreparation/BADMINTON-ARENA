@@ -361,38 +361,40 @@ function transientNoise(duration,low,high,volume,decay=0.035){
  gain.gain.setValueAtTime(Math.max(.0001,volume),t);gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
  src.buffer=buf;src.connect(hp);hp.connect(lp);lp.connect(gain);gain.connect(ac.destination);src.start(t);src.stop(t+duration);
 }
-function racketSound(sport,who,speed){
+// 実録音の効果音（BigSoundBank / CC0）
+const REAL_SFX={
+ badmintonHit:'https://bigsoundbank.com/UPLOAD/mp3/0537.mp3',
+ tennisBall:'https://bigsoundbank.com/UPLOAD/mp3/0584.mp3'
+};
+function playRealSound(url,volume,maxMs,startAt=0){
  const v=+$('vol').value;if(!v)return;
  try{
-  audio();const tennis=sport==='tennis',power=Math.min(1,Math.max(.35,(speed||20)/45));
-  if(tennis){
-   // テニスラケットの短い弦のパチッという音と、ボールの柔らかい打球音
-   transientNoise(.018,900,6500,.42*v*power,.006);
-   transientNoise(.065,130,1250,.20*v*power,.022);
-   transientNoise(.035,2400,9000,.13*v*power,.009);
-  }else{
-   // バドミントンは軽く高いシャトルの打球音。低いドラム状の音を使わない
-   transientNoise(.012,1800,10000,.48*v*power,.004);
-   transientNoise(.028,3200,12000,.20*v*power,.008);
-   transientNoise(.045,700,4200,.055*v*power,.014);
-  }
+  const a=new Audio(url);a.preload='auto';a.volume=Math.max(0,Math.min(1,v));
+  const stop=()=>{try{a.pause();a.currentTime=0}catch(e){}};
+  a.addEventListener('loadedmetadata',()=>{try{if(startAt>0&&startAt<a.duration)a.currentTime=startAt}catch(e){}},{once:true});
+  a.play().then(()=>{if(maxMs>0)setTimeout(stop,maxMs)}).catch(()=>{});
  }catch(e){}
+}
+function racketSound(sport,who,speed){
+ const v=+$('vol').value;if(!v)return;
+ if(sport==='badminton'){
+  // 実際にバドミントンのラケットでシャトルを打った録音
+  playRealSound(REAL_SFX.badmintonHit,v,420,0);
+ }else{
+  // テニスの実録音を短く切り出して再生
+  playRealSound(REAL_SFX.tennisBall,v,180,0);
+ }
 }
 function courtBounceSound(sport,impact){
  const v=+$('vol').value;if(!v||sport!=='tennis')return;
- try{
-  audio();const p=Math.min(1,Math.max(.25,impact||.5));
-  // テニスボールがコートに当たる、短く丸い「ポン」という音
-  transientNoise(.055,90,950,.22*v*p,.02);
-  transientNoise(.012,500,3000,.09*v*p,.004);
- }catch(e){}
+ // テニスボールがコートに当たる実録音
+ playRealSound(REAL_SFX.tennisBall,v,260,0);
 }
 function netSound(){
  const v=+$('vol').value;if(!v)return;
- try{audio();transientNoise(.075,500,5200,.18*v,.03);transientNoise(.025,2200,8500,.09*v,.008)}catch(e){}
+ // ネット接触音のみ控えめな短い効果音にする
+ try{audio();transientNoise(.055,700,5200,.12*v,.02)}catch(e){}
 }
-function courtBounceSound(sport,impact){const v=+$('vol').value;if(!v)return;try{audio();const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(sport==='tennis'?115:260,t);o.frequency.exponentialRampToValueAtTime(sport==='tennis'?48:110,t+.07);g.gain.setValueAtTime(.18*v*Math.min(1,Math.max(.3,impact||.5)),t);g.gain.exponentialRampToValueAtTime(.001,t+.09);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.1);noise(.018,sport==='tennis'?650:1300,.12*v)}catch(e){}}
-function netSound(){const v=+$('vol').value;if(!v)return;try{audio();noise(.07,900,.28*v);beep(240,.045)}catch(e){}}
 function cheer(){const v=+$('vol').value;if(!v||!ac)return;try{noise(1.4,900,.5*v)}catch(e){}}
 function hit(who,tx,tz,deg,sp){sp=sp||0;const p=ball.pos,c=cfg,th=deg*D2R;ball.lastHitter=who;ball.bounces=0;ball.net=false;aiL=null;hitCd=.25;const q=(who===1?P:C).q||0;tx+=(R()-.5)*q*3;tz+=(R()-.5)*q*2;
  let dx=tx-p.x,dz=tz-p.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let s=Math.max(10,L*1.4);const v={x:0,y:0,z:0},w={x:dz*sp,y:0,z:-dx*sp};
