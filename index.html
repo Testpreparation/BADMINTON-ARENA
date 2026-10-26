@@ -317,6 +317,24 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 .resultBadge{display:inline-block;padding:5px 12px;margin-bottom:8px;border-radius:999px;background:rgba(255,210,63,.16);border:1px solid rgba(255,210,63,.45);font-size:12px;font-weight:900;letter-spacing:.12em}
 @media(prefers-reduced-motion:reduce){#screenFade,.extraCard,.championTrophy{animation:none!important;transition:none!important}}
 
+
+/* アプリらしい操作感：既存の色・形・レイアウトを維持して反応だけを統一 */
+button{ -webkit-tap-highlight-color:transparent; transition:transform .14s ease,filter .14s ease,box-shadow .14s ease; }
+button:active{transform:scale(.975);filter:brightness(.96)}
+button:focus-visible{outline:3px solid rgba(255,210,63,.95);outline-offset:3px}
+button.mode{will-change:transform;}
+button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
+#menu:not([hidden]) .home{animation:appMenuEnter .42s cubic-bezier(.2,.75,.25,1) both}
+#menu:not([hidden]) #homeActions .mode{animation:appButtonEnter .38s cubic-bezier(.2,.75,.25,1) both}
+#menu:not([hidden]) #homeActions .mode:nth-child(2){animation-delay:.045s}
+#menu:not([hidden]) #homeActions .mode:nth-child(3){animation-delay:.09s}
+#menu:not([hidden]) #homeActions .mode:nth-child(4){animation-delay:.135s}
+.ov:not([hidden]) .modecard{animation:appPanelEnter .24s cubic-bezier(.2,.75,.25,1) both}
+@keyframes appMenuEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes appButtonEnter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes appPanelEnter{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){#menu:not([hidden]) .home,#menu:not([hidden]) #homeActions .mode,.ov:not([hidden]) .modecard{animation:none!important}button{transition:none!important}}
+
 /* アプリ起動スプラッシュ：既存画面のデザイン・ゲーム処理には影響させない */
 #appSplash{position:fixed;inset:0;z-index:250000;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:24px;box-sizing:border-box;background:radial-gradient(ellipse at 50% 38%,#183653 0%,#0b1523 48%,#060b12 100%);color:#f5f9ff;text-align:center;opacity:1;transition:opacity .36s ease,visibility .36s ease}
 #appSplash[hidden]{display:none!important}
