@@ -198,18 +198,8 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 @media(max-width:380px){.waitingPanel{width:96vw;padding:8px;border-radius:16px}.waitingTop{font-size:9px}.waitingPanel h2{font-size:17px}.waitingCodeBox{padding:5px}.playerSlots{gap:3px;margin:4px 0}.playerSlot{padding:4px 2px}.playerIcon{font-size:15px}.playerLabel{font-size:7px}.playerSlot b{font-size:9px}}
 
 
-/* Cinematic match intro: layered UI, motion, and responsive title cards */
-#matchIntro{position:fixed;inset:0;z-index:40;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(110deg,rgba(5,16,35,.3),rgba(5,16,35,.88) 65%,rgba(5,16,35,.35));opacity:1;transition:opacity .7s ease}
-#matchIntro .mi-panel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(8,24,49,.18),rgba(3,10,24,.72));}
-#matchIntro .mi-main{z-index:2;width:min(92vw,720px);box-sizing:border-box;padding:clamp(20px,5vh,54px) 16px;text-align:center;background:linear-gradient(135deg,rgba(7,24,48,.94),rgba(15,47,83,.88));border:1px solid rgba(180,230,255,.75);border-radius:24px;box-shadow:0 0 0 5px rgba(70,170,255,.12),0 20px 70px rgba(0,0,0,.6),inset 0 0 35px rgba(75,175,255,.12);transform:none;filter:none;animation:introSlam .75s cubic-bezier(.15,.8,.2,1.1) both}
-#matchIntro .mi-title{font-size:clamp(42px,10vw,100px);line-height:1.05;letter-spacing:-.035em;color:#fff;text-shadow:0 3px 0 #2479c7,0 7px 0 #123d78,0 14px 24px rgba(0,0,0,.55);overflow-wrap:anywhere}
-#matchIntro .mi-sub{max-width:100%;box-sizing:border-box;white-space:normal;margin-top:20px;padding:10px 18px;font-size:clamp(12px,2.8vw,19px);letter-spacing:.12em}
-#matchIntro .mi-top{top:calc(env(safe-area-inset-top,0px) + 3vh);letter-spacing:.25em}
-#matchIntro .mi-bottom{bottom:calc(env(safe-area-inset-bottom,0px) + 3vh);letter-spacing:.15em}
-#matchIntro .mi-bar.top{top:14%}#matchIntro .mi-bar.bottom{bottom:14%}
-#matchIntro .mi-glow{width:45vmin;height:45vmin}
-#matchIntro .mi-title.changing{animation:introTitleChange .55s cubic-bezier(.2,.8,.2,1) both}
-@keyframes introTitleChange{from{opacity:0;transform:translateY(28px) scale(.86);filter:blur(8px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+/* Cinematic match intro: original styling restored */
+#matchIntro{position:fixed;inset:0;z-index:40;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(110deg,rgba(5,16,35,.05),rgba(5,16,35,.62) 65%,rgba(5,16,35,.08));opacity:1;transition:opacity .55s ease}
 #matchIntro.out{opacity:0}
 /* Point/game transition and final result presentation */
 #matchTransition{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;pointer-events:none;background:rgba(3,10,22,.74);opacity:0;transition:opacity .22s ease}
@@ -564,7 +554,7 @@ function introSound(phase){
 }
 function startMatchIntro(){
  if($('matchIntro'))$('matchIntro').remove();
- const el=document.createElement('div');el.id='matchIntro';el.innerHTML='<div class="mi-panel"><div class="mi-glow"></div><div class="mi-top">RACKET STARS · MATCH PRESENTATION</div><div class="mi-bar top"></div><div class="mi-main"><div class="mi-title" id="miTitle">PLAYER 1</div><div class="mi-sub" id="miSub">YOUR COURT. YOUR MOMENT.</div><div class="mi-dots"><i></i><i></i><i></i></div></div><div class="mi-bar bottom"></div><div class="mi-bottom" id="miBottom">INTRODUCING YOU</div></div>';
+ const el=document.createElement('div');el.id='matchIntro';el.innerHTML='<div class="mi-glow"></div><div class="mi-top">RACKET STARS · MATCH PRESENTATION</div><div class="mi-bar top"></div><div class="mi-main"><div class="mi-title" id="miTitle">READY?</div><div class="mi-sub" id="miSub">PLAYER 1 VS CPU</div><div class="mi-dots"><i></i><i></i><i></i></div></div><div class="mi-bar bottom"></div><div class="mi-bottom" id="miBottom">GET READY TO PLAY</div>';
  document.body.appendChild(el);matchIntro={el,t:0};
 }
 function updateMatchIntro(dt){
