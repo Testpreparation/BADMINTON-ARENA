@@ -257,22 +257,37 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 @keyframes introDot{50%{opacity:1;transform:scale(1.5)}}
 @media(prefers-reduced-motion:reduce){#matchIntro:before,#matchIntro:after,#matchIntro .mi-glow,#matchIntro .mi-main,#matchIntro .mi-top,#matchIntro .mi-bottom,#matchIntro .mi-sub,#matchIntro .mi-bar,#matchIntro .mi-dots i{animation-duration:.01ms!important;animation-iteration-count:1!important}}
 
-/* スコアボード：高さを抑え、列の意味が分かりやすいシンプル表示 */
-#score{padding:4px 7px!important;min-width:138px!important;font-size:12px!important;line-height:1.15;border-radius:8px;background:rgba(8,12,18,.88);box-shadow:0 2px 7px rgba(0,0,0,.24)}
-#score .sr{grid-template-columns:minmax(62px,1fr) 24px 34px!important;gap:3px!important;padding:2px 2px!important;min-height:0;line-height:1.2}
-#score .sr:first-child{border-bottom:1px solid rgba(255,255,255,.14)}
-#score .sr.summary{grid-template-columns:1fr auto!important;padding:2px 2px!important;background:transparent!important;color:#fff}
-#score .sr b{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#score .sr i{font-size:11px;white-space:nowrap}
-#score .sr u{font-size:11px!important;padding:0!important;background:transparent!important;color:#fff!important;font-weight:800}
-#score .sr.summary u{display:none}
-@media (pointer:coarse) and (max-width:900px){
- #score{padding:3px 6px!important;min-width:126px!important;font-size:11px!important}
- #score .sr{grid-template-columns:minmax(54px,1fr) 20px 30px!important;gap:2px!important;padding:2px 1px!important}
- #score .sr b,#score .sr i,#score .sr u{font-size:10px!important}
+/* スコアボード：ガラス調の半透明パネル。速度表示は非表示 */
+#spd{display:none!important}
+#score{
+  box-sizing:border-box!important;
+  padding:10px 12px!important;
+  min-width:164px!important;
+  max-width:min(48vw,240px)!important;
+  font-size:13px!important;
+  line-height:1.25!important;
+  border:1px solid rgba(255,255,255,.38)!important;
+  border-radius:16px!important;
+  background:linear-gradient(135deg,rgba(235,247,255,.28),rgba(120,170,220,.12))!important;
+  -webkit-backdrop-filter:blur(18px) saturate(170%)!important;
+  backdrop-filter:blur(18px) saturate(170%)!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.34),inset 0 -1px 0 rgba(255,255,255,.08)!important;
+  color:rgba(255,255,255,.98)!important;
+  text-shadow:0 1px 5px rgba(0,0,0,.32);
 }
-/* スコア表示に黄色いセット背景を使わない */
+#score .sr{grid-template-columns:minmax(68px,1fr) 26px 34px!important;gap:5px!important;padding:5px 2px!important;min-height:0;line-height:1.25}
+#score .sr:first-child{border-bottom:1px solid rgba(255,255,255,.26)!important}
+#score .sr.summary{grid-template-columns:1fr auto!important;padding:5px 2px!important;background:transparent!important;color:#fff!important}
+#score .sr b{font-size:12px!important;font-weight:750!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#score .sr i{font-size:12px!important;white-space:nowrap}
+#score .sr u{font-size:12px!important;padding:0!important;background:transparent!important;color:#fff!important;font-weight:850!important}
+#score .sr.summary u{display:none}
 #score .set,#score .sr.set,#score .sr.summary{background:transparent!important;box-shadow:none!important}
+@media (pointer:coarse) and (max-width:900px){
+ #score{padding:8px 10px!important;min-width:150px!important;max-width:52vw!important;font-size:12px!important;border-radius:14px!important}
+ #score .sr{grid-template-columns:minmax(58px,1fr) 22px 30px!important;gap:3px!important;padding:4px 1px!important}
+ #score .sr b,#score .sr i,#score .sr u{font-size:11px!important}
+}
 </style></head><body>
 <div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
