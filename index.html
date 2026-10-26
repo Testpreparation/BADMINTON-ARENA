@@ -235,9 +235,9 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 @keyframes mtCardIn{from{opacity:0;transform:translateY(28px) scale(.88);filter:blur(6px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
 @keyframes resultEnter{0%{opacity:0;transform:scale(.82) translateY(24px);filter:blur(8px)}65%{opacity:1;transform:scale(1.035) translateY(0);filter:blur(0)}100%{opacity:1;transform:scale(1)}}
 @keyframes resultTitle{from{opacity:0;transform:translateY(24px) scale(.8)}to{opacity:1;transform:translateY(0) scale(1)}}
-#matchIntro:before{content:"";position:absolute;inset:-25%;background:repeating-linear-gradient(125deg,transparent 0 92px,rgba(255,255,255,.12) 93px 96px,transparent 97px 184px);animation:introLines 2.8s linear infinite}
-#matchIntro:after{content:"";position:absolute;width:clamp(220px,58vw,760px);aspect-ratio:1;border:clamp(8px,2vw,22px) solid rgba(255,255,255,.13);border-radius:50%;box-shadow:0 0 0 20px rgba(46,174,255,.08),0 0 0 54px rgba(255,255,255,.05);animation:introOrbit 5.8s ease-in-out infinite}
-#matchIntro .mi-glow{position:absolute;width:65vmin;height:65vmin;border-radius:50%;background:radial-gradient(circle,rgba(45,174,255,.48),rgba(87,220,255,.12) 42%,transparent 70%);filter:blur(4px);animation:introGlow 2.4s ease-in-out infinite alternate}
+#matchIntro:before{content:"";position:absolute;inset:-25%;background:repeating-linear-gradient(125deg,transparent 0 92px,rgba(255,255,255,.12) 93px 96px,transparent 97px 184px);animation:introLines 3s linear infinite}
+#matchIntro:after{content:"";position:absolute;width:clamp(220px,58vw,760px);aspect-ratio:1;border:clamp(8px,2vw,22px) solid rgba(255,255,255,.13);border-radius:50%;box-shadow:0 0 0 20px rgba(46,174,255,.08),0 0 0 54px rgba(255,255,255,.05);animation:introOrbit 6.25s ease-in-out infinite}
+#matchIntro .mi-glow{position:absolute;width:65vmin;height:65vmin;border-radius:50%;background:radial-gradient(circle,rgba(45,174,255,.48),rgba(87,220,255,.12) 42%,transparent 70%);filter:blur(4px);animation:introGlow 2.6s ease-in-out infinite alternate}
 #matchIntro .mi-top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 6vh);left:0;right:0;text-align:center;color:#fff;font-size:clamp(10px,2vw,14px);font-weight:900;letter-spacing:.3em;text-shadow:0 2px 12px #00152c;animation:introFade .5s both}
 #matchIntro .mi-main{position:relative;z-index:2;max-width:94vw;text-align:center;animation:introSlam .55s cubic-bezier(.18,.85,.25,1.12) both}
 #matchIntro .mi-title{font-size:clamp(58px,15vw,142px);font-weight:1000;line-height:.92;letter-spacing:-.045em;color:#fff;-webkit-text-stroke:1px rgba(255,255,255,.65);text-shadow:0 4px 0 #248bd4,0 8px 0 #1464a7,0 14px 28px rgba(0,0,0,.42)}
@@ -641,14 +641,14 @@ function updateMatchIntro(dt){
  if(!matchIntro)return false;
  matchIntro.t+=dt;const t=matchIntro.t,el=matchIntro.el,title=$('miTitle'),sub=$('miSub'),bottom=$('miBottom');
  let phase='';
- if(t<1.05){phase='player';title.textContent='PLAYER 1';sub.textContent='YOUR COURT. YOUR MOMENT.';bottom.textContent='INTRODUCING YOU';}
- else if(t<2.1){phase='opponent';title.textContent='CHALLENGER';sub.textContent=netRole==='guest'?'PLAYER 1 VS YOU':'PLAYER 1 VS CPU';bottom.textContent='MEET YOUR OPPONENT';}
- else if(t<3.05){phase='match';title.textContent=mode==='tennis'?'TENNIS':'BADMINTON';sub.textContent=selectedFormat==='doubles'?'DOUBLES MATCH':'SINGLES MATCH';bottom.textContent='GET INTO POSITION';}
- else if(t<3.7){phase='ready';title.textContent='READY?';sub.textContent='';bottom.textContent='GET READY';}
- else if(t<4.15){phase='three';title.textContent='3';sub.textContent='';bottom.textContent='';}
- else if(t<4.6){phase='two';title.textContent='2';sub.textContent='';bottom.textContent='';}
- else if(t<5.05){phase='one';title.textContent='1';sub.textContent='';bottom.textContent='';}
- else if(t<5.85){phase='play';title.textContent='PLAY!';sub.textContent='LET THE MATCH BEGIN';bottom.textContent='';}
+ if(t<1.13){phase='player';title.textContent='PLAYER 1';sub.textContent='YOUR COURT. YOUR MOMENT.';bottom.textContent='INTRODUCING YOU';}
+ else if(t<2.27){phase='opponent';title.textContent='CHALLENGER';sub.textContent=netRole==='guest'?'PLAYER 1 VS YOU':'PLAYER 1 VS CPU';bottom.textContent='MEET YOUR OPPONENT';}
+ else if(t<3.29){phase='match';title.textContent=mode==='tennis'?'TENNIS':'BADMINTON';sub.textContent=selectedFormat==='doubles'?'DOUBLES MATCH':'SINGLES MATCH';bottom.textContent='GET INTO POSITION';}
+ else if(t<4.0){phase='ready';title.textContent='READY?';sub.textContent='';bottom.textContent='GET READY';}
+ else if(t<4.48){phase='three';title.textContent='3';sub.textContent='';bottom.textContent='';}
+ else if(t<4.97){phase='two';title.textContent='2';sub.textContent='';bottom.textContent='';}
+ else if(t<5.45){phase='one';title.textContent='1';sub.textContent='';bottom.textContent='';}
+ else if(t<6.32){phase='play';title.textContent='PLAY!';sub.textContent='LET THE MATCH BEGIN';bottom.textContent='';}
  else{
   el.classList.add('out');matchIntro=null;
   setTimeout(()=>{if(el.isConnected)el.remove()},600);
