@@ -821,19 +821,19 @@ function cam(){if(isSpectatingTournament&&spectatorView==='stands'){camera.posit
   // ゲスト視点がコートの奥を向きすぎて、自分のキャラクターが画面外になるのを防ぐ
   const back=mode==='tennis'?6.2:8.2;
   const px=Number.isFinite(p.x)?p.x:0,pz=Number.isFinite(p.z)?p.z:-(cfg.hl+1.5);
-  const t=new THREE.Vector3(px*.7,mode==='badminton'?5.3:4.1,pz-(mode==='badminton'?9:back));
+  const t=new THREE.Vector3(px*.7,mode==='badminton'?4.4:4.1,pz-(mode==='badminton'?6.8:back));
   camera.position.lerp(t,1-Math.exp(-9*fdt));
-  lk.lerp(new THREE.Vector3(px*.35,1.0,pz+2.5),1-Math.exp(-10*fdt));
+  lk.lerp(new THREE.Vector3(px*.35,1.0,pz+(mode==='badminton'?1.8:2.5)),1-Math.exp(-10*fdt));
  }
  else if(state==='point'){
   const t=new THREE.Vector3(0,Math.max(8,cfg.hl*.55),cfg.hl+9);
   camera.position.lerp(t,1-Math.exp(-5*fdt));
   lk.lerp(new THREE.Vector3(0,1,0),1-Math.exp(-5*fdt));
  }else{
-  const t=new THREE.Vector3(p.x*.7,mode==='badminton'?5.3:4.3,p.z+(mode==='tennis'?6.2:9));
+  const t=new THREE.Vector3(p.x*.7,mode==='badminton'?4.5:4.3,p.z+(mode==='tennis'?6.2:7));
   camera.position.lerp(t,1-Math.exp(-7*fdt));
   const bp=state==='rally'||state==='serveWait'?ball.pos:p;
-  lk.lerp(new THREE.Vector3(p.x*.4+(bp.x-p.x)*.2,mode==='badminton'?1.45+bp.y*.1:1.2+bp.y*.12,p.z-(mode==='badminton'?8.5:9)+(bp.z-p.z+(mode==='badminton'?8.5:9))*.1),1-Math.exp(-8*fdt));
+  lk.lerp(new THREE.Vector3(p.x*.4+(bp.x-p.x)*.2,mode==='badminton'?1.45+bp.y*.1:1.2+bp.y*.12,p.z-(mode==='badminton'?6:9)+(bp.z-p.z+(mode==='badminton'?6:9))*.1),1-Math.exp(-8*fdt));
  }
  camera.lookAt(lk)}
 let last=performance.now(),fdt=.016;const lk=new THREE.Vector3(0,1,0);
@@ -951,7 +951,7 @@ function handleNetData(d){
 }
 function sendSnapshot(){try{const data={state,server,mode,P:{x:P.x,z:P.z,swingT:P.swingT,diveT:P.diveT,diveX:P.diveX,diveZ:P.diveZ},C:{x:C.x,z:C.z,swingT:C.swingT,diveT:C.diveT,diveX:C.diveX,diveZ:C.diveZ},P2:{x:P2.x,z:P2.z,swingT:P2.swingT},C2:{x:C2.x,z:C2.z,swingT:C2.swingT},ball:{p:ball.pos.toArray(),v:ball.vel.toArray(),s:ball.spin.toArray(),net:ball.net,lastHitter:ball.lastHitter,bounces:ball.bounces},scoreHtml:$('score').innerHTML,msg:$('msg').textContent,spd:$('spd').textContent,finished:!$('res').hidden,rt:$('rt').textContent,rtClass:$('rt').className,rs:$('rs').textContent};if(netConn&&netConn.open)netConn.send({type:'snapshot',data});if(activeTournamentMatchRef&&activeTournament&&activeTournamentMatchId&&netRole==='host'&&state!=='menu'&&Date.now()-lastTournamentStateAt>=125){lastTournamentStateAt=Date.now();activeTournamentRef.child('live/'+activeTournamentMatchId).set(data).catch(()=>{})}}catch(e){}}
 function guestFrame(dt){if(netConn&&netConn.open){netInputTimer+=dt;if(netInputTimer>.05){netInputTimer=0;netConn.send({type:'input',input:{...inp(),swing:false}})}}}
-function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=camera.aspect<1?80:(mode==='badminton'?68:60);camera.updateProjectionMatrix()}
+function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=camera.aspect<1?80:(mode==='badminton'?72:60);camera.updateProjectionMatrix()}
 addEventListener('resize',rs);
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Escape'&&state!=='menu'){e.preventDefault();togglePause();return}if(paused)return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;if(state==='serveWait'&&server===1){startServeCharge();return}swing()}});
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&serveCharging)releaseServeCharge()});
