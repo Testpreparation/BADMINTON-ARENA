@@ -203,7 +203,14 @@ let cfg=CFG.tennis,mode='tennis',state='menu',server=1,score,msgT=0,acc=0,hitCd=
 let selectedSport='tennis',netRole='offline',netPeer=null,netConn=null,roomBusy=false,roomTimeout=null,screenMode='sport',remoteInput={x:0,z:0,dash:false},netLastSnapshot=0,netInputTimer=0;
 let fbAuth=null,fbDb=null,activeRoomRef=null,roomListeners=[],roomDisconnectRef=null,lastHostNonce='',lastGuestNonce='';
 const FIREBASE_CONFIG={apiKey:'AIzaSyB85NfBhRRSLsLxhwewaJYJjWSPxLzaJKE',authDomain:'sports-app-2e1bb.firebaseapp.com',databaseURL:'https://sports-app-2e1bb-default-rtdb.firebaseio.com',projectId:'sports-app-2e1bb',storageBucket:'sports-app-2e1bb.firebasestorage.app',messagingSenderId:'614670493916',appId:'1:614670493916:web:2bc45bf2fc2fce2af2ec19'};
-function initFirebase(){if(!window.firebase){throw new Error('Firebase SDKを読み込めません。通信環境を確認してください。')}if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);fbAuth=firebase.auth();fbDb=firebase.database();return fbAuth.currentUser?Promise.resolve(fbAuth.currentUser):fbAuth.signInAnonymously().then(r=>r.user)}
+function withTimeout(promise,ms,label){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+'（タイムアウト）')),ms))])}
+function initFirebase(){
+ if(!window.firebase)throw new Error('Firebase SDKを読み込めません。ページを再読み込みしてください。');
+ if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+ fbAuth=firebase.auth();fbDb=firebase.database();
+ const authPromise=fbAuth.currentUser?Promise.resolve(fbAuth.currentUser):fbAuth.signInAnonymously().then(r=>r.user).catch(e=>{const code=e&&e.code?e.code:'';if(code==='auth/operation-not-allowed')throw new Error('Firebase Authenticationで「匿名」ログインを有効にしてください。');if(code==='auth/unauthorized-domain')throw new Error('Firebase Authenticationの承認済みドメインに testpreparation.github.io を追加してください。');throw new Error('Firebase匿名認証エラー '+code+': '+(e&&e.message?e.message:'設定を確認してください'));});
+ return withTimeout(authPromise,12000,'Firebase認証').then(user=>withTimeout(fbDb.ref('.info/connected').once('value'),10000,'Firebaseデータベース接続').then(()=>user));
+}
 function listenRoom(ref,event,fn){ref.on(event,fn);roomListeners.push({ref,event,fn})}
 function makeFirebaseConnection(){return {open:true,send(d){if(!activeRoomRef||!this.open)return;const side=netRole==='host'?'hostMessage':'guestMessage';const payload={nonce:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),data:d,ts:Date.now()};activeRoomRef.child(side).set(payload).catch(e=>roomMessage('Firebase送信エラー：'+e.message))},close(){this.open=false}}}
 
