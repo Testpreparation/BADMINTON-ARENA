@@ -335,28 +335,32 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 @keyframes appPanelEnter{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){#menu:not([hidden]) .home,#menu:not([hidden]) #homeActions .mode,.ov:not([hidden]) .modecard{animation:none!important}button{transition:none!important}}
 
-/* アプリ起動スプラッシュ：メインメニューと統一した配色・ロゴ表現 */
-#appSplash{position:fixed;inset:0;z-index:250000;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:24px;box-sizing:border-box;background:radial-gradient(ellipse at 50% 42%,rgba(28,48,72,.96) 0%,rgba(10,16,29,.98) 48%,#050812 100%);color:var(--fg,#f2f6fa);text-align:center;opacity:1;transition:opacity .42s ease,visibility .42s ease}
+/* 起動画面：RACKET STARSのメインメニューと同じスポーツアリーナの世界観 */
+#appSplash{position:fixed;inset:0;z-index:250000;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:24px;box-sizing:border-box;background:radial-gradient(ellipse at 50% 45%,rgba(30,53,79,.92) 0%,rgba(11,18,31,.98) 45%,#050812 100%);color:var(--fg,#f2f6fa);text-align:center;opacity:1;transition:opacity .42s ease,visibility .42s ease;isolation:isolate}
 #appSplash[hidden]{display:none!important}
 #appSplash.leaving{opacity:0;visibility:hidden;pointer-events:none}
-#appSplash:before,#appSplash:after{content:'';position:absolute;border:1px solid rgba(255,210,63,.16);border-radius:50%;width:min(82vw,680px);aspect-ratio:1;pointer-events:none;animation:splashOrbit 9s linear infinite}
-#appSplash:after{width:min(61vw,490px);border-color:rgba(255,255,255,.08);animation-direction:reverse;animation-duration:13s}
+#appSplash:before{content:'';position:absolute;z-index:-2;inset:-25%;pointer-events:none;background:repeating-linear-gradient(118deg,transparent 0 72px,rgba(255,255,255,.018) 73px 74px,transparent 75px 146px);transform:perspective(500px) rotateX(58deg) scale(1.5);transform-origin:center 70%;mask-image:linear-gradient(to bottom,transparent 8%,#000 40%,#000 80%,transparent 100%)}
+#appSplash:after{content:'';position:absolute;z-index:-1;left:50%;top:50%;width:min(100vw,900px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,210,63,.075) 0%,rgba(255,210,63,.025) 34%,transparent 68%);box-shadow:0 0 0 1px rgba(255,210,63,.045),0 0 0 36px rgba(255,255,255,.012),0 0 0 72px rgba(255,255,255,.009)}
+.splashCourt{position:absolute;z-index:-1;left:50%;bottom:-21%;width:min(110vw,1100px);height:64%;transform:translateX(-50%) perspective(460px) rotateX(58deg);transform-origin:center bottom;border:1px solid rgba(255,210,63,.22);background:linear-gradient(180deg,rgba(27,65,94,.12),rgba(14,31,48,.22));box-shadow:inset 0 0 0 2px rgba(255,255,255,.025),0 -20px 80px rgba(0,0,0,.12);pointer-events:none}
+.splashCourt:before,.splashCourt:after{content:'';position:absolute;pointer-events:none}
+.splashCourt:before{left:0;right:0;top:50%;border-top:1px solid rgba(255,255,255,.14)}
+.splashCourt:after{top:0;bottom:0;left:50%;border-left:1px solid rgba(255,255,255,.12)}
 .splashContent{position:relative;z-index:1;width:min(520px,100%);animation:splashEnter .75s cubic-bezier(.2,.8,.2,1) both}
-.splashMark{display:inline-flex;align-items:center;justify-content:center;width:68px;height:68px;margin-bottom:19px;border:1px solid rgba(255,210,63,.58);border-radius:21px;background:linear-gradient(145deg,rgba(255,210,63,.19),rgba(255,255,255,.035));box-shadow:0 0 36px rgba(255,190,50,.12),inset 0 1px rgba(255,255,255,.12);font-size:34px}
-.splashEyebrow{margin:0 0 9px;color:var(--ac,#ffd23f);font-size:11px;font-weight:800;letter-spacing:.4em}
+.splashMark{display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;margin-bottom:20px;border:1px solid rgba(255,210,63,.62);border-radius:22px;background:linear-gradient(145deg,rgba(255,210,63,.2),rgba(255,255,255,.045));box-shadow:0 0 38px rgba(255,190,50,.13),inset 0 1px rgba(255,255,255,.13);font-size:31px;letter-spacing:-8px;padding-right:8px}
+.splashEyebrow{margin:0 0 10px;color:var(--ac,#ffd23f);font-size:10px;font-weight:900;letter-spacing:.42em}
 #appSplash h1{margin:4px 0;font-size:clamp(48px,12vmin,86px);font-weight:900;font-style:italic;line-height:.92;letter-spacing:-.055em;background:linear-gradient(180deg,#fff 0%,#ffd23f 60%,#ff8a00 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 rgba(0,0,0,.45))}
 .splashSub{margin:17px 0 28px;color:rgba(242,246,250,.82);font-size:12px;letter-spacing:.2em}
 .splashLoading{height:18px;display:flex;align-items:center;justify-content:center;gap:6px;margin:0 auto}
 .splashLoading span{width:5px;height:5px;border-radius:50%;background:var(--ac,#ffd23f);opacity:.28;animation:splashPulse .8s ease-in-out infinite}
 .splashLoading span:nth-child(2){animation-delay:.14s}
 .splashLoading span:nth-child(3){animation-delay:.28s}
-.splashHint{margin:8px 0 0;color:rgba(222,235,248,.55);font-size:10px;letter-spacing:.12em}
+.splashHint{margin:8px 0 0;color:rgba(222,235,248,.55);font-size:10px;font-weight:700;letter-spacing:.2em}
 @keyframes splashEnter{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes splashPulse{0%,80%,100%{opacity:.28;transform:scale(.75)}40%{opacity:1;transform:scale(1.15)}}
-@keyframes splashOrbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){#appSplash,.splashContent,#appSplash:before,#appSplash:after,.splashLoading span{animation:none!important;transition:none!important}}
+@media(prefers-reduced-motion:reduce){#appSplash,.splashContent,.splashLoading span{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
+ <div class="splashCourt" aria-hidden="true"></div>
  <div class="splashContent">
   <div class="splashMark" aria-hidden="true">🎾 🏸</div>
   <p class="splashEyebrow">RACKET SPORTS</p>
