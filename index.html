@@ -481,7 +481,17 @@ function update(dt){const c=cfg;hitCd-=dt;const i=inp();
  if(state==='serveWait'){if(server===1){ball.pos.set(P.x+.5,1.1,P.z)}else{ball.pos.set(C.x+.5,1.1,C.z);if(netRole!=='host'){serveT+=dt;if(serveT>1)doServe(-1)}}}
  if(state==='rally'){acc+=dt;while(acc>=DT&&state==='rally'){stepBall();acc-=DT}tryHit(P);tryHit(C)}
  if(state==='point'){msgT-=dt;if(msgT<=0){if(over){finish()}else beginServe()}}
- [P,C].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.diveT=Math.max(0,p.diveT-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm;const u=1-p.swingT/.3,ez=p.swingT>0?Math.sin(u*Math.PI)*(.4+.6*Math.sin(u*Math.PI/2)):0;a.rotation.x=-.6-ez*2.1;a.rotation.z=-ez*.5;p.g.rotation.z+=(clamp(-(p.vx||0)*(p===P?1:-1)*.03,-.22,.22)-p.g.rotation.z)*(1-Math.exp(-8*dt));p.g.userData.rk.rotation.x=-ez*.5})}
+ [P,C].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.diveT=Math.max(0,p.diveT-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm;const u=1-p.swingT/.3,ez=p.swingT>0?Math.sin(u*Math.PI)*(.4+.6*Math.sin(u*Math.PI/2)):0;
+  if(mode==='badminton'){
+   // バドミントンの低い打球は、腕を下げてから前上方へ振り抜く
+   const low=clamp((1.45-ball.pos.y)/1.15,0,1),phase=p.swingT>0?u:0;
+   const armX=-.35-ez*(1.1+low*.85),armZ=-.08-ez*(.32+low*.12);
+   a.rotation.x+=(armX-a.rotation.x)*(1-Math.exp(-18*dt));a.rotation.z+=(armZ-a.rotation.z)*(1-Math.exp(-18*dt));
+   p.g.userData.rk.rotation.x+=( (-.15-ez*(.55+low*.5))-p.g.userData.rk.rotation.x)*(1-Math.exp(-18*dt));
+  }else{
+   a.rotation.x=-.6-ez*2.1;a.rotation.z=-ez*.5;p.g.userData.rk.rotation.x=-ez*.5
+  }
+  p.g.rotation.z+=(clamp(-(p.vx||0)*(p===P?1:-1)*.03,-.22,.22)-p.g.rotation.z)*(1-Math.exp(-8*dt))})}
 function cam(){const p=netRole==='guest'?C:P;
  if(netRole==='guest'){
   // ゲスト視点がコートの奥を向きすぎて、自分のキャラクターが画面外になるのを防ぐ
