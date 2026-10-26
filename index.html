@@ -32,11 +32,106 @@ function makeShuttle(){const g=new THREE.Group();const cork=new THREE.Mesh(new T
 function setup(){scene=new THREE.Scene();scene.background=new THREE.Color(0x091726);scene.fog=new THREE.Fog(0x091726,18,45);camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,100);camera.position.set(0,9.5,16.5);camera.lookAt(0,0,0);renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;root.appendChild(renderer.domElement);clock=new THREE.Clock();scene.add(new THREE.HemisphereLight(0xcceeff,0x263445,2));const light=new THREE.DirectionalLight(0xffffff,3);light.position.set(-5,12,6);light.castShadow=true;light.shadow.mapSize.set(1024,1024);scene.add(light);const floor=box(scene,24,.25,30,mat(0x112a3c),0,-.2,0);const courtMat=mat(0x147f83,.8);box(scene,court.width,.04,court.length,courtMat,0,-.04,0);const white=mat(0xf4ffff,.5);const w=court.width/2,l=court.length/2;for(const x of [-w,w])line(scene,[x,.005,-l],[x,.005,l],0xffffff,.018);for(const z of [-l,l])line(scene,[-w,.005,z],[w,.005,z],0xffffff,.018);line(scene,[-w,.005,0],[w,.005,0]);line(scene,[-w,.005,-l*.5],[w,.005,-l*.5]);line(scene,[-w,.005,l*.5],[w,.005,l*.5]);line(scene,[-w,.005,-2.1],[w,.005,-2.1]);line(scene,[-w,.005,2.1],[w,.005,2.1]);for(const x of [-w-.03,w+.03]){line(scene,[x,0,-.1],[x,court.netHeight,-.1],0xe9f2f7,.035)}net=new THREE.Mesh(new THREE.PlaneGeometry(court.width,court.netHeight),new THREE.MeshBasicMaterial({color:0xdde7ed,wireframe:true,transparent:true,opacity:.4,side:THREE.DoubleSide}));net.position.set(0,court.netHeight/2,-.1);scene.add(net);line(scene,[-w,court.netHeight,-.1],[w,court.netHeight,-.1],0xffffff,.025);player=makePerson(shirtColor,4.4,1);opponent=makePerson(0xf05a65,-4.4,-1);racket=createRacket(player);shuttle=makeShuttle();shuttle.position.set(0,2,0);for(let i=0;i<10;i++){const lamp=new THREE.PointLight(0x7deaff,8,7,2);lamp.position.set(i%2? -8:8,6,-13+i*2.8);scene.add(lamp)}window.addEventListener('resize',resize);animate()}
 function resize(){if(!renderer)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
 let flight=null;
-function launchShuttle(fromPlayer=true,power=1){const start=fromPlayer?player.position:opponent.position;const targetX=(Math.random()-.5)*3.2;const targetZ=fromPlayer?-4.9:4.9;const startPos=new THREE.Vector3(start.x+(fromPlayer?0:0),fromPlayer?1.7:1.8,start.z+(fromPlayer?-.4:.4));const endPos=new THREE.Vector3(targetX,.12,targetZ);const duration=fromPlayer?0.82:0.9;flight={start:startPos,end:endPos,t:0,duration,arc:2.3*power,fromPlayer};shuttle.position.copy(startPos);serveSide=fromPlayer?1:-1}
+let shuttleVelocity=new THREE.Vector3(), shuttleInPlay=false, lastPlayerHit=0, aiHitTimer=0, shuttleLastSide='cpu';
+const GRAVITY=9.81, AIR_DRAG=0.12;
+function launchShuttle(fromPlayer=true,power=1){
+  const start=fromPlayer?player.position:opponent.position;
+  const targetX=THREE.MathUtils.clamp((Math.random()-.5)*3.6,-2.1,2.1);
+  const targetZ=fromPlayer?-4.9:4.9;
+  shuttle.position.set(start.x+(fromPlayer?.28:-.28),fromPlayer?1.7:1.8,start.z+(fromPlayer?-.35:.35));
+  const target=new THREE.Vector3(targetX,.12,targetZ);
+  const flightTime=fromPlayer?.78:.92;
+  shuttleVelocity.set((target.x-shuttle.position.x)/flightTime, (target.y-shuttle.position.y+.5*GRAVITY*flightTime*flightTime)/flightTime, (target.z-shuttle.position.z)/flightTime);
+  shuttleVelocity.multiplyScalar(power);
+  shuttleInPlay=true; shuttleLastSide=fromPlayer?'player':'cpu'; serveSide=fromPlayer?1:-1;
+}
 function animate(){requestAnimationFrame(animate);if(!renderer)return;const dt=Math.min(clock.getDelta(),.04);if(running)updateGame(dt);renderer.render(scene,camera)}
-function updateGame(dt){const speed=4.8;let dx=0,dz=0;if(keys.KeyA||keys.ArrowLeft)dx--;if(keys.KeyD||keys.ArrowRight)dx++;if(keys.KeyW||keys.ArrowUp)dz--;if(keys.KeyS||keys.ArrowDown)dz++;dx+=touchMove.x;dz+=touchMove.z;const len=Math.hypot(dx,dz)||1;player.position.x=THREE.MathUtils.clamp(player.position.x+dx/len*speed*dt,-2.1,2.1);player.position.z=THREE.MathUtils.clamp(player.position.z+dz/len*speed*dt,1.1,6.2);player.rotation.y=Math.PI;player.userData.limbs[0].rotation.x=Math.sin(performance.now()*.01)*.1;player.userData.limbs[1].rotation.x=Math.sin(performance.now()*.01+Math.PI)*.1;racket.position.set(.38,1.4,-.05);racket.rotation.x=Math.sin(performance.now()*.009)*.15;opponentTarget.x=THREE.MathUtils.clamp(shuttle.position.x,-2,2);opponentTarget.z=-3.4;opponent.position.x=THREE.MathUtils.damp(opponent.position.x,opponentTarget.x,2,dt);opponent.position.z=THREE.MathUtils.damp(opponent.position.z,opponentTarget.z,2,dt);if(flight){flight.t+=dt;const p=Math.min(flight.t/flight.duration,1);shuttle.position.lerpVectors(flight.start,flight.end,p);shuttle.position.y=flight.start.y+(flight.end.y-flight.start.y)*p+Math.sin(p*Math.PI)*flight.arc;shuttle.rotation.z=Math.sin(p*Math.PI)*.25;if(p>=1){const scoredOnPlayer=flight.fromPlayer;if(scoredOnPlayer){scoreYou++;}else{scoreCpu++;}document.querySelector('#score').textContent='YOU '+scoreYou+' — '+scoreCpu+' CPU';flight=null;shuttle.position.set((Math.random()-.5)*2,2,0);if(scoreYou>=11||scoreCpu>=11){running=false;setTimeout(()=>{alert(scoreYou>scoreCpu?'練習終了！あなたの勝ちです。':'練習終了！もう一度挑戦しましょう。');stopGame()},100)}}}else if(performance.now()-lastHit>1400){lastHit=performance.now();launchShuttle(false,.9)}hitCooldown=Math.max(0,hitCooldown-dt)}
-function hit(){if(!running||hitCooldown>0)return;hitCooldown=.55;lastHit=performance.now();launchShuttle(true,1+Math.random()*.25)}
-function startGame(){menu.classList.add('hidden');modes.classList.add('hidden');style.classList.add('hidden');hud.style.display='block';touch.style.display='block';scoreYou=scoreCpu=0;document.querySelector('#score').textContent='YOU 0 — 0 CPU';player.position.set(0,0,4.4);opponent.position.set(0,0,-4.4);shuttle.position.set(0,2,0);flight=null;running=true;lastHit=performance.now();launchShuttle(false)}
+function updateGame(dt){
+  const speed=4.8;
+  let dx=0,dz=0;
+  if(keys.KeyA||keys.ArrowLeft)dx--;
+  if(keys.KeyD||keys.ArrowRight)dx++;
+  if(keys.KeyW||keys.ArrowUp)dz--;
+  if(keys.KeyS||keys.ArrowDown)dz++;
+  dx+=touchMove.x; dz+=touchMove.z;
+  const len=Math.hypot(dx,dz)||1;
+  player.position.x=THREE.MathUtils.clamp(player.position.x+dx/len*speed*dt,-2.1,2.1);
+  player.position.z=THREE.MathUtils.clamp(player.position.z+dz/len*speed*dt,1.1,6.2);
+  player.rotation.y=Math.PI;
+  const moving=Math.min(1,Math.hypot(dx,dz));
+  player.userData.limbs[0].rotation.x=Math.sin(performance.now()*.012)*.65*moving;
+  player.userData.limbs[1].rotation.x=Math.sin(performance.now()*.012+Math.PI)*.65*moving;
+  racket.position.set(.38,1.4,-.05);
+  racket.rotation.x=Math.sin(performance.now()*.009)*.15;
+
+  opponentTarget.x=THREE.MathUtils.clamp(shuttle.position.x,-2,2);
+  opponentTarget.z=shuttle.position.z<0?THREE.MathUtils.clamp(shuttle.position.z+1.0,-5.7,-1.1):-3.4;
+  opponent.position.x=THREE.MathUtils.damp(opponent.position.x,opponentTarget.x,3.4,dt);
+  opponent.position.z=THREE.MathUtils.damp(opponent.position.z,opponentTarget.z,3.4,dt);
+
+  if(shuttleInPlay){
+    // Shuttle flight is integrated every frame with gravity and aerodynamic drag.
+    const v=shuttleVelocity;
+    const drag=Math.exp(-AIR_DRAG*dt);
+    v.x*=drag; v.z*=drag; v.y-=GRAVITY*dt; v.y*=drag;
+    shuttle.position.addScaledVector(v,dt);
+    const horizontalSpeed=Math.hypot(v.x,v.z);
+    if(horizontalSpeed>.05){
+      shuttle.rotation.z=THREE.MathUtils.clamp(-v.x*.06,-.45,.45);
+      shuttle.rotation.x=THREE.MathUtils.clamp(v.z*.035,-.35,.35);
+    }
+
+    // CPU returns the shuttle when it reaches the CPU half and is within racket reach.
+    if(shuttle.position.z<-.25 && shuttle.position.y<2.9 &&
+       Math.hypot(shuttle.position.x-opponent.position.x,shuttle.position.z-opponent.position.z)<1.05){
+      aiHitTimer+=dt;
+      if(aiHitTimer>.18){
+        aiHitTimer=0;
+        launchShuttle(false,1);
+      }
+    }else aiHitTimer=0;
+
+    // Landing determines the point; crossing the net alone does not award a point.
+    if(shuttle.position.y<=.12){
+      shuttle.position.y=.12;
+      shuttleInPlay=false;
+      const landedOnPlayerSide=shuttle.position.z>0;
+      if(landedOnPlayerSide) scoreCpu++; else scoreYou++;
+      document.querySelector('#score').textContent='YOU '+scoreYou+' — '+scoreCpu+' CPU';
+      if(scoreYou>=11||scoreCpu>=11){
+        running=false;
+        setTimeout(()=>{alert(scoreYou>scoreCpu?'練習終了！あなたの勝ちです。':'練習終了！もう一度挑戦しましょう。');stopGame()},100);
+      } else {
+        setTimeout(()=>{if(running)launchShuttle(false,.95)},650);
+      }
+    }
+  } else if(performance.now()-lastHit>1400){
+    lastHit=performance.now();
+    launchShuttle(false,.95);
+  }
+  hitCooldown=Math.max(0,hitCooldown-dt);
+}
+function hit(){
+  if(!running||hitCooldown>0||!shuttleInPlay)return;
+  // A swing only connects when the shuttle is close enough to the player's body/racket.
+  const dx=shuttle.position.x-player.position.x;
+  const dz=shuttle.position.z-player.position.z;
+  const distance=Math.hypot(dx,dz);
+  if(shuttle.position.z<0 || distance>1.55 || shuttle.position.y>3.4 || shuttle.position.y<.35)return;
+  hitCooldown=.42;
+  lastHit=performance.now();
+  const targetX=THREE.MathUtils.clamp((Math.random()-.5)*3.6,-2.1,2.1);
+  const targetZ=-4.9;
+  const target=new THREE.Vector3(targetX,.12,targetZ);
+  const start=shuttle.position.clone();
+  const flightTime=THREE.MathUtils.clamp(.95-start.distanceTo(target)*.025,.62,.92);
+  shuttleVelocity.set((target.x-start.x)/flightTime,(target.y-start.y+.5*GRAVITY*flightTime*flightTime)/flightTime,(target.z-start.z)/flightTime);
+  // A higher shuttle can be hit harder, but the shot still follows a ballistic path.
+  const power=shuttle.position.y>2.1?1.16:1.0;
+  shuttleVelocity.multiplyScalar(power);
+  shuttleLastSide='player';
+}
+function startGame(){menu.classList.add('hidden');modes.classList.add('hidden');style.classList.add('hidden');hud.style.display='block';touch.style.display='block';scoreYou=scoreCpu=0;document.querySelector('#score').textContent='YOU 0 — 0 CPU';player.position.set(0,0,4.4);opponent.position.set(0,0,-4.4);shuttle.position.set(0,2,0);flight=null;shuttleInPlay=false;shuttleVelocity.set(0,0,0);aiHitTimer=0;running=true;lastHit=performance.now();launchShuttle(false)}
 function stopGame(){running=false;hud.style.display='none';touch.style.display='none';menu.classList.remove('hidden');}
 document.querySelector('#play').onclick=()=>{menu.classList.add('hidden');modes.classList.remove('hidden')};document.querySelector('#cpu').onclick=startGame;document.querySelector('#online').onclick=()=>alert('オンライン対戦は次の開発段階でサーバーを追加します。');document.querySelector('#modeBack').onclick=()=>{modes.classList.add('hidden');menu.classList.remove('hidden')};document.querySelector('#back').onclick=stopGame;document.querySelector('#customize').onclick=()=>{menu.classList.add('hidden');style.classList.remove('hidden')};document.querySelector('#styleBack').onclick=()=>{style.classList.add('hidden');menu.classList.remove('hidden')};document.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-color]').forEach(x=>x.classList.remove('active'));b.classList.add('active');shirtColor=Number('0x'+b.dataset.color.slice(1));if(player){player.userData.shirt.color.setHex(shirtColor)}});document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='Space'||e.code==='KeyJ'){e.preventDefault();hit()}});document.addEventListener('keyup',e=>keys[e.code]=false);document.querySelector('#hit').onclick=hit;
 const stick=document.querySelector('#stick');let stickPointer=null;stick.addEventListener('pointerdown',e=>{stickPointer=e.pointerId;stick.setPointerCapture(e.pointerId);moveStick(e)});stick.addEventListener('pointermove',e=>{if(e.pointerId===stickPointer)moveStick(e)});function moveStick(e){const r=stick.getBoundingClientRect(),x=(e.clientX-(r.left+r.width/2))/(r.width/2),y=(e.clientY-(r.top+r.height/2))/(r.height/2);const mag=Math.max(1,Math.hypot(x,y));touchMove={x:Math.max(-1,Math.min(1,x/mag)),z:Math.max(-1,Math.min(1,y/mag))}}function resetStick(){stickPointer=null;touchMove={x:0,z:0}}stick.addEventListener('pointerup',resetStick);stick.addEventListener('pointercancel',resetStick);
