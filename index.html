@@ -335,45 +335,44 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 @keyframes appPanelEnter{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){#menu:not([hidden]) .home,#menu:not([hidden]) #homeActions .mode,.ov:not([hidden]) .modecard{animation:none!important}button{transition:none!important}}
 
-/* RACKET STARS 起動画面：明るく爽快なスポーツゲーム風デザイン */
-#appSplash{position:fixed;inset:0;z-index:250000;display:flex;align-items:center;justify-content:center;overflow:hidden;isolation:isolate;padding:24px;box-sizing:border-box;background:#8cecf2!important;background-image:radial-gradient(ellipse at 50% 28%,rgba(255,255,255,.98) 0%,rgba(239,255,255,.7) 20%,transparent 48%),linear-gradient(150deg,#b7f6f2 0%,#6ce0ed 38%,#52b9ec 72%,#7aabf4 100%)!important;color:#fff;text-align:center;opacity:1;transition:opacity .48s ease,visibility .48s ease}
+/* RACKET STARS 起動画面：Switch Sportsを思わせる、白く明るいスポーツブランドの導入演出 */
+#appSplash{position:fixed;inset:0;z-index:250000;display:flex;align-items:center;justify-content:center;overflow:hidden;isolation:isolate;padding:24px;box-sizing:border-box;background:#f8ffff!important;background-image:radial-gradient(ellipse at 50% 48%,#ffffff 0%,#f4ffff 34%,transparent 66%),linear-gradient(135deg,#e8fffb 0%,#f7ffff 45%,#e6f6ff 100%)!important;color:#fff;text-align:center;opacity:1;transition:opacity .55s ease,visibility .55s ease}
 #appSplash[hidden]{display:none!important}
 #appSplash.leaving{opacity:0;visibility:hidden;pointer-events:none}
-#appSplash:before{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background:radial-gradient(ellipse at 12% 16%,rgba(255,255,255,.78) 0 2px,transparent 3px),radial-gradient(ellipse at 86% 24%,rgba(255,255,255,.8) 0 3px,transparent 4px),radial-gradient(ellipse at 19% 70%,rgba(255,255,255,.62) 0 2px,transparent 3px),radial-gradient(ellipse at 82% 77%,rgba(255,255,255,.72) 0 2px,transparent 3px),linear-gradient(180deg,rgba(255,255,255,.2),transparent 48%,rgba(30,143,208,.08))}
-#appSplash:after{content:'';position:absolute;z-index:2;inset:-25%;pointer-events:none;background:linear-gradient(112deg,transparent 25%,rgba(255,255,255,.45) 34%,transparent 43%),radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.34),transparent 50%);animation:splashLights 5.5s ease-in-out infinite alternate}
-.splashCourt{position:absolute;z-index:1;left:50%;bottom:-39%;width:min(140vw,1600px);height:82%;transform:translateX(-50%) perspective(520px) rotateX(59deg);transform-origin:center bottom;border:3px solid rgba(255,255,255,.78);border-radius:8px;background:linear-gradient(180deg,rgba(92,235,222,.24),rgba(55,157,231,.12));box-shadow:inset 0 0 0 3px rgba(255,255,255,.18),0 -14px 70px rgba(255,255,255,.3);pointer-events:none}
+#appSplash:before{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,rgba(63,213,220,.13),transparent 48%),linear-gradient(180deg,rgba(255,255,255,.8),transparent 48%,rgba(73,178,231,.08));}
+#appSplash:after{content:'';position:absolute;z-index:2;inset:-30%;pointer-events:none;background:linear-gradient(108deg,transparent 38%,rgba(255,255,255,.96) 48%,transparent 58%);animation:splashLights 4.8s ease-in-out infinite alternate}
+.splashCourt{position:absolute;z-index:1;left:50%;bottom:-48%;width:min(145vw,1700px);height:94%;transform:translateX(-50%) perspective(650px) rotateX(62deg);transform-origin:center bottom;border:3px solid rgba(36,177,204,.24);border-radius:4px;background:linear-gradient(180deg,rgba(101,231,218,.14),rgba(84,174,233,.08));box-shadow:inset 0 0 0 3px rgba(255,255,255,.8),0 -18px 80px rgba(64,190,218,.1);pointer-events:none}
 .splashCourt:before,.splashCourt:after{content:'';position:absolute;pointer-events:none}
-.splashCourt:before{left:0;right:0;top:50%;border-top:3px solid rgba(255,255,255,.72);box-shadow:0 0 15px rgba(255,255,255,.35)}
-.splashCourt:after{top:0;bottom:0;left:50%;border-left:3px solid rgba(255,255,255,.58)}
-.splashContent{position:relative;z-index:3;width:min(540px,100%);padding:20px 24px 24px;border:1px solid rgba(255,255,255,.62);border-radius:34px;background:linear-gradient(145deg,rgba(255,255,255,.62),rgba(255,255,255,.22));box-shadow:0 24px 65px rgba(41,137,204,.16),inset 0 2px 0 rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);animation:splashEnter .85s cubic-bezier(.2,.8,.2,1) both}
-.splashMark{position:relative;display:flex;align-items:center;justify-content:center;width:74px;height:74px;margin:0 auto 14px;border:2px solid rgba(255,255,255,.98);border-radius:25px;background:linear-gradient(145deg,#49d9d9,#36a9ed);box-shadow:0 9px 0 rgba(41,133,204,.13),0 15px 32px rgba(39,145,208,.2),inset 0 2px 0 rgba(255,255,255,.55);font-size:27px;font-weight:1000;letter-spacing:-.07em;color:#fff;text-shadow:0 2px 8px rgba(27,105,172,.22);animation:splashMarkIn .8s .1s both}
-.splashMark:after{content:'';position:absolute;inset:6px;border:1px solid rgba(255,255,255,.45);border-radius:18px;pointer-events:none}
-.splashEyebrow{margin:0 0 9px;color:#168eb5;font-size:10px;font-weight:950;letter-spacing:.48em;text-indent:.48em}
-#appSplash h1{margin:0;font-size:clamp(49px,12vmin,90px);font-weight:1000;font-style:italic;line-height:.86;letter-spacing:-.075em;color:#fff;-webkit-text-stroke:1px rgba(255,255,255,.8);text-shadow:0 3px 0 #4ab9e1,0 7px 0 rgba(37,143,206,.24),0 12px 28px rgba(34,126,193,.18)}
-.splashSub{margin:17px 0 24px;color:#197da9;font-size:11px;font-weight:900;letter-spacing:.25em}
-.splashSub span{padding:0 5px;color:#30bfcf}
-.splashLoadLabel{margin:0 0 10px;color:#288db3;font-size:9px;font-weight:900;letter-spacing:.3em}
-.splashProgress{width:min(240px,65vw);height:5px;margin:0 auto;overflow:hidden;border-radius:8px;background:rgba(255,255,255,.68);box-shadow:inset 0 1px 2px rgba(32,119,170,.12)}
-.splashProgress span{display:block;width:100%;height:100%;transform:scaleX(0);transform-origin:left;border-radius:inherit;background:linear-gradient(90deg,#42d9cb,#36bde9,#fff);box-shadow:0 0 12px rgba(255,255,255,.8);animation:splashProgress 1.65s cubic-bezier(.18,.7,.25,1) forwards}
-.splashHint{margin:12px 0 0;color:#3d9bbd;font-size:9px;font-weight:850;letter-spacing:.32em}
-@keyframes splashEnter{from{opacity:0;transform:translateY(18px) scale(.965)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes splashMarkIn{from{opacity:0;transform:scale(.72) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+.splashCourt:before{left:0;right:0;top:50%;border-top:3px solid rgba(36,177,204,.22)}
+.splashCourt:after{top:0;bottom:0;left:50%;border-left:3px solid rgba(36,177,204,.18)}
+.splashContent{position:relative;z-index:3;width:min(620px,100%);padding:0 18px 10px;box-sizing:border-box;animation:splashEnter .9s cubic-bezier(.18,.78,.22,1) both}
+.splashMark{display:flex;align-items:center;justify-content:center;width:86px;height:86px;margin:0 auto 22px;border:0;border-radius:50%;background:linear-gradient(145deg,#48d9ce 0%,#38bce0 52%,#438de9 100%);box-shadow:0 12px 0 rgba(53,160,207,.12),0 22px 45px rgba(53,160,207,.22),inset 0 3px 0 rgba(255,255,255,.55);font-size:29px;font-weight:1000;letter-spacing:-.08em;color:#fff;text-shadow:0 2px 8px rgba(19,116,172,.22);animation:splashMarkIn .9s .08s both}
+.splashEyebrow{margin:0 0 12px;color:#48bfc9;font-size:10px;font-weight:950;letter-spacing:.58em;text-indent:.58em}
+#appSplash h1{margin:0;font-size:clamp(52px,13vmin,100px);font-weight:1000;font-style:normal;line-height:.88;letter-spacing:-.075em;color:#fff;-webkit-text-stroke:1.5px #43bcd2;text-shadow:0 4px 0 rgba(49,177,205,.18),0 9px 0 rgba(48,156,205,.09);filter:drop-shadow(0 12px 24px rgba(68,170,210,.14))}
+.splashSub{margin:20px 0 32px;color:#55b8c9;font-size:11px;font-weight:900;letter-spacing:.32em}
+.splashSub span{padding:0 7px;color:#8ddbd8}
+.splashLoadLabel{margin:0 0 12px;color:#6cbacb;font-size:9px;font-weight:900;letter-spacing:.32em}
+.splashProgress{width:min(210px,58vw);height:4px;margin:0 auto;overflow:hidden;border-radius:8px;background:#e1f5f7;box-shadow:inset 0 1px 2px rgba(53,152,185,.08)}
+.splashProgress span{display:block;width:100%;height:100%;transform:scaleX(0);transform-origin:left;border-radius:inherit;background:linear-gradient(90deg,#60e0d1,#4bbde0,#71a7f4);animation:splashProgress 1.65s cubic-bezier(.18,.7,.25,1) forwards}
+.splashHint{margin:12px 0 0;color:#90cbd5;font-size:8px;font-weight:850;letter-spacing:.38em}
+@keyframes splashEnter{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes splashMarkIn{from{opacity:0;transform:scale(.7) rotate(-12deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes splashProgress{to{transform:scaleX(1)}}
-@keyframes splashLights{from{opacity:.55;transform:translateX(-1.5%)}to{opacity:1;transform:translateX(1.5%)}}
-@media(orientation:landscape) and (max-height:520px){#appSplash{padding:10px}.splashContent{display:grid;grid-template-columns:90px auto;column-gap:20px;align-items:center;width:min(680px,90vw);padding:16px 24px;border-radius:26px;text-align:left}.splashMark{grid-column:1;grid-row:1/5;width:68px;height:68px;margin:0;justify-self:center}.splashEyebrow{grid-column:2;align-self:end;margin-bottom:4px}.splashContent h1{grid-column:2;font-size:clamp(42px,9vmin,66px)}.splashSub{grid-column:2;margin:7px 0 10px}.splashLoadLabel{grid-column:2;margin-bottom:6px}.splashProgress{grid-column:2;width:min(250px,100%);margin:0}.splashHint{grid-column:2;margin-top:6px}}
-@media(max-width:420px){.splashContent{padding:20px 14px 21px;border-radius:27px}.splashMark{width:64px;height:64px;border-radius:22px}.splashEyebrow{font-size:9px;letter-spacing:.38em;text-indent:.38em}#appSplash h1{font-size:clamp(47px,13vmin,65px)}.splashSub{font-size:10px;letter-spacing:.18em}}
+@keyframes splashLights{from{opacity:.18;transform:translateX(-4%)}to{opacity:.9;transform:translateX(4%)}}
+@media(orientation:landscape) and (max-height:520px){#appSplash{padding:10px}.splashContent{display:grid;grid-template-columns:100px auto;column-gap:24px;align-items:center;width:min(700px,90vw);text-align:left}.splashMark{grid-column:1;grid-row:1/5;width:78px;height:78px;margin:0;justify-self:center}.splashEyebrow{grid-column:2;align-self:end;margin-bottom:5px}.splashContent h1{grid-column:2;font-size:clamp(42px,9vmin,68px)}.splashSub{grid-column:2;margin:8px 0 12px}.splashLoadLabel{grid-column:2;margin-bottom:7px}.splashProgress{grid-column:2;width:min(240px,100%);margin:0}.splashHint{grid-column:2;margin-top:7px}}
+@media(max-width:420px){.splashContent{padding:0 8px 8px}.splashMark{width:72px;height:72px;margin-bottom:19px}#appSplash h1{font-size:clamp(48px,13vmin,68px)}.splashSub{font-size:10px;letter-spacing:.22em;margin-bottom:27px}}
 @media(prefers-reduced-motion:reduce){#appSplash,.splashContent,.splashMark,#appSplash:after,.splashProgress span{animation:none!important;transition:none!important}.splashProgress span{transform:scaleX(1)}}
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
  <div class="splashCourt" aria-hidden="true"></div>
  <div class="splashContent">
   <div class="splashMark" aria-hidden="true">RS</div>
-  <p class="splashEyebrow">RACKET SPORTS</p>
+  <p class="splashEyebrow">WELCOME TO</p>
   <h1 id="splashHeading">RACKET<br>STARS</h1>
   <p class="splashSub">TENNIS <span aria-hidden="true">·</span> BADMINTON</p>
-  <p class="splashLoadLabel">INITIALIZING ARENA</p>
+  <p class="splashLoadLabel">GET READY TO PLAY</p>
   <div class="splashProgress" role="progressbar" aria-label="起動中"><span></span></div>
-  <p class="splashHint">PLEASE WAIT</p>
+  <p class="splashHint">LET'S PLAY</p>
  </div>
 </div>
 
