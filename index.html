@@ -247,7 +247,18 @@ function update(dt){const c=cfg;hitCd-=dt;const i=inp();
  if(state==='rally'){acc+=dt;while(acc>=DT&&state==='rally'){stepBall();acc-=DT}tryHit(P);tryHit(C)}
  if(state==='point'){msgT-=dt;if(msgT<=0){if(over){finish()}else beginServe()}}
  [P,C].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm;const u=1-p.swingT/.3,ez=p.swingT>0?Math.sin(u*Math.PI)*(.4+.6*Math.sin(u*Math.PI/2)):0;a.rotation.x=-.6-ez*2.1;a.rotation.z=-ez*.5;p.g.rotation.z+=(clamp(-(p.vx||0)*(p===P?1:-1)*.03,-.22,.22)-p.g.rotation.z)*(1-Math.exp(-8*dt));p.g.userData.rk.rotation.x=-ez*.5})}
-function cam(){const p=P,t=new THREE.Vector3(p.x*.7,4.3,p.z+(mode==='tennis'?7.5:6.5));camera.position.lerp(t,1-Math.exp(-7*fdt));const bp=state==='rally'||state==='serveWait'?ball.pos:p;lk.lerp(new THREE.Vector3(p.x*.4+(bp.x-p.x)*.2,1.2+bp.y*.12,p.z-9+(bp.z-p.z+9)*.1),1-Math.exp(-8*fdt));camera.lookAt(lk)}
+function cam(){const p=P;
+ if(state==='point'){
+  const t=new THREE.Vector3(0,Math.max(8,cfg.hl*.55),cfg.hl+9);
+  camera.position.lerp(t,1-Math.exp(-5*fdt));
+  lk.lerp(new THREE.Vector3(0,1,0),1-Math.exp(-5*fdt));
+ }else{
+  const t=new THREE.Vector3(p.x*.7,4.3,p.z+(mode==='tennis'?7.5:6.5));
+  camera.position.lerp(t,1-Math.exp(-7*fdt));
+  const bp=state==='rally'||state==='serveWait'?ball.pos:p;
+  lk.lerp(new THREE.Vector3(p.x*.4+(bp.x-p.x)*.2,1.2+bp.y*.12,p.z-9+(bp.z-p.z+9)*.1),1-Math.exp(-8*fdt));
+ }
+ camera.lookAt(lk)}
 let last=performance.now(),fdt=.016;const lk=new THREE.Vector3(0,1,0);
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;tm+=dt;fdt=dt;
  try{
