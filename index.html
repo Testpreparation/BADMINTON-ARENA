@@ -346,20 +346,23 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 .splashEyebrow{margin:0 0 9px;color:#ffd23f;font-size:11px;font-weight:900;letter-spacing:.34em}
 #appSplash h1{margin:0;font-size:clamp(42px,9vw,68px);font-weight:1000;font-style:italic;line-height:.94;letter-spacing:-.055em;text-shadow:0 8px 32px rgba(0,0,0,.35)}
 .splashSub{margin:18px 0 30px;color:#c3d3e5;font-size:13px;letter-spacing:.12em}
-#splashStart{width:min(300px,100%);margin:0 auto;padding:15px 20px;border:1px solid rgba(255,255,255,.65);border-radius:999px;background:linear-gradient(110deg,#ffe47a,#ffc52f);color:#142033;font-size:15px;font-weight:950;letter-spacing:.08em;box-shadow:0 8px 28px rgba(255,190,40,.2);transition:transform .16s ease,filter .16s ease}
-#splashStart:active{transform:scale(.97);filter:brightness(.96)}
-.splashHint{margin:17px 0 0;color:rgba(222,235,248,.62);font-size:11px;letter-spacing:.08em}
+.splashLoading{height:20px;display:flex;align-items:center;justify-content:center;gap:7px;margin:0 auto}
+.splashLoading span{width:6px;height:6px;border-radius:50%;background:#ffd23f;opacity:.35;animation:splashPulse .8s ease-in-out infinite}
+.splashLoading span:nth-child(2){animation-delay:.14s}
+.splashLoading span:nth-child(3){animation-delay:.28s}
+.splashHint{margin:9px 0 0;color:rgba(222,235,248,.62);font-size:11px;letter-spacing:.08em}
 @keyframes splashEnter{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(prefers-reduced-motion:reduce){#appSplash,.splashContent,#splashStart{animation:none!important;transition:none!important}}
+@keyframes splashPulse{0%,80%,100%{opacity:.3;transform:scale(.75)}40%{opacity:1;transform:scale(1.15)}}
+@media(prefers-reduced-motion:reduce){#appSplash,.splashContent,.splashLoading span{animation:none!important;transition:none!important}}
 </style></head><body>
-<div id="appSplash" role="dialog" aria-modal="true" aria-labelledby="splashHeading">
+<div id="appSplash" aria-labelledby="splashHeading">
  <div class="splashContent">
   <div class="splashMark" aria-hidden="true">🏸</div>
   <p class="splashEyebrow">SPORTS GAME</p>
   <h1 id="splashHeading">RACKET<br>STARS</h1>
   <p class="splashSub">TENNIS · BADMINTON</p>
-  <button id="splashStart" type="button">タップしてスタート　▶</button>
-  <p class="splashHint">横画面でのプレイがおすすめです</p>
+  <div class="splashLoading" role="status" aria-label="読み込み中"><span></span><span></span><span></span></div>
+  <p class="splashHint">準備しています…</p>
  </div>
 </div>
 
@@ -1067,28 +1070,20 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value,3));rs();buildCou
 </script>
 <script>
 
-// 起動画面から既存のメインメニューへ接続。試合処理・設定は変更しない。
+// 起動画面は操作不要で自動的に既存のメインメニューへ移行する。
 (()=>{
  const splash=document.getElementById('appSplash');
- const start=document.getElementById('splashStart');
- if(!splash||!start)return;
+ if(!splash)return;
  let started=false;
  function enterApp(){
   if(started)return;
   started=true;
   splash.classList.add('leaving');
-  start.disabled=true;
   const finish=()=>{splash.hidden=true;splash.setAttribute("aria-hidden","true")};
   splash.addEventListener("transitionend",finish,{once:true});
   window.setTimeout(finish,420);
  }
- start.addEventListener("click",enterApp);
- document.addEventListener("keydown",function(e){
-  if(!splash.hidden&&(e.key==="Enter"||e.key===" ")){
-   if(e.target===start||e.target===document.body){e.preventDefault();enterApp()}
-  }
- });
- start.focus({preventScroll:true});
+ window.setTimeout(enterApp,1200);
 })();
 
 </script>
