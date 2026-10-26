@@ -835,7 +835,7 @@ addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code===
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&serveCharging)releaseServeCharge()});
 function swing(){if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'input',input:{...inp(),swing:true}});return}if(state==='serveWait'&&server===1&&serveT<=0){serveT=.001}else if(state==='rally'&&P.swingT<=0){P.swingT=.3;P.swingReqT=.22;tryHit(P)}}
  function syncTouchActions(){const serving=state==='serveWait'&&server===1,inRally=state==='rally';$('bs').hidden=!serving&&!inRally;$('bp').hidden=!inRally;$('bd').hidden=!inRally;$('bs').textContent=serving?'サーブ':'スイング';if(!serving){serveCharging=false;$('serveMeter').hidden=true}}
- function currentServePower(){const cycle=.8,elapsed=Math.max(0,(performance.now()-serveChargeStart)/1000),phase=(elapsed%cycle)/cycle,triangle=phase<.5?phase*2:(1-phase)*2;return .25+.75*triangle}
+ function currentServePower(){const cycle=.8,elapsed=Math.max(0,(performance.now()-serveChargeStart)/1000),phase=(elapsed%cycle)/cycle,level=phase<.4?phase/.4:phase<.55?1:(1-phase)/.45;return .25+.75*Math.max(0,Math.min(1,level))}
  function startServeCharge(){if(paused||state!=='serveWait'||server!==1||serveT>0||serveCharging)return false;serveCharging=true;serveChargeStart=performance.now();$('serveMeter').hidden=false;$('serveMeterFill').style.height='8%';updateServeMeter();return true}
  function releaseServeCharge(){if(!serveCharging)return;servePower=currentServePower();serveCharging=false;$('serveMeter').hidden=true;swing()}
  function updateServeMeter(){if(!serveCharging)return;servePower=currentServePower();$('serveMeterFill').style.height=(8+(servePower-.25)/.75*92)+'%'}
