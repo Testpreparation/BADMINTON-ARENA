@@ -211,6 +211,19 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 #matchIntro .mi-title.changing{animation:introTitleChange .55s cubic-bezier(.2,.8,.2,1) both}
 @keyframes introTitleChange{from{opacity:0;transform:translateY(28px) scale(.86);filter:blur(8px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
 #matchIntro.out{opacity:0}
+/* Point/game transition and final result presentation */
+#matchTransition{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;pointer-events:none;background:rgba(3,10,22,.74);opacity:0;transition:opacity .22s ease}
+#matchTransition.show{opacity:1}
+#matchTransition .mt-card{width:min(88vw,650px);box-sizing:border-box;padding:clamp(22px,5vh,48px) 18px;text-align:center;border:1px solid rgba(190,230,255,.8);border-radius:22px;background:linear-gradient(135deg,rgba(8,27,53,.97),rgba(17,63,106,.95));box-shadow:0 0 0 5px rgba(74,174,255,.12),0 20px 65px rgba(0,0,0,.55);animation:mtCardIn .48s cubic-bezier(.15,.8,.2,1.1) both}
+#matchTransition .mt-kicker{font-size:clamp(10px,2.5vw,14px);font-weight:900;letter-spacing:.28em;color:#9bdcff}
+#matchTransition .mt-title{margin-top:12px;font-size:clamp(36px,9vw,76px);line-height:1.05;font-weight:1000;color:#fff;text-shadow:0 4px 0 #1c5f9b,0 10px 24px #00142a;overflow-wrap:anywhere}
+#matchTransition .mt-sub{margin-top:14px;font-size:clamp(13px,3vw,20px);font-weight:800;color:#e6f5ff}
+#matchTransition.out{opacity:0}
+#res.result-enter{animation:resultEnter .75s cubic-bezier(.15,.8,.2,1.05) both}
+#res.result-enter #rt{animation:resultTitle .7s cubic-bezier(.15,.8,.2,1.1) both}
+@keyframes mtCardIn{from{opacity:0;transform:translateY(28px) scale(.88);filter:blur(6px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes resultEnter{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes resultTitle{from{opacity:0;transform:translateY(24px) scale(.8)}to{opacity:1;transform:translateY(0) scale(1)}}
 #matchIntro:before{content:"";position:absolute;inset:-20%;background:repeating-linear-gradient(115deg,transparent 0 70px,rgba(255,255,255,.055) 71px 73px,transparent 74px 150px);animation:introLines 1.4s linear infinite;transform:translateX(-10%)}
 #matchIntro .mi-glow{position:absolute;width:60vmin;height:60vmin;border-radius:50%;background:radial-gradient(circle,rgba(82,190,255,.28),transparent 68%);filter:blur(5px);animation:introGlow 2s ease-in-out infinite alternate}
 #matchIntro .mi-top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8vh);left:0;right:0;text-align:center;color:#fff;font-size:clamp(10px,2vw,14px);font-weight:900;letter-spacing:.42em;text-shadow:0 3px 14px #00152c;animation:introFade .45s both}
@@ -495,16 +508,33 @@ function save(){try{localStorage.setItem('rs1',JSON.stringify({REC,name:pname,co
 function paint(){document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===OPT[sg.dataset.k])));document.querySelectorAll('.sw').forEach((b,i)=>b.classList.toggle('on',i===OPT.col));$('av').style.background=COLS[OPT.col];const t=REC.tennis,bd=REC.badminton;$('rec').textContent='🎾 '+t[0]+'勝'+t[1]+'敗　🏸 '+bd[0]+'勝'+bd[1]+'敗'}
 function initMenu(){const cs=$('cols');COLS.forEach((c,i)=>{const b=document.createElement('button');b.className='sw';b.style.background=c;b.onclick=()=>{OPT.col=i;paint();save();beep(700,.05)};cs.appendChild(b)});document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>{OPT[sg.dataset.k]=+b.dataset.v;paint();save();beep(600,.05)}));$('nm').value=pname;$('nm').maxLength=12;$('nm').oninput=()=>{pname=$('nm').value.slice(0,12)||'プレイヤー';save()};$('nickInput').value=needsNickname?'':pname;$('nickConfirm').onclick=()=>{const n=$('nickInput').value.trim().slice(0,12);if(!n){$('nickInput').focus();$('nickInput').placeholder='名前を入力してください';return}pname=n;$('nm').value=n;needsNickname=false;save();$('nickSetup').style.display='none';beep(660,.08)};$('nickInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('nickConfirm').click()});if(needsNickname){$('nickSetup').style.display='flex';setTimeout(()=>$('nickInput').focus(),100)}paint()}
 function bgm(on){clearInterval(bgmT);bgmT=null;if(!on)return;const N=[523,659,784,659,587,740,880,740];let i=0;bgmT=setInterval(()=>{const v=+$('vol').value;if(!v||!ac)return;try{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=N[i++%8];g.gain.value=.08*v;g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.35);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.35)}catch(e){}},320)}
-function finish(){const w=over===1,s=score;if(!practice){REC[mode][w?0:1]++;save();paint()}$('rt').textContent=w?'WIN!':'LOSE…';$('rt').className=w?'win':'lose';$('rs').textContent=mode==='tennis'?'ゲーム '+s.games[0]+' - '+s.games[1]:'スコア '+s.pts[0]+' - '+s.pts[1];state='menu';$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;beep(w?880:200,.4);}
+function finish(){const w=over===1,s=score;if(!practice){REC[mode][w?0:1]++;save();paint()}$('rt').textContent=w?'WIN!':'LOSE…';$('rt').className=w?'win':'lose';$('rs').textContent=mode==='tennis'?'ゲーム '+s.games[0]+' - '+s.games[1]:'スコア '+s.pts[0]+' - '+s.pts[1];state='menu';$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;$('res').classList.remove('result-enter');void $('res').offsetWidth;$('res').classList.add('result-enter');beep(w?880:200,.4);try{if(w)cheer()}catch(e){}}
 function updScore(){const s=score;let t;
  if(mode==='tennis'){let a=s.pts[0],b=s.pts[1],x,y;if(a>=3&&b>=3){x=a===b?'40':a>b?'Ad':'40';y=a===b?'40':b>a?'Ad':'40'}else{x=T4[a];y=T4[b]}t=`あなた ${x} - ${y} CPU ｜ ゲーム ${s.games[0]}-${s.games[1]}`}
  else t=`あなた ${s.pts[0]} - ${s.pts[1]} CPU`;$('score').innerHTML=sbHtml()}
 function sbHtml(){if(practice)return '<div class="sr"><b>RALLY</b><i></i><u>'+rally+'</u></div><div class="sr"><b>BEST</b><i></i><u>'+best+'</u></div>';const s=score,T=mode==='tennis',a=s.pts[0],b=s.pts[1];let x=a,y=b;if(T){if(a>=3&&b>=3){x=a===b?'40':a>b?'Ad':'40';y=a===b?'40':b>a?'Ad':'40'}else{x=T4[a];y=T4[b]}}const r=(n,g,p)=>'<div class="sr"><b>'+n+'</b><i>'+g+'</i><u>'+p+'</u></div>';return r(pname.replace(/[<>&"]/g,''),T?s.games[0]:'',x)+r('CPU',T?s.games[1]:'',y)}
+let transitionTimer=null;
+function showMatchTransition(kicker,title,sub,duration=1350){
+ const previous=$('matchTransition');if(previous)previous.remove();
+ if(transitionTimer)clearTimeout(transitionTimer);
+ const el=document.createElement('div');el.id='matchTransition';
+ el.innerHTML='<div class="mt-card"><div class="mt-kicker"></div><div class="mt-title"></div><div class="mt-sub"></div></div>';
+ el.querySelector('.mt-kicker').textContent=kicker;
+ el.querySelector('.mt-title').textContent=title;
+ el.querySelector('.mt-sub').textContent=sub;
+ document.body.appendChild(el);requestAnimationFrame(()=>el.classList.add('show'));
+ try{audio();const t=ac.currentTime,v=+$('vol').value;if(v){const o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(760,t+.22);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.12*v,t+.035);g.gain.exponentialRampToValueAtTime(.0001,t+.42);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.45)}}catch(e){}
+ transitionTimer=setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),260);transitionTimer=null},duration);
+}
 function point(w,why){if(practice){state='point';msgT=1.4;best=Math.max(best,rally);$('msg').textContent='ラリー '+rally+'回！（'+why+'）';rally=0;server=1;updScore();$('pointScore').hidden=true;beep(300,.2);return}state='point';msgT=2.4;pointScoreShown=false;pointWinner=w;$('pointScore').hidden=true;$('msg').textContent=why;const i=w===1?0:1,o=1-i,s=score,serving=server,oldGames0=s.games[0],oldGames1=s.games[1];let m=(w===1?'ポイント！':'相手のポイント')+'（'+why+'）';
  s.pts[i]++;
  if(mode==='tennis'){if(s.pts[i]>=4&&s.pts[i]-s.pts[o]>=2){s.games[i]++;s.pts=[0,0];m=(w===1?'ゲーム獲得！':'相手がゲーム獲得');if(s.games[i]>=GW[OPT.mlen])over=w}server=(s.games[0]!==oldGames0||s.games[1]!==oldGames1)?-serving:serving}
  else{server=w;if(s.pts[i]>=BP[OPT.mlen]&&s.pts[i]-s.pts[o]>=2||s.pts[i]>=BP[OPT.mlen]+4)over=w}
- updScore();$('msg').textContent=why;beep(w===1?760:240,.25);if(w===1)cheer();else missReaction();announcePoint(w,m)}
+ updScore();$('msg').textContent=why;beep(w===1?760:240,.25);if(w===1)cheer();else missReaction();announcePoint(w,m);
+ if(mode==='tennis'&&(s.games[0]!==oldGames0||s.games[1]!==oldGames1)&&!over){
+  const won=s.games[i]> (i===0?oldGames0:oldGames1);
+  setTimeout(()=>{if(!over)showMatchTransition('GAME '+(s.games[0]+s.games[1]),won?(w===1?'GAME WON':'CPU TAKES GAME'):'NEXT GAME', 'SCORE  '+s.games[0]+'  —  '+s.games[1],1150)},550);
+ }}
 function announcePoint(w,result){if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window))return;const s=score,T=mode==='tennis';let call=w===1?'あなたのポイント。':'CPUのポイント。';if(T){const names=['ラブ','フィフティーン','サーティ','フォーティ'];let a=s.pts[0],b=s.pts[1],x,y;if(a>=3&&b>=3){x=a===b?'フォーティ':a>b?'アドバンテージ あなた':'フォーティ';y=a===b?'フォーティ':b>a?'アドバンテージ CPU':'フォーティ'}else{x=names[a]||'フォーティ';y=names[b]||'フォーティ'}call+='スコア、'+x+'、'+y+'。ゲームスコア、'+s.games[0]+'対'+s.games[1]+'。'}else{call+='スコア、あなた '+s.pts[0]+'、CPU '+s.pts[1]+'。'}if(result.includes('ゲーム獲得'))call+='ゲーム。';if(over)call+='マッチポイント。試合終了。';try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(call);u.lang='ja-JP';u.rate=.92;u.pitch=1;u.volume=Math.max(.35,Math.min(1,+$('vol').value||.8));window.speechSynthesis.speak(u)}catch(e){}}
 function showPointScore(w){const s=score,T=mode==='tennis',p=(n)=>T?(n>=3&&s.pts[0]>=3&&s.pts[1]>=3?(s.pts[0]===s.pts[1]?'40':n===s.pts[0]?(s.pts[0]>s.pts[1]?'Ad':'40'):(s.pts[1]>s.pts[0]?'Ad':'40')):T4[n]):String(n),a=T?p(s.pts[0]):String(s.pts[0]),b=T?p(s.pts[1]):String(s.pts[1]);let sub=T?'ゲーム '+s.games[0]+' - '+s.games[1]:'得点 '+s.pts[0]+' - '+s.pts[1];if(over)sub+=' ｜ 試合終了';$('pointScore').innerHTML='<div class="ps-title">'+(over?'MATCH POINT':'LIVE SCORE')+'</div><div class="ps-main"><span>'+a+'</span><span>－</span><span>'+b+'</span></div><div class="ps-sub"><span class="ps-names">'+pname.replace(/[<>&"]/g,'')+'</span> 対 <span class="ps-names">CPU</span>　'+sub+'</div>';$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=false}
 function beginServe(){$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
