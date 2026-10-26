@@ -517,7 +517,7 @@ function stepBall(){const b=ball,c=cfg,v=b.vel,s=v.length();b.prev.copy(b.pos);
   const sp0=Math.hypot(v.x,v.z)||1,tp=(b.spin.x*v.z-b.spin.z*v.x)/sp0,m=clamp(.78+tp*.0007,.55,1);v.y=-v.y*c.e*(1-clamp(sp0*.003,0,.2));v.x*=m;v.z*=m;b.spin.multiplyScalar(.55);b.bounces++;spawn(b.pos,12,2.5);courtBounceSound(mode,Math.abs(v.y)/12)}}
 function update(dt){const c=cfg;hitCd-=dt;const i=inp();
  if(state!=='point'){if(P.diveT>0){P.vx=0;P.vz=0}else{const d=Math.max(1,Math.hypot(i.x,i.z)),mx=c.pSpeed*(i.dash?1.5:1),k=1-Math.exp(-8*dt);P.vx=(P.vx||0)+(i.x/d*mx-(P.vx||0))*k;P.vz=(P.vz||0)+(i.z/d*mx-(P.vz||0))*k;P.x=clamp(P.x+P.vx*dt,-c.hw-2.5,c.hw+2.5);P.z=clamp(P.z+P.vz*dt,state==='serveWait'&&mode==='tennis'&&server===1?c.hl+.15:.8,c.hl+3.5)}}
- let tx=0,tz=-c.hl*.55;
+ let tx=0,tz=mode==='badminton'?-c.hl*.25:-c.hl*.55;
  if(state==='rally'&&ball.lastHitter===1){const b=ball;if(c.bounce&&b.bounces>0){tx=b.pos.x+b.vel.x*.3;tz=b.pos.z+b.vel.z*.3}else{aiT-=dt;if(aiT<=0||!aiL){aiL=simLand(b.pos,b.vel,c,b.spin);aiT=.15}tx=aiL.x;tz=aiL.z}}
  tz=clamp(tz,-c.hl-3.5,-.8);tx=clamp(tx,-c.hw-2.5,c.hw+2.5);
  if(state!=='point'){if(C.diveT>0){C.vx=0;C.vz=0}else if(netRole==='host'&&netConn&&netConn.open){const mx=remoteInput.x||0,mz=-(remoteInput.z||0),d=Math.max(1,Math.hypot(mx,mz)),sp=c.pSpeed*(remoteInput.dash?1.5:1);C.vx=mx/d*sp;C.vz=mz/d*sp;C.x=clamp(C.x+C.vx*dt,-c.hw-2.5,c.hw+2.5);C.z=clamp(C.z+C.vz*dt,-c.hl-3.5,state==='serveWait'&&mode==='tennis'&&server===-1?-c.hl-.15:-.8)}else{const dx=tx-C.x,dz=tz-C.z,d=Math.hypot(dx,dz),kk=1-Math.exp(-7*dt),wn=d>.15?c.cSpeed*SPD[practice?3:OPT.diff]:0;C.vx=(C.vx||0)+((d>.05?dx/d*wn:0)-(C.vx||0))*kk;C.vz=(C.vz||0)+((d>.05?dz/d*wn:0)-(C.vz||0))*kk;C.x+=C.vx*dt;C.z+=C.vz*dt}}
