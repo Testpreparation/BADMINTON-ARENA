@@ -335,16 +335,21 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 @keyframes appPanelEnter{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){#menu:not([hidden]) .home,#menu:not([hidden]) #homeActions .mode,.ov:not([hidden]) .modecard{animation:none!important}button{transition:none!important}}
 
-/* RACKET STARS 起動画面：統一された爽やかなスポーツゲームのタイトル演出 */
-#appSplash{position:fixed;inset:0;z-index:250000;display:flex;align-items:center;justify-content:center;overflow:hidden;isolation:isolate;padding:24px;box-sizing:border-box;background:#f7ffff!important;background-image:radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.98) 0%,rgba(255,255,255,.78) 24%,transparent 57%),linear-gradient(135deg,#dffaf5 0%,#f7ffff 44%,#e3f2ff 100%)!important;color:#fff;text-align:center;opacity:1;transition:opacity .48s ease,visibility .48s ease}
+/* RACKET STARS 起動画面：明るく爽やかなスポーツゲーム演出 */
+#appSplash{position:fixed;inset:0;z-index:250000;display:flex;align-items:center;justify-content:center;overflow:hidden;isolation:isolate;padding:24px;box-sizing:border-box;background:#f5ffff!important;background-image:radial-gradient(ellipse at 50% 44%,rgba(255,255,255,.98) 0%,rgba(255,255,255,.8) 24%,transparent 57%),linear-gradient(135deg,#d9fbf4 0%,#f9ffff 43%,#e3f1ff 100%)!important;color:#fff;text-align:center;opacity:1;transition:opacity .48s ease,visibility .48s ease}
 #appSplash[hidden]{display:none!important}
 #appSplash.leaving{opacity:0;visibility:hidden;pointer-events:none}
-#appSplash:before{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background:radial-gradient(circle at 12% 20%,rgba(57,200,198,.24) 0 1px,transparent 2px),radial-gradient(circle at 84% 17%,rgba(63,160,225,.22) 0 2px,transparent 3px),radial-gradient(circle at 18% 76%,rgba(57,200,198,.19) 0 2px,transparent 3px),radial-gradient(circle at 91% 70%,rgba(63,160,225,.18) 0 1px,transparent 2px),radial-gradient(ellipse at 50% 100%,rgba(57,180,220,.13),transparent 48%)}
-#appSplash:after{content:'';position:absolute;z-index:2;inset:-18%;pointer-events:none;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.76) 47%,rgba(255,255,255,.18) 51%,transparent 63%);transform:translateX(-75%);animation:splashSweep 5.2s ease-in-out .4s infinite}
-.splashCourt{position:absolute;z-index:1;left:50%;bottom:-46%;width:min(150vw,1750px);height:96%;transform:translateX(-50%) perspective(740px) rotateX(62deg);transform-origin:center bottom;border:2px solid rgba(43,174,201,.23);border-radius:5px;background:linear-gradient(180deg,rgba(75,220,206,.17),rgba(76,166,231,.1));box-shadow:inset 0 0 0 2px rgba(255,255,255,.82),0 -18px 65px rgba(55,180,214,.12);pointer-events:none}
+.splashGlow{position:absolute;z-index:0;inset:-20%;pointer-events:none;background:radial-gradient(ellipse at 16% 22%,rgba(78,224,207,.25),transparent 30%),radial-gradient(ellipse at 84% 27%,rgba(97,180,255,.22),transparent 32%),radial-gradient(ellipse at 52% 92%,rgba(59,196,219,.2),transparent 36%);filter:blur(8px);animation:splashGlowMove 8s ease-in-out infinite alternate}
+.splashOrb{position:absolute;z-index:1;width:clamp(120px,24vw,300px);aspect-ratio:1;border:1px solid rgba(255,255,255,.8);border-radius:50%;background:linear-gradient(145deg,rgba(255,255,255,.36),rgba(112,226,220,.08));box-shadow:inset 0 0 35px rgba(255,255,255,.48),0 15px 55px rgba(72,178,211,.08);pointer-events:none}
+.splashOrb.one{top:-9%;left:-5%;animation:splashFloat 9s ease-in-out infinite}
+.splashOrb.two{right:-8%;bottom:1%;width:clamp(160px,30vw,390px);animation:splashFloat 11s ease-in-out -3s infinite reverse}
+.splashOrb.three{right:16%;top:12%;width:clamp(36px,6vw,76px);background:rgba(255,255,255,.28);box-shadow:0 0 30px rgba(255,255,255,.7);animation:splashFloat 7s ease-in-out -1s infinite}
+#appSplash:before{content:'';position:absolute;z-index:1;inset:0;pointer-events:none;background:radial-gradient(circle at 12% 20%,rgba(57,200,198,.32) 0 1px,transparent 2px),radial-gradient(circle at 84% 17%,rgba(63,160,225,.3) 0 2px,transparent 3px),radial-gradient(circle at 18% 76%,rgba(57,200,198,.25) 0 2px,transparent 3px),radial-gradient(circle at 91% 70%,rgba(63,160,225,.24) 0 1px,transparent 2px),radial-gradient(circle at 72% 84%,rgba(255,255,255,.9) 0 2px,transparent 4px),radial-gradient(ellipse at 50% 100%,rgba(57,180,220,.13),transparent 48%)}
+#appSplash:after{content:'';position:absolute;z-index:4;inset:-18%;pointer-events:none;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.82) 47%,rgba(255,255,255,.2) 51%,transparent 63%);transform:translateX(-75%);animation:splashSweep 5.2s ease-in-out .4s infinite}
+.splashCourt{position:absolute;z-index:2;left:50%;bottom:-43%;width:min(155vw,1850px);height:100%;transform:translateX(-50%) perspective(740px) rotateX(62deg);transform-origin:center bottom;border:2px solid rgba(43,174,201,.25);border-radius:5px;background:linear-gradient(180deg,rgba(75,220,206,.15),rgba(76,166,231,.13));box-shadow:inset 0 0 0 2px rgba(255,255,255,.84),0 -18px 65px rgba(55,180,214,.14);pointer-events:none}
 .splashCourt:before,.splashCourt:after{content:'';position:absolute;pointer-events:none}
-.splashCourt:before{left:0;right:0;top:50%;border-top:2px solid rgba(43,174,201,.2)}
-.splashCourt:after{top:0;bottom:0;left:50%;border-left:2px solid rgba(43,174,201,.17)}
+.splashCourt:before{left:0;right:0;top:50%;border-top:2px solid rgba(43,174,201,.22);box-shadow:0 24px 0 rgba(255,255,255,.5)}
+.splashCourt:after{top:0;bottom:0;left:50%;border-left:2px solid rgba(43,174,201,.19)}
 .splashContent{position:relative;z-index:3;width:min(740px,100%);padding:0 12px 12px;box-sizing:border-box;animation:splashEnter .82s cubic-bezier(.2,.75,.25,1) both}
 .splashMark{position:relative;display:flex;align-items:center;justify-content:center;width:82px;height:82px;margin:0 auto 22px;border:3px solid rgba(255,255,255,.98);border-radius:27px;background:linear-gradient(145deg,#51dfd0 0%,#39bfdf 53%,#4b91ed 100%);box-shadow:0 0 0 1px rgba(56,189,207,.24),0 12px 0 rgba(56,161,203,.08),0 22px 42px rgba(55,164,211,.23),inset 0 2px 0 rgba(255,255,255,.68);font-size:27px;font-weight:1000;letter-spacing:-.08em;color:#fff;text-shadow:0 2px 7px rgba(28,117,171,.22);animation:splashMarkIn .8s .05s both}
 .splashMark:after{content:'';position:absolute;inset:6px;border:1px solid rgba(255,255,255,.46);border-radius:20px;pointer-events:none}
@@ -355,11 +360,17 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 @keyframes splashEnter{from{opacity:0;transform:translateY(18px) scale(.975)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes splashMarkIn{from{opacity:0;transform:scale(.65) rotate(-8deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes splashSweep{0%,20%{transform:translateX(-75%);opacity:0}38%{opacity:.9}72%,100%{transform:translateX(75%);opacity:0}}
-@media(orientation:landscape) and (max-height:520px){#appSplash{padding:8px}.splashContent{display:grid;grid-template-columns:92px auto;column-gap:24px;align-items:center;width:min(780px,90vw);text-align:left}.splashMark{grid-column:1;grid-row:1/4;width:74px;height:74px;margin:0;justify-self:center;border-radius:24px}.splashEyebrow{grid-column:2;align-self:end;margin-bottom:6px}.splashContent h1{grid-column:2;font-size:clamp(46px,10vmin,74px)}.splashSub{grid-column:2;margin:13px 0 0}}
+@keyframes splashGlowMove{from{transform:translate3d(-1%,0,0) scale(1)}to{transform:translate3d(1%,2%,0) scale(1.05)}}
+@keyframes splashFloat{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-16px,0)}}
+@media(orientation:landscape) and (max-height:520px){#appSplash{padding:8px}.splashContent{display:grid;grid-template-columns:92px auto;column-gap:24px;align-items:center;width:min(780px,90vw);text-align:left}.splashMark{grid-column:1;grid-row:1/4;width:74px;height:74px;margin:0;justify-self:center;border-radius:24px}.splashEyebrow{grid-column:2;align-self:end;margin-bottom:6px}.splashContent h1{grid-column:2;font-size:clamp(46px,10vmin,74px)}.splashSub{grid-column:2;margin:13px 0 0}.splashOrb.one{top:-30%;left:-5%}.splashOrb.two{bottom:-18%}}
 @media(max-width:420px){.splashMark{width:68px;height:68px;margin-bottom:20px;border-radius:23px}.splashMark:after{border-radius:16px}#appSplash h1{font-size:clamp(50px,13.5vmin,70px)}.splashSub{font-size:10px;letter-spacing:.22em;margin-top:19px}}
-@media(prefers-reduced-motion:reduce){#appSplash,.splashContent,.splashMark,#appSplash:after{animation:none!important;transition:none!important}}
+@media(prefers-reduced-motion:reduce){#appSplash,.splashContent,.splashMark,#appSplash:after,.splashGlow,.splashOrb{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
+ <div class="splashGlow" aria-hidden="true"></div>
+ <div class="splashOrb one" aria-hidden="true"></div>
+ <div class="splashOrb two" aria-hidden="true"></div>
+ <div class="splashOrb three" aria-hidden="true"></div>
  <div class="splashCourt" aria-hidden="true"></div>
  <div class="splashContent">
   <div class="splashMark" aria-hidden="true">RS</div>
