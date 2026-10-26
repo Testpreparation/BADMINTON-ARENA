@@ -172,6 +172,32 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
   .modecard button{padding:10px;font-size:15px}
   #chatPanel{left:8px;bottom:calc(58px + env(safe-area-inset-bottom,0px));width:min(320px,calc(100vw - 16px))}
 }
+
+/* Compact mobile waiting-room layout */
+.waitingPanel{width:min(560px,96vw);max-width:96vw;max-height:90dvh;padding:14px;overflow-y:auto;overscroll-behavior:contain}
+.waitingPanel h2{margin:10px 0 4px;font-size:clamp(20px,4.8vmin,28px)}
+.waitingPanel .waitingIntro{margin:0 0 10px;font-size:11px;line-height:1.45}
+.waitingCodeBox{padding:9px}
+.waitingPanel #waitingCode{font-size:clamp(32px,8vmin,46px);margin:3px 0 5px}
+.playerSlots{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:9px 0}
+.playerSlot{padding:8px 6px;border-radius:11px}
+.playerIcon{font-size:21px;margin-bottom:2px}
+.playerLabel{font-size:9px;margin-bottom:4px;letter-spacing:.02em}
+.playerSlot b{font-size:11px}
+#teamControls{padding:8px!important;margin:7px 0!important}
+.waitingPanel #startMatch{margin:6px 0 0;padding:11px;border-radius:12px}
+@media(max-width:380px){
+ .waitingPanel{width:96vw;padding:10px;border-radius:20px}
+ .waitingTop{padding-bottom:8px}
+ .waitingPanel h2{font-size:19px}
+ .waitingCodeBox{padding:7px}
+ .playerSlots{gap:5px;margin:7px 0}
+ .playerSlot{padding:7px 4px}
+ .playerIcon{font-size:19px}
+ .playerLabel{font-size:8px;line-height:1.2}
+ .playerSlot b{font-size:10px}
+}
+
 </style></head><body>
 <div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
