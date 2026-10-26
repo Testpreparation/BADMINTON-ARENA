@@ -201,6 +201,20 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 /* Cinematic match intro: original styling restored */
 #matchIntro{position:fixed;inset:0;z-index:40;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(110deg,rgba(5,16,35,.05),rgba(5,16,35,.62) 65%,rgba(5,16,35,.08));opacity:1;transition:opacity .55s ease}
 #matchIntro.out{opacity:0}
+/* Power-shot impact effect */
+#powerImpact{position:fixed;inset:0;z-index:55;pointer-events:none;display:grid;place-items:center;overflow:hidden;opacity:0}
+#powerImpact.fire{animation:powerFlash .62s ease-out both}
+#powerImpact .pi-ring{position:absolute;width:min(42vw,42vh);aspect-ratio:1;border:clamp(3px,.65vw,8px) solid #fff;border-radius:50%;box-shadow:0 0 12px #fff,0 0 35px #31d9ff,inset 0 0 28px #31d9ff;transform:scale(.1);opacity:0}
+#powerImpact.fire .pi-ring{animation:powerRing .58s cubic-bezier(.1,.7,.2,1) both}
+#powerImpact .pi-burst{position:absolute;inset:-30%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,0) 0deg 8deg,rgba(95,224,255,.8) 8.5deg 9.5deg,rgba(255,255,255,0) 10deg 18deg);mask-image:radial-gradient(circle,transparent 0 9%,#000 22% 50%,transparent 72%);opacity:0;transform:scale(.25) rotate(-12deg)}
+#powerImpact.fire .pi-burst{animation:powerBurst .55s ease-out both}
+#powerImpact .pi-label{position:relative;z-index:1;color:#fff;font-weight:1000;font-size:clamp(25px,7vw,72px);font-style:italic;letter-spacing:.06em;text-align:center;text-shadow:0 3px 0 #0877b8,0 6px 0 #00456f,0 0 24px #31d9ff;opacity:0;transform:scale(.5) rotate(-5deg)}
+#powerImpact.fire .pi-label{animation:powerLabel .62s cubic-bezier(.15,.8,.2,1.2) both}
+@keyframes powerFlash{0%{opacity:0;background:rgba(190,248,255,0)}12%{opacity:1;background:rgba(190,248,255,.58)}38%{opacity:.8;background:rgba(20,150,255,.12)}100%{opacity:0;background:transparent}}
+@keyframes powerRing{0%{opacity:0;transform:scale(.1)}22%{opacity:1}100%{opacity:0;transform:scale(3.2)}}
+@keyframes powerBurst{0%{opacity:0;transform:scale(.25) rotate(-12deg)}25%{opacity:.9}100%{opacity:0;transform:scale(1.4) rotate(18deg)}}
+@keyframes powerLabel{0%{opacity:0;transform:scale(.5) rotate(-5deg)}25%{opacity:1;transform:scale(1.12) rotate(2deg)}75%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.08) translateY(-16px)}}
+@media(prefers-reduced-motion:reduce){#powerImpact.fire,#powerImpact.fire *{animation-duration:.01ms!important}}
 /* Point/game transition and final result presentation */
 #matchTransition{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;pointer-events:none;background:rgba(3,10,22,.74);opacity:0;transition:opacity .22s ease}
 #matchTransition.show{opacity:1}
@@ -229,6 +243,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 </style></head><body>
 <div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
+<div id="powerImpact" aria-hidden="true"><div class="pi-burst"></div><div class="pi-ring"></div><div class="pi-label">SUPER SMASH!</div></div>
 <div id="rot"><i>📱</i>横向きにしてください</div>
 <div id="nickSetup" role="dialog" aria-modal="true" aria-labelledby="nickTitle"><div class="nickCard"><h2 id="nickTitle">ニックネーム設定</h2><p>ゲームで使用する名前を設定してください。<br>あとからメニュー上部で変更できます。</p><input id="nickInput" maxlength="12" autocomplete="nickname" placeholder="12文字以内" aria-label="ニックネーム"><button id="nickConfirm">この名前で始める</button></div></div>
 <div id="formatMenu" class="ov" hidden><div class="modecard"><h2 id="formatTitle">🎾 テニス｜試合形式</h2><p>試合形式を選んでください</p><button id="singlesMode">👤 シングルス（1対1）</button><button id="doublesMode">👥 ダブルス（2対2）</button><button id="formatBack" class="secondary">← 競技選択へ戻る</button></div></div>
@@ -483,10 +498,12 @@ function cpuShotFor(who,p){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R(
  if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)p.jumpT=.48;if(R()<.35){deg=-8;dz=c.hl-1}}hit(who,tx,who===1?-dz:dz,deg,mode==='tennis'?(R()<.25?-100:160):0)}
 function cpuShot(){cpuShotFor(-1,C)}
 function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>0)return;const b=ball.pos;
+  const powerShot=p===P&&!!inp().dash;
  const controlled=p===P||(p===C&&netRole==='host'&&netConn&&netConn.open);if(mode==='badminton'&&controlled&&p.swingReqT<=0)return;
  const hd=Math.hypot(b.x-p.x,b.z-p.z),reach=cfg.reach*(mode==='badminton'?.98:.9),lowBadminton=mode==='badminton'&&b.y<1.1,isDoublesNpc=selectedFormat==='doubles'&&(p===P2||p===C2),hitReach=isDoublesNpc?Math.max(2.15,mode==='badminton'?1.7:reach):(mode==='badminton'?1.7+(lowBadminton?.15:0):reach),diveShot=mode==='tennis'&&p.swingT>0&&b.z*p.who>=.3&&((Math.abs(b.x)>=cfg.hw*.68&&Math.abs(b.x-p.x)>reach*.45)||((b.z-p.z)*p.who>.45&&Math.abs(b.z-p.z)<1.8));
   // バドミントンは低いシャトルも拾えるようにし、床に触れる直前まで打てるようにする
   if(b.z*p.who<-.3||b.y>cfg.hMax||b.y<.07||hd>hitReach)return;
+  if(powerShot)triggerPowerImpact();
  if(diveShot){p.diveT=1.2;p.diveX=clamp((b.x-p.x)*.42,-.85,.85);p.diveZ=clamp((b.z-p.z)*.35,-.65,.65);p.vx=0;p.vz=0}
  p.q=Math.max(0,hd/hitReach-.4)+(b.y<.4?.3:0);p.swingReqT=0;if(p===P)playerShot(1);else if(p===C&&netRole==='host'&&netConn&&netConn.open)playerShot(-1);else cpuShotFor(p.who,p);p.swingT=.3}
 function doServe(who){const c=cfg;ball.lastHitter=who;state='rally';(who===1?P:C).q=0;hit(who,(R()*2-1)*c.hw*.6,-who*c.hl*.5,mode==='tennis'?12:45,mode==='tennis'?120:0);$('msg').textContent=''}
@@ -527,6 +544,8 @@ function point(w,why){if(practice){state='point';msgT=1.4;best=Math.max(best,ral
  }}
 function announcePoint(w,result){if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window))return;const s=score,T=mode==='tennis';let call=w===1?'あなたのポイント。':'CPUのポイント。';if(T){const names=['ラブ','フィフティーン','サーティ','フォーティ'];let a=s.pts[0],b=s.pts[1],x,y;if(a>=3&&b>=3){x=a===b?'フォーティ':a>b?'アドバンテージ あなた':'フォーティ';y=a===b?'フォーティ':b>a?'アドバンテージ CPU':'フォーティ'}else{x=names[a]||'フォーティ';y=names[b]||'フォーティ'}call+='スコア、'+x+'、'+y+'。ゲームスコア、'+s.games[0]+'対'+s.games[1]+'。'}else{call+='スコア、あなた '+s.pts[0]+'、CPU '+s.pts[1]+'。'}if(result.includes('ゲーム獲得'))call+='ゲーム。';if(over)call+='マッチポイント。試合終了。';try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(call);u.lang='ja-JP';u.rate=.92;u.pitch=1;u.volume=Math.max(.35,Math.min(1,+$('vol').value||.8));window.speechSynthesis.speak(u)}catch(e){}}
 function showPointScore(w){const s=score,T=mode==='tennis',p=(n)=>T?(n>=3&&s.pts[0]>=3&&s.pts[1]>=3?(s.pts[0]===s.pts[1]?'40':n===s.pts[0]?(s.pts[0]>s.pts[1]?'Ad':'40'):(s.pts[1]>s.pts[0]?'Ad':'40')):T4[n]):String(n),a=T?p(s.pts[0]):String(s.pts[0]),b=T?p(s.pts[1]):String(s.pts[1]);let sub=T?'ゲーム '+s.games[0]+' - '+s.games[1]:'得点 '+s.pts[0]+' - '+s.pts[1];if(over)sub+=' ｜ 試合終了';$('pointScore').innerHTML='<div class="ps-title">'+(over?'MATCH POINT':'LIVE SCORE')+'</div><div class="ps-main"><span>'+a+'</span><span>－</span><span>'+b+'</span></div><div class="ps-sub"><span class="ps-names">'+pname.replace(/[<>&"]/g,'')+'</span> 対 <span class="ps-names">CPU</span>　'+sub+'</div>';$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=false}
+function triggerPowerImpact(){const el=$('powerImpact');if(!el)return;el.classList.remove('fire');void el.offsetWidth;el.classList.add('fire');clearTimeout(powerImpactTimer);powerImpactTimer=setTimeout(()=>el.classList.remove('fire'),700)}
+let powerImpactTimer=null;
 function beginServe(){suppressPointScore=false;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
  $('msg').textContent=server===1?'Spaceでサーブ':'相手のサーブ'}
 let matchIntro=null;
