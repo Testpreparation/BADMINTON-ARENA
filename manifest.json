@@ -1,0 +1,20 @@
+{
+  "name": "RACKET STARS｜ラケットスポーツ",
+  "short_name": "RACKET STARS",
+  "description": "テニスとバドミントンを楽しむ3Dラケットスポーツゲーム",
+  "lang": "ja",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0b111a",
+  "theme_color": "#0b111a",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
