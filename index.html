@@ -531,11 +531,11 @@ function save(){try{localStorage.setItem('rs1',JSON.stringify({REC,name:pname,co
 function paint(){document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===OPT[sg.dataset.k])));document.querySelectorAll('.sw').forEach((b,i)=>b.classList.toggle('on',i===OPT.col));$('av').style.background=COLS[OPT.col];const t=REC.tennis,bd=REC.badminton;$('rec').textContent='🎾 '+t[0]+'勝'+t[1]+'敗　🏸 '+bd[0]+'勝'+bd[1]+'敗'}
 function initMenu(){const cs=$('cols');COLS.forEach((c,i)=>{const b=document.createElement('button');b.className='sw';b.style.background=c;b.onclick=()=>{OPT.col=i;paint();save();beep(700,.05)};cs.appendChild(b)});document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>{OPT[sg.dataset.k]=+b.dataset.v;paint();save();beep(600,.05)}));$('nm').value=pname;$('nm').maxLength=12;$('nm').oninput=()=>{pname=$('nm').value.slice(0,12)||'プレイヤー';save()};$('nickInput').value=needsNickname?'':pname;$('nickConfirm').onclick=()=>{const n=$('nickInput').value.trim().slice(0,12);if(!n){$('nickInput').focus();$('nickInput').placeholder='名前を入力してください';return}pname=n;$('nm').value=n;needsNickname=false;save();$('nickSetup').style.display='none';beep(660,.08)};$('nickInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('nickConfirm').click()});if(needsNickname){$('nickSetup').style.display='flex';setTimeout(()=>$('nickInput').focus(),100)}paint()}
 const bgmNodes=new Set();function bgm(on){clearInterval(bgmT);bgmT=null;if(!on){for(const n of bgmNodes){try{n.stop()}catch(e){}}bgmNodes.clear();return}if(bgmT)return;const N=[523,659,784,659,587,740,880,740];let i=0;bgmT=setInterval(()=>{if(state!=='menu'||$('menu').hidden||!$('res').hidden||!ac)return;const v=+$('vol').value;if(!v)return;try{const o=ac.createOscillator(),g=ac.createGain();bgmNodes.add(o);o.type='sine';o.frequency.value=N[i++%8];g.gain.setValueAtTime(.08*v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.35);o.connect(g);g.connect(ac.destination);o.onended=()=>bgmNodes.delete(o);o.start();o.stop(ac.currentTime+.35)}catch(e){}},320)}
-function finish(){const w=over===1,s=score;if(!practice){REC[mode][w?0:1]++;save();paint()}$('rt').textContent=w?'WIN!':'LOSE…';$('rt').className=w?'win':'lose';$('rs').textContent=mode==='tennis'?'ゲーム '+s.games[0]+' - '+s.games[1]:'スコア '+s.pts[0]+' - '+s.pts[1];state='menu';$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;$('res').classList.remove('result-enter');void $('res').offsetWidth;$('res').classList.add('result-enter');beep(w?880:200,.4);try{if(w)cheer()}catch(e){}}
+function finish(){const w=over===1,s=score;if(!practice){REC[mode][w?0:1]++;save();paint()}$('rt').textContent=w?'WIN!':'LOSE…';$('rt').className=w?'win':'lose';$('rs').textContent='ゲーム '+s.games[0]+' - '+s.games[1]+' ／ 最終得点 '+s.pts[0]+' - '+s.pts[1];state='menu';$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;$('res').classList.remove('result-enter');void $('res').offsetWidth;$('res').classList.add('result-enter');beep(w?880:200,.4);try{if(w)cheer()}catch(e){}}
 function updScore(){const s=score;let t;
  if(mode==='tennis'){let a=s.pts[0],b=s.pts[1],x,y;if(a>=3&&b>=3){x=a===b?'40':a>b?'Ad':'40';y=a===b?'40':b>a?'Ad':'40'}else{x=T4[a];y=T4[b]}t=`あなた ${x} - ${y} CPU ｜ ゲーム ${s.games[0]}-${s.games[1]}`}
- else t=`あなた ${s.pts[0]} - ${s.pts[1]} CPU`;$('score').innerHTML=sbHtml()}
-function sbHtml(){if(practice)return '<div class="sr"><b>RALLY</b><i></i><u>'+rally+'</u></div><div class="sr"><b>BEST</b><i></i><u>'+best+'</u></div>';const s=score,T=mode==='tennis',a=s.pts[0],b=s.pts[1];let x=a,y=b;if(T){if(a>=3&&b>=3){x=a===b?'40':a>b?'Ad':'40';y=a===b?'40':b>a?'Ad':'40'}else{x=T4[a];y=T4[b]}}const r=(n,g,p)=>'<div class="sr"><b>'+n+'</b><i>'+g+'</i><u>'+p+'</u></div>';return r(pname.replace(/[<>&"]/g,''),T?s.games[0]:'',x)+r('CPU',T?s.games[1]:'',y)}
+ else t=`あなた ${s.pts[0]} - ${s.pts[1]} CPU ｜ ゲーム ${s.games[0]}-${s.games[1]}`;$('score').innerHTML=sbHtml()}
+function sbHtml(){if(practice)return '<div class="sr"><b>RALLY</b><i></i><u>'+rally+'</u></div><div class="sr"><b>BEST</b><i></i><u>'+best+'</u></div>';const s=score,T=mode==='tennis',a=s.pts[0],b=s.pts[1];let x=a,y=b;if(T){if(a>=3&&b>=3){x=a===b?'40':a>b?'Ad':'40';y=a===b?'40':b>a?'Ad':'40'}else{x=T4[a];y=T4[b]}}const r=(n,g,p)=>'<div class="sr"><b>'+n+'</b><i>'+g+'</i><u>'+p+'</u></div>';return r(pname.replace(/[<>&"]/g,''),s.games[0],x)+r('CPU',s.games[1],y)}
 let transitionTimer=null;
 function showMatchTransition(kicker,title,sub,duration=1350){
  const previous=$('matchTransition');if(previous)previous.remove();
@@ -552,14 +552,14 @@ function showMatchTransition(kicker,title,sub,duration=1350){
 function point(w,why){const replayDuration=replayFrames.length>1?replayFrames[replayFrames.length-1].t-replayFrames[0].t:0;if(!practice&&replayFrames.length>1&&replayDuration>=3){replayAutoPending=true;replayPointT=tm;replayAutoAt=tm+.85;}else{replayAutoPending=false;}if(practice){state='point';syncTouchActions();msgT=1.4;best=Math.max(best,rally);$('msg').textContent='ラリー '+rally+'回！（'+why+'）';rally=0;server=1;updScore();$('pointScore').hidden=true;beep(300,.2);return}state='point';msgT=2.4;pointScoreShown=false;pointWinner=w;$('pointScore').hidden=true;$('msg').textContent=why;const i=w===1?0:1,o=1-i,s=score,serving=server,oldGames0=s.games[0],oldGames1=s.games[1];let m=(w===1?'ポイント！':'相手のポイント')+'（'+why+'）';
  s.pts[i]++;
  if(mode==='tennis'){if(s.pts[i]>=4&&s.pts[i]-s.pts[o]>=2){s.games[i]++;s.pts=[0,0];suppressPointScore=true;m=(w===1?'ゲーム獲得！':'相手がゲーム獲得');if(s.games[i]>=GW[OPT.mlen])over=w}server=(s.games[0]!==oldGames0||s.games[1]!==oldGames1)?-serving:serving}
- else{server=w;if(s.pts[i]>=BP[OPT.mlen]&&s.pts[i]-s.pts[o]>=2||s.pts[i]>=BP[OPT.mlen]+4)over=w}
+ else{server=w;const gameWon=(s.pts[i]>=21&&s.pts[i]-s.pts[o]>=2)||s.pts[i]===30;if(gameWon){s.games[i]++;s.pts=[0,0];suppressPointScore=true;m=(w===1?'ゲーム獲得！':'相手がゲーム獲得');if(s.games[i]>=2)over=w}}
  updScore();$('msg').textContent=why;beep(w===1?760:240,.25);if(w===1)cheer();else missReaction();announcePoint(w,m);
- if(mode==='tennis'&&(s.games[0]!==oldGames0||s.games[1]!==oldGames1)&&!over){
+ if((s.games[0]!==oldGames0||s.games[1]!==oldGames1)&&!over){
   const won=s.games[i]> (i===0?oldGames0:oldGames1);
   setTimeout(()=>{if(!over)showMatchTransition('GAME '+(s.games[0]+s.games[1]),won?(w===1?'GAME WON':'CPU TAKES GAME'):'NEXT GAME', 'SCORE  '+s.games[0]+'  —  '+s.games[1],1150)},550);
  }}
 function announcePoint(w,result){if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window))return;const s=score,T=mode==='tennis';let call=w===1?'あなたのポイント。':'CPUのポイント。';if(T){const names=['ラブ','フィフティーン','サーティ','フォーティ'];let a=s.pts[0],b=s.pts[1],x,y;if(a>=3&&b>=3){x=a===b?'フォーティ':a>b?'アドバンテージ あなた':'フォーティ';y=a===b?'フォーティ':b>a?'アドバンテージ CPU':'フォーティ'}else{x=names[a]||'フォーティ';y=names[b]||'フォーティ'}call+='スコア、'+x+'、'+y+'。ゲームスコア、'+s.games[0]+'対'+s.games[1]+'。'}else{call+='スコア、あなた '+s.pts[0]+'、CPU '+s.pts[1]+'。'}if(result.includes('ゲーム獲得'))call+='ゲーム。';if(over)call+='マッチポイント。試合終了。';try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(call);u.lang='ja-JP';u.rate=.92;u.pitch=1;u.volume=Math.max(.35,Math.min(1,+$('vol').value||.8));window.speechSynthesis.speak(u)}catch(e){}}
-function showPointScore(w){const s=score,T=mode==='tennis',p=(n)=>T?(n>=3&&s.pts[0]>=3&&s.pts[1]>=3?(s.pts[0]===s.pts[1]?'40':n===s.pts[0]?(s.pts[0]>s.pts[1]?'Ad':'40'):(s.pts[1]>s.pts[0]?'Ad':'40')):T4[n]):String(n),a=T?p(s.pts[0]):String(s.pts[0]),b=T?p(s.pts[1]):String(s.pts[1]);let sub=T?'ゲーム '+s.games[0]+' - '+s.games[1]:'得点 '+s.pts[0]+' - '+s.pts[1];if(over)sub+=' ｜ 試合終了';$('pointScore').innerHTML='<div class="ps-title">'+(over?'MATCH POINT':'LIVE SCORE')+'</div><div class="ps-main"><span>'+a+'</span><span>－</span><span>'+b+'</span></div><div class="ps-sub"><span class="ps-names">'+pname.replace(/[<>&"]/g,'')+'</span> 対 <span class="ps-names">CPU</span>　'+sub+'</div>';$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=false}
+function showPointScore(w){const s=score,T=mode==='tennis',p=(n)=>T?(n>=3&&s.pts[0]>=3&&s.pts[1]>=3?(s.pts[0]===s.pts[1]?'40':n===s.pts[0]?(s.pts[0]>s.pts[1]?'Ad':'40'):(s.pts[1]>s.pts[0]?'Ad':'40')):T4[n]):String(n),a=T?p(s.pts[0]):String(s.pts[0]),b=T?p(s.pts[1]):String(s.pts[1]);let sub='ゲーム '+s.games[0]+' - '+s.games[1]+' ／ 得点 '+s.pts[0]+' - '+s.pts[1];if(over)sub+=' ｜ 試合終了';$('pointScore').innerHTML='<div class="ps-title">'+(over?'MATCH POINT':'LIVE SCORE')+'</div><div class="ps-main"><span>'+a+'</span><span>－</span><span>'+b+'</span></div><div class="ps-sub"><span class="ps-names">'+pname.replace(/[<>&"]/g,'')+'</span> 対 <span class="ps-names">CPU</span>　'+sub+'</div>';$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=false}
 // 直近10秒の試合状態を記録し、物理進行を止めて再生する
 const REPLAY_MAX=10,REPLAY_STEP=.08;let replayFrames=[],replayRecordT=0,replayPlaying=false,replayAutoPending=false,replayAutoAt=0,replayPointT=0,replayPlayT=0,replaySaved=null,replayBadge=null;
 function captureReplayFrame(){
@@ -641,14 +641,14 @@ function updateMatchIntro(dt){
  if(!matchIntro)return false;
  matchIntro.t+=dt;const t=matchIntro.t,el=matchIntro.el,title=$('miTitle'),sub=$('miSub'),bottom=$('miBottom');
  let phase='';
- if(t<1.13){phase='player';title.textContent='PLAYER 1';sub.textContent='YOUR COURT. YOUR MOMENT.';bottom.textContent='INTRODUCING YOU';}
- else if(t<2.27){phase='opponent';title.textContent='CHALLENGER';sub.textContent=netRole==='guest'?'PLAYER 1 VS YOU':'PLAYER 1 VS CPU';bottom.textContent='MEET YOUR OPPONENT';}
- else if(t<3.29){phase='match';title.textContent=mode==='tennis'?'TENNIS':'BADMINTON';sub.textContent=selectedFormat==='doubles'?'DOUBLES MATCH':'SINGLES MATCH';bottom.textContent='GET INTO POSITION';}
- else if(t<4.0){phase='ready';title.textContent='READY?';sub.textContent='';bottom.textContent='GET READY';}
- else if(t<4.48){phase='three';title.textContent='3';sub.textContent='';bottom.textContent='';}
- else if(t<4.97){phase='two';title.textContent='2';sub.textContent='';bottom.textContent='';}
- else if(t<5.45){phase='one';title.textContent='1';sub.textContent='';bottom.textContent='';}
- else if(t<6.32){phase='play';title.textContent='PLAY!';sub.textContent='LET THE MATCH BEGIN';bottom.textContent='';}
+ if(t<1.24){phase='player';title.textContent='PLAYER 1';sub.textContent='YOUR COURT. YOUR MOMENT.';bottom.textContent='INTRODUCING YOU';}
+ else if(t<2.50){phase='opponent';title.textContent='CHALLENGER';sub.textContent=netRole==='guest'?'PLAYER 1 VS YOU':'PLAYER 1 VS CPU';bottom.textContent='MEET YOUR OPPONENT';}
+ else if(t<3.62){phase='match';title.textContent=mode==='tennis'?'TENNIS':'BADMINTON';sub.textContent=selectedFormat==='doubles'?'DOUBLES MATCH':'SINGLES MATCH';bottom.textContent='GET INTO POSITION';}
+ else if(t<4.40){phase='ready';title.textContent='READY?';sub.textContent='';bottom.textContent='GET READY';}
+ else if(t<4.93){phase='three';title.textContent='3';sub.textContent='';bottom.textContent='';}
+ else if(t<5.46){phase='two';title.textContent='2';sub.textContent='';bottom.textContent='';}
+ else if(t<5.99){phase='one';title.textContent='1';sub.textContent='';bottom.textContent='';}
+ else if(t<6.95){phase='play';title.textContent='PLAY!';sub.textContent='LET THE MATCH BEGIN';bottom.textContent='';}
  else{
   el.classList.add('out');matchIntro=null;
   setTimeout(()=>{if(el.isConnected)el.remove()},600);
@@ -667,9 +667,9 @@ function updateMatchIntroCamera(){
  if(!matchIntro)return;
  const t=matchIntro.t,p=netRole==='guest'?C:P,op=netRole==='guest'?P:C;
  let x,y,z,tx,ty,tz;
- if(t<1.15){x=p.x+1.8;y=2.3;z=p.z+(mode==='tennis'?3.4:3.0);tx=p.x;ty=1.15;tz=p.z;}
- else if(t<2.3){x=op.x-1.8;y=2.5;z=op.z-(mode==='tennis'?3.7:3.2);tx=op.x;ty=1.2;tz=op.z;}
- else if(t<3.35){const q=clamp((t-2.3)/1.05,0,1);x=Math.sin(q*Math.PI)*2.2;y=6.5;z=p.z+(mode==='tennis'?10:9);tx=0;ty=.9;tz=0;}
+ if(t<1.26){x=p.x+1.8;y=2.3;z=p.z+(mode==='tennis'?3.4:3.0);tx=p.x;ty=1.15;tz=p.z;}
+ else if(t<2.53){x=op.x-1.8;y=2.5;z=op.z-(mode==='tennis'?3.7:3.2);tx=op.x;ty=1.2;tz=op.z;}
+ else if(t<3.68){const q=clamp((t-2.53)/1.15,0,1);x=Math.sin(q*Math.PI)*2.2;y=6.5;z=p.z+(mode==='tennis'?10:9);tx=0;ty=.9;tz=0;}
  else{x=p.x*.35;y=4.2;z=p.z+(mode==='tennis'?6.2:8);tx=0;ty=1;tz=0;}
  const target=new THREE.Vector3(x,y,z),look=new THREE.Vector3(tx,ty,tz);camera.position.lerp(target,1-Math.exp(-8*fdt));lk.lerp(look,1-Math.exp(-9*fdt));camera.lookAt(lk);
 }
