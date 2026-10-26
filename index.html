@@ -292,6 +292,10 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 }
 
 .homeActions{display:flex;flex-direction:column;gap:2.4vmin}.navHeading{margin:4px 0 12px;font-size:18px;color:#fff}.navBack{margin:10px auto 0;max-width:420px;width:100%}.tournamentCard{width:min(94vw,680px)!important;max-height:90vh;overflow:auto;text-align:left}.tournamentCard>h2,.tournamentCard h3{text-align:center}.tournamentCard button{margin:5px 0}.tournamentField{display:block;margin:10px 0;font-size:13px;font-weight:700}.tournamentField input,.tournamentField select,#tournamentJoinCode{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:12px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;color:#14243a;font:inherit}.tournamentList{display:grid;gap:7px;margin:12px 0}.tournamentPlayer{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.09);font-size:13px}.tournamentBracket{display:grid;gap:8px;margin:12px 0}.tournamentRound{padding:10px;border-radius:12px;background:rgba(255,255,255,.07)}.tournamentRound h4{margin:0 0 8px}.tournamentMatchBtn{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;width:100%;text-align:left;margin:6px 0!important;padding:10px!important;font-size:12px!important}.tournamentMatchName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tournamentMatchName:last-child{text-align:right}.tournamentMatchScore{white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums;color:#ffd23f}#tournamentMatchInfo{padding:14px;border-radius:12px;background:rgba(255,255,255,.08);line-height:1.9;margin:12px 0}#spectatorBar{position:fixed;z-index:30;top:10px;left:10px;right:10px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px;border:1px solid rgba(255,255,255,.3);border-radius:14px;background:rgba(10,20,40,.78);backdrop-filter:blur(14px);color:#fff;font:12px system-ui}#spectatorBar>div{display:flex;flex-direction:column;gap:3px;margin-right:8px}#spectatorBar button{font-size:12px;padding:8px 10px;border-radius:9px}@media(max-width:600px){.tournamentCard{padding:16px!important}#spectatorBar{top:5px;left:5px;right:5px;gap:5px}#spectatorBar button{padding:7px 8px;font-size:10px}}
+
+/* 保存容量のお知らせ：既存ゲーム画面には影響させない */
+#cacheNotice{position:fixed;z-index:100000;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);width:min(calc(100% - 28px),360px);box-sizing:border-box;padding:16px;background:#18222e;color:#f2f6fa;border:1px solid #ffd23f;border-radius:16px;box-shadow:0 10px 36px rgba(0,0,0,.45);text-align:center}
+#cacheNotice[hidden]{display:none!important}#cacheNotice h2{margin:0 0 8px;font-size:18px}#cacheNotice p{margin:0 0 10px;font-size:13px;line-height:1.6}#cacheNotice button{margin:7px 0 0;padding:10px;font-size:15px}#cacheNotice .cacheLater{background:#344354;color:#fff}
 </style></head><body>
 <div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><h2 id="rt"></h2><p id="rs"></p><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
@@ -954,4 +958,36 @@ document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 let lastTouchEnd=0;document.addEventListener('touchend',e=>{const now=Date.now();if(now-lastTouchEnd<=300)e.preventDefault();lastTouchEnd=now},{passive:false});
 renderer.setPixelRatio(COARSE?1:Math.min(devicePixelRatio,+$('q').value));rs();buildCourt('tennis');camera.position.set(0,7,16);requestAnimationFrame(loop);
 })();
-</script></body></html>
+</script>
+<div id="cacheNotice" role="dialog" aria-live="polite" aria-labelledby="cacheNoticeTitle" hidden><h2 id="cacheNoticeTitle">📦 保存容量のお知らせ</h2><p id="cacheNoticeText">サイトの保存容量が10MB以上になりました。保存データは削除せず、最新版を読み込み直せます。</p><button id="cacheRefreshBtn" type="button">最新版を読み込む</button><button id="cacheLaterBtn" type="button" class="cacheLater">あとで</button></div>
+<script>
+// ブラウザが報告できるサイト保存容量を確認。HTTPキャッシュそのものの容量ではありません。
+(()=>{
+ const notice=document.getElementById('cacheNotice');
+ const later=document.getElementById('cacheLaterBtn');
+ const refresh=document.getElementById('cacheRefreshBtn');
+ if(!notice||!later||!refresh||!navigator.storage||typeof navigator.storage.estimate!=='function')return;
+ const threshold=10*1024*1024;
+ let shown=false;
+ async function checkSiteStorage(){
+  if(shown||sessionStorage.getItem('rsStorageNoticeDismissed')==='1')return;
+  try{
+   const estimate=await navigator.storage.estimate();
+   if(typeof estimate.usage==='number'&&estimate.usage>=threshold){
+    shown=true;
+    const mb=(estimate.usage/1024/1024).toFixed(1);
+    document.getElementById('cacheNoticeText').textContent='ブラウザが計測したこのサイトの保存容量は約'+mb+'MBです。保存データは削除せず、最新版を読み込み直せます。※通常のブラウザキャッシュ容量とは異なります。';
+    notice.hidden=false;
+   }
+  }catch(e){}
+ }
+ later.addEventListener('click',()=>{notice.hidden=true;sessionStorage.setItem('rsStorageNoticeDismissed','1')});
+ refresh.addEventListener('click',()=>{
+  refresh.disabled=true;refresh.textContent='読み込み中…';
+  const url=new URL(location.href);url.searchParams.set('_refresh',Date.now().toString());location.replace(url.toString());
+ });
+ checkSiteStorage();
+ setInterval(checkSiteStorage,60000);
+})();
+</script>
+</body></html>
