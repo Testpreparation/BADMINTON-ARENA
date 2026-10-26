@@ -451,7 +451,7 @@ function playerShot(who=1){const c=cfg,i=who===1?inp():{x:remoteInput.x||0,z:-(r
  if(mode==='badminton'){deg=ball.pos.y<.85?54:ball.pos.y<1.5?48:42}
  hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(i.dash?60:(i.z<-.6?-120:180)):0)}
 function cpuShotFor(who,p){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=c.th+R()*3;
- if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)p.jumpT=.48;if(R()<.35){deg=-8;dz=c.hl-1}}hit(who,tx,dz,deg,mode==='tennis'?(R()<.25?-100:160):0)}
+ if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)p.jumpT=.48;if(R()<.35){deg=-8;dz=c.hl-1}}hit(who,tx,who===1?-dz:dz,deg,mode==='tennis'?(R()<.25?-100:160):0)}
 function cpuShot(){cpuShotFor(-1,C)}
 function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>0)return;const b=ball.pos;
  const controlled=p===P||(p===C&&netRole==='host'&&netConn&&netConn.open);if(mode==='badminton'&&controlled&&p.swingReqT<=0)return;
