@@ -308,7 +308,7 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 <button id="createRoom">＋ 部屋を作る</button>
 <div class="roomrow"><input id="roomCode" maxlength="6" inputmode="numeric" placeholder="部屋番号（6桁）" aria-label="部屋番号"><button id="joinRoom">参加する</button></div>
 <p id="roomStatus" role="status"></p>
-<button id="friendBack" class="secondary">← モード選択へ戻る</button></div>
+<button id="friendBack">← モード選択へ戻る</button></div>
 <div id="waitingPanel" class="waitingPanel" hidden>
 <div class="waitingTop"><button id="waitingBack" class="leaveRoom">← 部屋を出る</button><span>ROOM：<b id="waitingCodeMini">------</b></span></div>
 <h2>👥 フレンド対戦ルーム</h2>
@@ -326,11 +326,11 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 <div id="waitingStatus" class="waitingStatus" role="status">部屋を作成しています…</div>
 <button id="startMatch" hidden>▶ 対戦を開始する</button>
 </div>
-<button id="modeBack" class="secondary">← 競技選択へ戻る</button>
+<button id="modeBack">← 競技選択へ戻る</button>
 </div></div>
 <div id="touch" hidden><div id="joy"><div id="knob"></div></div><button class="tb" id="bs">スイング</button><button class="tb" id="bp">強打</button><button class="tb" id="bd">ドロップ</button></div><div id="serveMeter" hidden aria-label="サーブ威力"><div id="serveMeterTrack"><div id="serveMeterFill"></div></div></div>
 <button id="mb" hidden aria-label="ポーズメニュー">☰</button>
-<div id="pauseMenu" class="ov" hidden><div class="modecard"><h2>⏸ ポーズ</h2><p>試合を一時停止しています</p><button id="resumeMatch">▶ 試合に戻る</button><button id="quitMatch" class="secondary">■ 試合をやめてメインメニューへ</button></div></div>
+<div id="pauseMenu" class="ov" hidden><div class="modecard"><h2>⏸ ポーズ</h2><p>試合を一時停止しています</p><button id="resumeMatch">▶ 試合に戻る</button><button id="quitMatch">■ 試合をやめてメインメニューへ</button></div></div>
 <div id="chatTicker" aria-live="polite"><div id="chatTickerText"></div></div>
 <button id="chatFab" type="button" aria-label="チャットを開く" title="チャット">💬</button>
 <div id="chatPanel" role="dialog" aria-label="対戦チャット">
@@ -342,15 +342,15 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 <div id="menu" class="ov"><div id="topbar"><div id="av">🙂</div><input id="nm" maxlength="12" aria-label="name"><span id="rec"></span></div><div class="home"><div class="logo"><small>RACKET SPORTS</small><h1 id="ttl">RACKET<br>STARS</h1><p>テニス ＆ バドミントン</p></div>
 <div id="homeActions" class="modes"><button id="playNav" class="mode"><span>🎮</span><b>プレイ</b><em>PLAY ▶</em></button><button id="friendNav" class="mode"><span>👥</span><b>フレンド対戦</b><em>PLAY ▶</em></button><button id="tournamentNav" class="mode"><span>🏆</span><b>トーナメント</b><em>PLAY ▶</em></button></div>
 <div id="playPanel" hidden><h2 class="navHeading">競技を選択</h2><div class="modes"><button class="mode" data-m="tennis"><span>🎾</span><b>テニス</b><em>PLAY ▶</em></button><button class="mode" data-m="badminton"><span>🏸</span><b>バドミントン</b><em>PLAY ▶</em></button></div>
-<button id="playBack" class="secondary navBack">← メインメニューへ戻る</button></div>
+<button id="playBack" class="navBack">← メインメニューへ戻る</button></div>
 <details class="set"><summary>⚙ 設定</summary><label>音量<input id="vol" type="range" min="0" max="1" step=".05" value=".5"></label><label>画質<select id="q"><option value="2.5" selected>最高</option><option value="2">高</option><option value="1.5">中</option><option value="1">低</option></select></label></details><small class="hint">PC：キーボード ／ スマホ：横向きで操作</small><button id="fs">⛶ 全画面</button></div></div>
 <div id="tournamentMenu" class="ov" hidden><div class="modecard tournamentCard"><button id="tournamentClose" class="secondary">← メインメニュー</button><h2>🏆 フレンドトーナメント</h2>
 <div id="tournamentHome"><p>フレンドを集めて大会を開催、または招待コードで参加します。</p><button id="tournamentCreateNav">＋ 大会を作る</button><button id="tournamentJoinNav">🔑 大会に参加</button><button id="tournamentResumeNav" class="secondary">開催中の大会を開く</button><p id="tournamentStatus" role="status"></p></div>
-<div id="tournamentCreatePanel" hidden><h3>大会設定</h3><label class="tournamentField">大会名<input id="tournamentName" maxlength="30" placeholder="フレンド大会"></label><label class="tournamentField">競技<select id="tournamentSport"><option value="tennis">🎾 テニス</option><option value="badminton">🏸 バドミントン</option></select></label><label class="tournamentField">試合形式<select id="tournamentFormat"><option value="singles">シングルス</option><option value="doubles">ダブルス</option></select></label><label class="tournamentField">参加人数<select id="tournamentSize"><option value="4">4人</option><option value="8">8人</option></select></label><button id="createTournament">大会を作成</button><button id="tournamentCreateBack" class="secondary">戻る</button></div>
-<div id="tournamentJoinPanel" hidden><h3>大会に参加</h3><p>主催者から共有された6桁のコードを入力してください。</p><input id="tournamentJoinCode" maxlength="6" inputmode="numeric" placeholder="大会コード"><button id="joinTournament">参加する</button><button id="tournamentJoinBack" class="secondary">戻る</button></div>
-<div id="tournamentLobbyPanel" hidden><h3 id="tournamentLobbyTitle">参加者待機中</h3><p>大会コード：<b id="tournamentLobbyCode">------</b> <button id="copyTournamentCode" class="secondary">コピー</button></p><p id="tournamentLobbyInfo"></p><div id="tournamentParticipants" class="tournamentList"></div><button id="startTournament">大会を開始</button><button id="cancelTournament" class="secondary">大会を取り消す</button><button id="tournamentLobbyBack" class="secondary">トーナメントメニューへ</button></div>
-<div id="tournamentBracketPanel" hidden><h3 id="tournamentBracketTitle">トーナメント表</h3><p id="tournamentBracketInfo"></p><div id="tournamentBracket" class="tournamentBracket"></div><button id="tournamentBracketBack" class="secondary">大会メニューへ戻る</button></div>
-<div id="tournamentMatchPanel" hidden><h3 id="tournamentMatchTitle">試合情報</h3><div id="tournamentMatchInfo"></div><button id="tournamentPlayMatch">試合に参加</button><button id="tournamentWatchMatch" class="secondary">観戦する</button><button id="tournamentMatchBack" class="secondary">トーナメント表へ戻る</button></div></div></div>
+<div id="tournamentCreatePanel" hidden><h3>大会設定</h3><label class="tournamentField">大会名<input id="tournamentName" maxlength="30" placeholder="フレンド大会"></label><label class="tournamentField">競技<select id="tournamentSport"><option value="tennis">🎾 テニス</option><option value="badminton">🏸 バドミントン</option></select></label><label class="tournamentField">試合形式<select id="tournamentFormat"><option value="singles">シングルス</option><option value="doubles">ダブルス</option></select></label><label class="tournamentField">参加人数<select id="tournamentSize"><option value="4">4人</option><option value="8">8人</option></select></label><button id="createTournament">大会を作成</button><button id="tournamentCreateBack">戻る</button></div>
+<div id="tournamentJoinPanel" hidden><h3>大会に参加</h3><p>主催者から共有された6桁のコードを入力してください。</p><input id="tournamentJoinCode" maxlength="6" inputmode="numeric" placeholder="大会コード"><button id="joinTournament">参加する</button><button id="tournamentJoinBack">戻る</button></div>
+<div id="tournamentLobbyPanel" hidden><h3 id="tournamentLobbyTitle">参加者待機中</h3><p>大会コード：<b id="tournamentLobbyCode">------</b> <button id="copyTournamentCode" class="secondary">コピー</button></p><p id="tournamentLobbyInfo"></p><div id="tournamentParticipants" class="tournamentList"></div><button id="startTournament">大会を開始</button><button id="cancelTournament" class="secondary">大会を取り消す</button><button id="tournamentLobbyBack">トーナメントメニューへ</button></div>
+<div id="tournamentBracketPanel" hidden><h3 id="tournamentBracketTitle">トーナメント表</h3><p id="tournamentBracketInfo"></p><div id="tournamentBracket" class="tournamentBracket"></div><button id="tournamentBracketBack">大会メニューへ戻る</button></div>
+<div id="tournamentMatchPanel" hidden><h3 id="tournamentMatchTitle">試合情報</h3><div id="tournamentMatchInfo"></div><button id="tournamentPlayMatch">試合に参加</button><button id="tournamentWatchMatch" class="secondary">観戦する</button><button id="tournamentMatchBack">トーナメント表へ戻る</button></div></div></div>
 <div id="spectatorBar" hidden><div><b id="spectatorTitle">トーナメント観戦</b><span id="spectatorScore"></span></div><button id="spectatorPlayerView">プレイヤー視点</button><button id="spectatorStandView">観客席視点</button><button id="spectatorBack">トーナメント表へ戻る</button></div><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
