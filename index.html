@@ -212,7 +212,7 @@ function mkPlayer(c){const g=new THREE.Group(),a=new THREE.Group();a.position.se
  const hair=new THREE.Mesh(new THREE.SphereGeometry(.235,16,10,0,Math.PI*2,0,Math.PI/2),M(0x2b1d14));hair.position.y=1.68;
  const la=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.6,8),M(0xf1c9a5));la.position.set(-.38,1.1,0);
  const hb=new THREE.Mesh(new THREE.TorusGeometry(.225,.02,6,16),M(0xffffff));hb.rotation.x=Math.PI/2;hb.position.y=1.72;g.add(b,l,h,a,sr,hair,la,hb);g.userData.arm=a;g.userData.legs=[L1,L2];g.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(g);return g}
-const P={who:1,x:0,z:0,swingT:0,g:mkPlayer(0x3b82f6)},C={who:-1,x:0,z:0,swingT:0,g:mkPlayer(0xef4444)};C.g.rotation.y=Math.PI;
+const P={who:1,x:0,z:0,swingT:0,swingReqT:0,g:mkPlayer(0x3b82f6)},C={who:-1,x:0,z:0,swingT:0,swingReqT:0,g:mkPlayer(0xef4444)};C.g.rotation.y=Math.PI;
 const ballG=new THREE.Group(),tb=new THREE.Mesh(new THREE.SphereGeometry(.13,16,12),M(0xffffff,{emissive:0x223300,map:ballTex()})),sh=new THREE.Group();
 const cone=new THREE.Mesh(new THREE.ConeGeometry(.1,.2,12),M(0xffffff,{emissive:0x555555}));cone.position.y=-.05;
 const cork=new THREE.Mesh(new THREE.SphereGeometry(.035,10,8),M(0xe8b27a));cork.position.y=.07;sh.add(cone,cork);
@@ -309,7 +309,8 @@ function playerShot(who=1){const c=cfg,i=who===1?inp():{x:remoteInput.x||0,z:-(r
 function cpuShot(){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=c.th+R()*3;
  if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3&&R()<.35){deg=-8;dz=c.hl-1}hit(-1,tx,dz,deg,mode==='tennis'?(R()<.25?-100:160):0)}
 function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>0)return;const b=ball.pos;
- const hd=Math.hypot(b.x-p.x,b.z-p.z);if(b.z*p.who<-.3||b.y>cfg.hMax||hd>cfg.reach)return;p.q=Math.max(0,hd/cfg.reach-.4)+(b.y<.4?.3:0);if(p===P)playerShot(1);else if(netRole==='host')playerShot(-1);else cpuShot()}
+ const controlled=p===P||(p===C&&netRole==='host'&&netConn&&netConn.open);if(mode==='badminton'&&controlled&&p.swingReqT<=0)return;
+ const hd=Math.hypot(b.x-p.x,b.z-p.z),reach=cfg.reach*.9;if(b.z*p.who<-.3||b.y>cfg.hMax||hd>reach)return;p.q=Math.max(0,hd/reach-.4)+(b.y<.4?.3:0);p.swingReqT=0;if(p===P)playerShot(1);else if(netRole==='host')playerShot(-1);else cpuShot()}
 function doServe(who){const c=cfg;ball.lastHitter=who;state='rally';(who===1?P:C).q=0;hit(who,(R()*2-1)*c.hw*.6,-who*c.hl*.5,mode==='tennis'?12:45,mode==='tennis'?120:0);$('msg').textContent=''}
 const T4=[0,15,30,40];
 const OPT={mode:0,diff:1,mlen:1,col:0},COLS=['#3b82f6','#ef4444','#22c55e','#f59e0b','#a855f7','#ec4899'],ERR=[.28,.12,.04,.03],SPD=[.8,1,1.2,1],GW=[1,2],BP=[7,11];
@@ -363,15 +364,15 @@ function stepBall(){const b=ball,c=cfg,v=b.vel,s=v.length();b.prev.copy(b.pos);
   if(!ok){point(-b.lastHitter,inb?'自コート':'アウト');return}
   const sp0=Math.hypot(v.x,v.z)||1,tp=(b.spin.x*v.z-b.spin.z*v.x)/sp0,m=clamp(.78+tp*.0007,.55,1);v.y=-v.y*c.e*(1-clamp(sp0*.003,0,.2));v.x*=m;v.z*=m;b.spin.multiplyScalar(.55);b.bounces++;spawn(b.pos,12,2.5);beep(180+Math.abs(v.y)*8,.06)}}
 function update(dt){const c=cfg;hitCd-=dt;const i=inp();
- if(state!=='point'){const d=Math.max(1,Math.hypot(i.x,i.z)),mx=c.pSpeed*(i.dash?1.5:1),k=1-Math.exp(-8*dt);P.vx=(P.vx||0)+(i.x/d*mx-(P.vx||0))*k;P.vz=(P.vz||0)+(i.z/d*mx-(P.vz||0))*k;P.x=clamp(P.x+P.vx*dt,-c.hw-2.5,c.hw+2.5);P.z=clamp(P.z+P.vz*dt,.8,c.hl+3.5)}
+ if(state!=='point'){const d=Math.max(1,Math.hypot(i.x,i.z)),mx=c.pSpeed*(i.dash?1.5:1),k=1-Math.exp(-8*dt);P.vx=(P.vx||0)+(i.x/d*mx-(P.vx||0))*k;P.vz=(P.vz||0)+(i.z/d*mx-(P.vz||0))*k;P.x=clamp(P.x+P.vx*dt,-c.hw-2.5,c.hw+2.5);P.z=clamp(P.z+P.vz*dt,state==='serveWait'&&mode==='tennis'&&server===1?c.hl+.15:.8,c.hl+3.5)}
  let tx=0,tz=-(c.hl+1.5);
  if(state==='rally'&&ball.lastHitter===1){const b=ball;if(c.bounce&&b.bounces>0){tx=b.pos.x+b.vel.x*.3;tz=b.pos.z+b.vel.z*.3}else{aiT-=dt;if(aiT<=0||!aiL){aiL=simLand(b.pos,b.vel,c,b.spin);aiT=.15}tx=aiL.x;tz=aiL.z}}
  tz=clamp(tz,-c.hl-3.5,-.8);tx=clamp(tx,-c.hw-2.5,c.hw+2.5);
- if(state!=='point'){if(netRole==='host'&&netConn&&netConn.open){const mx=remoteInput.x||0,mz=-(remoteInput.z||0),d=Math.max(1,Math.hypot(mx,mz)),sp=c.pSpeed*(remoteInput.dash?1.5:1);C.vx=mx/d*sp;C.vz=mz/d*sp;C.x=clamp(C.x+C.vx*dt,-c.hw-2.5,c.hw+2.5);C.z=clamp(C.z+C.vz*dt,-c.hl-3.5,-.8)}else{const dx=tx-C.x,dz=tz-C.z,d=Math.hypot(dx,dz),kk=1-Math.exp(-7*dt),wn=d>.15?c.cSpeed*SPD[practice?3:OPT.diff]:0;C.vx=(C.vx||0)+((d>.05?dx/d*wn:0)-(C.vx||0))*kk;C.vz=(C.vz||0)+((d>.05?dz/d*wn:0)-(C.vz||0))*kk;C.x+=C.vx*dt;C.z+=C.vz*dt}}
+ if(state!=='point'){if(netRole==='host'&&netConn&&netConn.open){const mx=remoteInput.x||0,mz=-(remoteInput.z||0),d=Math.max(1,Math.hypot(mx,mz)),sp=c.pSpeed*(remoteInput.dash?1.5:1);C.vx=mx/d*sp;C.vz=mz/d*sp;C.x=clamp(C.x+C.vx*dt,-c.hw-2.5,c.hw+2.5);C.z=clamp(C.z+C.vz*dt,-c.hl-3.5,state==='serveWait'&&mode==='tennis'&&server===-1?-c.hl-.15:-.8)}else{const dx=tx-C.x,dz=tz-C.z,d=Math.hypot(dx,dz),kk=1-Math.exp(-7*dt),wn=d>.15?c.cSpeed*SPD[practice?3:OPT.diff]:0;C.vx=(C.vx||0)+((d>.05?dx/d*wn:0)-(C.vx||0))*kk;C.vz=(C.vz||0)+((d>.05?dz/d*wn:0)-(C.vz||0))*kk;C.x+=C.vx*dt;C.z+=C.vz*dt}}
  if(state==='serveWait'){if(server===1){ball.pos.set(P.x+.5,1.1,P.z)}else{ball.pos.set(C.x+.5,1.1,C.z);if(netRole!=='host'){serveT+=dt;if(serveT>1)doServe(-1)}}}
  if(state==='rally'){acc+=dt;while(acc>=DT&&state==='rally'){stepBall();acc-=DT}tryHit(P);tryHit(C)}
  if(state==='point'){msgT-=dt;if(msgT<=0){if(over){finish()}else beginServe()}}
- [P,C].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm;const u=1-p.swingT/.3,ez=p.swingT>0?Math.sin(u*Math.PI)*(.4+.6*Math.sin(u*Math.PI/2)):0;a.rotation.x=-.6-ez*2.1;a.rotation.z=-ez*.5;p.g.rotation.z+=(clamp(-(p.vx||0)*(p===P?1:-1)*.03,-.22,.22)-p.g.rotation.z)*(1-Math.exp(-8*dt));p.g.userData.rk.rotation.x=-ez*.5})}
+ [P,C].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm;const u=1-p.swingT/.3,ez=p.swingT>0?Math.sin(u*Math.PI)*(.4+.6*Math.sin(u*Math.PI/2)):0;a.rotation.x=-.6-ez*2.1;a.rotation.z=-ez*.5;p.g.rotation.z+=(clamp(-(p.vx||0)*(p===P?1:-1)*.03,-.22,.22)-p.g.rotation.z)*(1-Math.exp(-8*dt));p.g.userData.rk.rotation.x=-ez*.5})}
 function cam(){const p=netRole==='guest'?C:P;
  if(netRole==='guest'){
   // ゲスト視点がコートの奥を向きすぎて、自分のキャラクターが画面外になるのを防ぐ
@@ -476,7 +477,7 @@ function handleNetData(d){
  if(!d||typeof d!=='object')return;
  if(d.type==='start'&&netRole==='guest'){OPT.mode=0;start(selectedSport);return}
  if(d.type==='restart'&&netRole==='host'){start(selectedSport);return}
- if(d.type==='input'&&netRole==='host'){remoteInput={x:clamp(+d.input.x||0,-1,1),z:clamp(+d.input.z||0,-1,1),dash:!!d.input.dash};if(d.input.swing){if(state==='serveWait'&&server===-1)doServe(-1);else if(state==='rally'&&C.swingT<=0){C.swingT=.3;tryHit(C)}}}
+ if(d.type==='input'&&netRole==='host'){remoteInput={x:clamp(+d.input.x||0,-1,1),z:clamp(+d.input.z||0,-1,1),dash:!!d.input.dash};if(d.input.swing){if(state==='serveWait'&&server===-1)doServe(-1);else if(state==='rally'&&C.swingT<=0){C.swingT=.3;C.swingReqT=.22;tryHit(C)}}}
  if(d.type==='snapshot'&&netRole==='guest'){const a=d.data;if(!a)return;state=a.state;server=a.server;mode=a.mode;cfg=CFG[mode]||CFG.tennis;P.x=a.P.x;P.z=a.P.z;C.x=a.C.x;C.z=a.C.z;P.swingT=a.P.swingT;C.swingT=a.C.swingT;ball.pos.set(a.ball.p[0],a.ball.p[1],a.ball.p[2]);ball.prev.set(a.ball.p[0],a.ball.p[1],a.ball.p[2]);ball.vel.set(a.ball.v[0],a.ball.v[1],a.ball.v[2]);ball.spin.set(a.ball.s[0],a.ball.s[1],a.ball.s[2]);ball.net=a.ball.net;ball.lastHitter=a.ball.lastHitter;ball.bounces=a.ball.bounces;P.g.visible=C.g.visible=ballG.visible=true;if(a.scoreHtml)$('score').innerHTML=a.scoreHtml;$('msg').textContent=a.msg||'';$('spd').textContent=a.spd||'';if(a.finished){$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;$('rt').textContent=a.rt||'試合終了';$('rt').className=a.rtClass||'';$('rs').textContent=a.rs||''}else{$('res').hidden=true;$('hud').hidden=false;$('touch').hidden=!COARSE;$('mb').hidden=false}}
 }
 function sendSnapshot(){try{if(netConn&&netConn.open)netConn.send({type:'snapshot',data:{state,server,mode,P:{x:P.x,z:P.z,swingT:P.swingT},C:{x:C.x,z:C.z,swingT:C.swingT},ball:{p:ball.pos.toArray(),v:ball.vel.toArray(),s:ball.spin.toArray(),net:ball.net,lastHitter:ball.lastHitter,bounces:ball.bounces},scoreHtml:$('score').innerHTML,msg:$('msg').textContent,spd:$('spd').textContent,finished:!$('res').hidden,rt:$('rt').textContent,rtClass:$('rt').className,rs:$('rs').textContent}})}catch(e){}}
@@ -487,7 +488,7 @@ addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;keys[e.code]
  swing()}
  if(e.code==='Escape'&&state!=='menu')toMenu()});
 addEventListener('keyup',e=>{keys[e.code]=false});
-function swing(){if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'input',input:{...inp(),swing:true}});return}if(state==='serveWait'&&server===1)doServe(1);else if(state==='rally'&&P.swingT<=0)P.swingT=.3}
+function swing(){if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'input',input:{...inp(),swing:true}});return}if(state==='serveWait'&&server===1)doServe(1);else if(state==='rally'&&P.swingT<=0){P.swingT=.3;P.swingReqT=.22;tryHit(P)}}
 const joy=$('joy'),kn=$('knob');let jid=null;
 function jm(e){const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const m=Math.hypot(dx,dy),R0=50;if(m>R0){dx*=R0/m;dy*=R0/m}kn.style.transform='translate('+dx+'px,'+dy+'px)';const k=Math.hypot(dx,dy)/R0;tc.x=k<.15?0:dx/R0;tc.z=k<.15?0:dy/R0}
 joy.addEventListener('pointerdown',e=>{jid=e.pointerId;joy.setPointerCapture(jid);jm(e)});
