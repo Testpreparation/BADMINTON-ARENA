@@ -704,7 +704,9 @@ function transientNoise(duration,low,high,volume,decay=0.035){
 // 実録音の効果音（BigSoundBank / CC0）
 const REAL_SFX={
  badmintonHit:'https://bigsoundbank.com/UPLOAD/mp3/0537.mp3',
- tennisBall:'https://bigsoundbank.com/UPLOAD/mp3/0584.mp3'
+ tennisBall:'https://bigsoundbank.com/UPLOAD/mp3/0584.mp3',
+ courtFootsteps:'https://bigsoundbank.com/UPLOAD/mp3/0514.mp3',
+ crowdCheer:'https://bigsoundbank.com/UPLOAD/mp3/0237.mp3'
 };
 let lastHitAudioAt=0;
 const REAL_AUDIO={};
@@ -730,12 +732,21 @@ function racketSound(sport,who,speed){
  if(sport==='badminton')playRealSound(REAL_SFX.badmintonHit,v,180,0,false,'hit');
  else playRealSound(REAL_SFX.tennisBall,v,150,0,false,'hit');
 }
-function courtBounceSound(sport,impact){}
+let lastFootstepAt=0;
+function courtBounceSound(sport,impact){
+ const v=+$('vol').value;if(!v)return;
+ // 短い床接触音で、実録音の読み込み状況に左右されず打球後の接地感を補う
+ try{audio();const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter();o.type='sine';o.frequency.setValueAtTime(sport==='tennis'?185:125,t);o.frequency.exponentialRampToValueAtTime(sport==='tennis'?82:58,t+.075);f.type='lowpass';f.frequency.value=420;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(Math.min(.09,Math.max(.025,impact*.045))*v,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+.09);o.connect(f);f.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.095)}catch(e){}
+}
+function playerFootstep(speed){
+ const v=+$('vol').value,now=performance.now();if(!v||speed<1.25||now-lastFootstepAt<300)return;
+ lastFootstepAt=now;playRealSound(REAL_SFX.courtFootsteps,v*.38,115,0,true,'footstep');
+}
 function netSound(){
  const v=+$('vol').value;if(!v)return;
  try{audio();transientNoise(.055,700,5200,.12*v,.02)}catch(e){}
 }
-function cheer(){const v=+$('vol').value;if(!v)return;playRealSound('https://sfxmint.com/dl/crowd-cheer-44.mp3',v,2800,0,true,'cheer')}
+function cheer(){const v=+$('vol').value;if(!v)return;playRealSound(REAL_SFX.crowdCheer,v*.72,1800,0,true,'cheer')}
 function missReaction(){
  const v=+$('vol').value;if(!v)return;
  try{
@@ -749,7 +760,7 @@ function missReaction(){
  try{audio();const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter();o.type='sawtooth';o.frequency.setValueAtTime(190,t);o.frequency.exponentialRampToValueAtTime(105,t+.48);f.type='lowpass';f.frequency.value=480;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.18*v,t+.07);g.gain.exponentialRampToValueAtTime(.0001,t+.52);o.connect(f);f.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.53)}catch(e){}
 }
 // 効果音を事前に準備して、打球・得点時の読み込み待ちを減らす
-[REAL_SFX.badmintonHit,REAL_SFX.tennisBall,'https://sfxmint.com/dl/crowd-cheer-44.mp3'].forEach(prepareRealAudio);
+[REAL_SFX.badmintonHit,REAL_SFX.tennisBall,REAL_SFX.courtFootsteps,REAL_SFX.crowdCheer].forEach(prepareRealAudio);
 function hit(who,tx,tz,deg,sp){sp=sp||0;const p=ball.pos,c=cfg,th=deg*D2R;ball.lastHitter=who;ball.bounces=0;ball.net=false;aiL=null;hitCd=.25;const q=(who===1?P:C).q||0;tx+=(R()-.5)*q*3;tz+=(R()-.5)*q*2;
  let dx=tx-p.x,dz=tz-p.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let s=Math.max(10,L*1.4);const v={x:0,y:0,z:0},w={x:dz*sp,y:0,z:-dx*sp};
  for(let i=0;i<16;i++){v.x=dx*s*Math.cos(th);v.z=dz*s*Math.cos(th);v.y=s*Math.sin(th);const l=simLand(p,v,c,w),Ld=Math.hypot(l.x-p.x,l.z-p.z)||.1;s=clamp(s*Math.pow(L/Ld,.6),3,70)}
@@ -1010,7 +1021,7 @@ function update(dt){if(matchIntro||replayPlaying)return;const c=cfg;hitCd-=dt;co
  if(state==='serveWait'){if(server===1){if(serveT>0){serveT+=dt;ball.pos.set(P.x+.5,1.1+2.1*Math.sin(Math.PI/2*clamp(serveT/.42,0,1))-Math.max(0,serveT-.55)*1.4,P.z);if(serveT>=.72)doServe(1)}else ball.pos.set(P.x+.5,1.1,P.z)}else{serveT+=dt;ball.pos.set(C.x+.5,1.1+2.1*Math.sin(Math.PI/2*clamp(serveT/.42,0,1))-Math.max(0,serveT-.55)*1.4,C.z);if(!(netRole==='host'&&netConn&&netConn.open)&&serveT>=.72)doServe(-1)}}
  if(state==='rally'){acc+=dt;while(acc>=DT&&state==='rally'){stepBall();acc-=DT}tryHit(P);tryHit(C);if(selectedFormat==='doubles'){tryHit(P2);tryHit(C2)}}
  if(state==='point'){msgT-=dt;if(!practice&&!replayAutoPending&&!replayPlaying&&!suppressPointScore&&msgT<=1.7&&!pointScoreShown){pointScoreShown=true;$('msg').textContent='';showPointScore(pointWinner)}if(msgT<=.4&&$('pointScore')&&!$('pointScore').hidden)$('pointScore').classList.add('fadeOut');if(msgT<=0){if(over){finish()}else beginServe()}}
- [P,C,...(selectedFormat==='doubles'?[P2,C2]:[])].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.diveT=Math.max(0,p.diveT-dt);p.jumpT=Math.max(0,(p.jumpT||0)-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm;const u=1-p.swingT/.3,ez=p.swingT>0?Math.sin(u*Math.PI)*(.4+.6*Math.sin(u*Math.PI/2)):0;
+ [P,C,...(selectedFormat==='doubles'?[P2,C2]:[])].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.diveT=Math.max(0,p.diveT-dt);p.jumpT=Math.max(0,(p.jumpT||0)-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);if(p===P||p===C)playerFootstep(sp);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm;const u=1-p.swingT/.3,ez=p.swingT>0?Math.sin(u*Math.PI)*(.4+.6*Math.sin(u*Math.PI/2)):0;
   if(mode==='badminton'){
    // バドミントンの低い打球は、腕を下げてから前上方へ振り抜く
    const low=clamp((1.45-ball.pos.y)/1.15,0,1),phase=p.swingT>0?u:0;
