@@ -644,12 +644,15 @@ function mkPlayer(c){
  const mk=x=>{
   const lg=new THREE.Group();lg.position.set(x,.70,0);g.add(lg);
   limb([0,-.01,0],[x*.12,-.31,.005],.085,.066,sk,lg);
-  limb([x*.12,-.31,.005],[x*.14,-.51,-.015],.066,.052,sk,lg);
-  mm(new THREE.SphereGeometry(.065,12,10),sk,x*.14,-.5,-.015,lg);
-  mm(new THREE.CylinderGeometry(.067,.075,.055,14),wh,x*.14,-.555,-.005,lg);
-  const shoe=mm(new THREE.SphereGeometry(.105,16,12),wh,x*.14,-.605,-.055,lg);shoe.scale.set(.82,.58,1.35);
-  const outsole=mm(new THREE.BoxGeometry(.15,.025,.245),sole,x*.14,-.652,-.055,lg);
-  mm(new THREE.BoxGeometry(.055,.018,.12),trim,x*.14,-.57,-.125,lg);
+  const knee=new THREE.Group();knee.position.set(x*.12,-.31,.005);lg.add(knee);
+  mm(new THREE.SphereGeometry(.068,14,12),sk,0,0,0,knee);
+  limb([0,0,0],[x*.02,-.20,-.02],.066,.052,sk,knee);
+  mm(new THREE.CylinderGeometry(.067,.075,.055,14),wh,x*.02,-.245,-.025,knee);
+  const foot=new THREE.Group();foot.position.set(x*.02,-.20,-.02);knee.add(foot);
+  const shoe=mm(new THREE.SphereGeometry(.105,16,12),wh,0,-.095,-.04,foot);shoe.scale.set(.82,.58,1.35);
+  mm(new THREE.BoxGeometry(.15,.025,.245),sole,0,-.142,-.04,foot);
+  mm(new THREE.BoxGeometry(.055,.018,.12),trim,0,-.06,-.11,foot);
+  lg.userData.knee=knee;lg.userData.foot=foot;
   return lg
  };
  const L1=mk(-.105),L2=mk(.105);
@@ -658,10 +661,21 @@ function mkPlayer(c){
  const ph=Math.random()*6,cl01=v=>Math.max(0,Math.min(1,v));
  tor.onBeforeRender=function(){
   const t=performance.now()/1000+ph,w=cl01(Math.abs(L1.rotation.x)/.9),s=cl01((-.6-a.rotation.x)/2.1);
-  tor.position.y=.77+Math.abs(L1.rotation.x)*.035+Math.sin(t*2.2)*.003;
-  tor.rotation.y=s*.28;tor.rotation.x=-s*.08-w*.055;
-  fa.rotation.x=-.25+.32*s;la.rotation.x=L2.rotation.x*.72;la.rotation.z=-(.08+s*.45);
-  hdG.rotation.x=Math.sin(t*1.5)*.018;hdG.rotation.y=Math.sin(t*1.1+ph)*.025;
+  const stride1=L1.rotation.x,stride2=L2.rotation.x;
+  const run=cl01((Math.abs(stride1)+Math.abs(stride2))*.7),swing=cl01(Math.abs(a.rotation.x+.35)/1.8);
+  // 股関節の動きに連動して膝を曲げ、着地時の脚の硬さを軽減
+  if(L1.userData.knee)L1.userData.knee.rotation.x=Math.max(0,Math.sin(stride1))*-.72-run*.12;
+  if(L2.userData.knee)L2.userData.knee.rotation.x=Math.max(0,Math.sin(stride2))*.72+run*.12;
+  if(L1.userData.foot)L1.userData.foot.rotation.x=-Math.max(0,-stride1)*.28;
+  if(L2.userData.foot)L2.userData.foot.rotation.x=-Math.max(0,-stride2)*.28;
+  // スイングに合わせて肘と手首を遅れて動かし、肩だけで振る印象を抑える
+  fa.rotation.x=-.12+Math.max(0,-a.rotation.x-.35)*.46+Math.sin(t*2.1)*.018;
+  fa.rotation.z=-a.rotation.z*.32;
+  la.rotation.x=L2.rotation.x*.72;la.rotation.z=-(.08+s*.45);
+  tor.position.y=.77+Math.abs(stride1)*.035+Math.sin(t*2.2)*.003+run*.025;
+  tor.rotation.y=s*.28;tor.rotation.x=-s*.08-w*.055+Math.sin(stride1)*.025;
+  hdG.rotation.x=Math.sin(t*1.5)*.018+tor.rotation.x*.24;
+  hdG.rotation.y=Math.sin(t*1.1+ph)*.025;
  };
  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
  scene.add(g);return g
