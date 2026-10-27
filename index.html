@@ -978,7 +978,10 @@ function moveCpuToward(p,tx,tz,dt,c,speedFactor,deadZone,smoothing){const dx=tx-
 function update(dt){if(matchIntro||replayPlaying)return;const c=cfg;hitCd-=dt;const i=inp();
  if(state!=='point'){if(P.diveT>0){P.vx=0;P.vz=0}else{moveControlledCharacter(P,i,dt,1)}}
  let tx=0,tz=mode==='badminton'?-c.hl*.25:-c.hl*.55;
- if(state==='rally'&&ball.lastHitter===1){const b=ball;if(c.bounce&&b.bounces>0){tx=b.pos.x+b.vel.x*.3;tz=b.pos.z+b.vel.z*.3}else{aiT-=dt;if(aiT<=0||!aiL){aiL=simLand(b.pos,b.vel,c,b.spin);aiT=.15}tx=aiL.x;tz=aiL.z}}
+ if(state==='rally'&&ball.lastHitter===1){const b=ball;if(c.bounce&&b.bounces>0){tx=b.pos.x+b.vel.x*.3;tz=b.pos.z+b.vel.z*.3}else{aiT-=dt;if(aiT<=0||!aiL){aiL=simLand(b.pos,b.vel,c,b.spin);aiT=mode==='badminton'?.055:.11}tx=aiL.x;tz=aiL.z;
+  // バドミントンCPUは着地点だけでなく、到達時間も考慮して取りに行く位置を補正する
+  if(mode==='badminton'&&Number.isFinite(aiL.t)&&aiL.t>.08){const maxMoveT=Math.min(aiL.t*.72,Math.hypot(aiL.x-C.x,aiL.z-C.z)/Math.max(1,c.cSpeed*SPD[practice?3:OPT.diff])*.9);if(maxMoveT>0){const lead=clamp(maxMoveT/aiL.t,0,1);tx=b.pos.x+(aiL.x-b.pos.x)*lead;tz=b.pos.z+(aiL.z-b.pos.z)*lead}}
+ }}
  tz=clamp(tz,-c.hl-3.5,-.8);tx=clamp(tx,-c.hw-2.5,c.hw+2.5);
  if(state!=='point'){if(C.diveT>0){C.vx=0;C.vz=0}else if(netRole==='host'&&netConn&&netConn.open){moveControlledCharacter(C,remoteInput,dt,-1)}else{moveCpuToward(C,tx,tz,dt,c,SPD[practice?3:OPT.diff],.15,7)}}
  if(selectedFormat==='doubles'&&state!=='point'){[[P2,1,P],[C2,-1,C]].forEach(([p,side,human])=>{const homeX=side===1?-c.hw*.48:c.hw*.48,homeZ=side*c.hl*.32;let tx2=homeX,tz2=homeZ;if(state==='rally'&&ball.lastHitter!==side){const land=simLand(ball.pos,ball.vel,c,ball.spin);const interceptT=clamp(land.t*.72,.08,.9),ix=ball.pos.x+ball.vel.x*interceptT,iz=ball.pos.z+ball.vel.z*interceptT;const npcDist=Math.hypot(ix-p.x,iz-p.z),humanDist=Math.hypot(ix-human.x,iz-human.z);if(npcDist+0.35<humanDist){tx2=ix;tz2=iz}else{const away=Math.sign(human.x-homeX)||1;tx2=clamp(homeX-away*.8,-c.hw*.85,c.hw*.85);tz2=side===1?c.hl*.22:-c.hl*.22}}tx2=clamp(tx2,-c.hw+0.35,c.hw-0.35);tz2=clamp(tz2,side===1?.8:-c.hl-3.5,side===1?c.hl+3.5:-.8);moveCpuToward(p,tx2,tz2,dt,c,SPD[OPT.diff],.1,5.5);p.x=clamp(p.x,-c.hw+0.35,c.hw-0.35);p.z=clamp(p.z,side===1?.8:-c.hl-3.5,side===1?c.hl+3.5:-.8)})}
