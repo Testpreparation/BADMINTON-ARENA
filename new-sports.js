@@ -54,7 +54,7 @@ const style=el('style','');
 style.textContent=`
 #newSportCanvas{position:absolute;inset:0}
 #nsTop{position:absolute;left:0;right:0;top:env(safe-area-inset-top,8px);display:flex;justify-content:space-between;align-items:center;padding:10px 12px;gap:8px;pointer-events:none}
-#nsTitle{font-weight:800;text-shadow:0 2px 8px #000;font-size:clamp(13px,2.4vw,20px)}
+#nsTitle{margin-left:104px;font-weight:800;text-shadow:0 2px 8px #000;font-size:clamp(13px,2.4vw,20px)}
 #nsScore{font-size:clamp(16px,3vw,22px);font-weight:900;background:#111b;padding:8px 12px;border-radius:12px;border:1px solid #ffffff55;white-space:nowrap}
 #nsMessage{position:absolute;top:calc(env(safe-area-inset-top,8px) + 58px);left:50%;transform:translateX(-50%);background:#111d;padding:7px 12px;border-radius:9px;font-size:clamp(11px,1.8vw,14px);white-space:normal;width:max-content;max-width:90vw;text-align:center;box-sizing:border-box}
 #nsControls button{touch-action:manipulation;border:2px solid #ffffffb0;box-shadow:0 3px 12px #0008;font-weight:800;cursor:pointer}
@@ -64,7 +64,7 @@ style.textContent=`
 #nsServeType{position:absolute;left:calc(env(safe-area-inset-left,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 24px);max-width:calc(100vw - 150px);background:#101c2cdd;color:white;border:1px solid #ffffff70;border-radius:12px;padding:10px;font-size:13px}
 #nsUtility{position:absolute;left:calc(env(safe-area-inset-left,0px) + 12px);top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;gap:6px}
 #nsUtility button{border-radius:10px;background:#111b;color:white;border:1px solid #ffffff55;padding:8px 10px;font-size:12px}
-@media (orientation:portrait){#nsActionStack{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 120px)}#nsServe{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}#nsServeType{left:calc(env(safe-area-inset-left,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);max-width:calc(100vw - 120px)}}
+@media (orientation:portrait){#nsTitle{margin-left:0;font-size:12px}#nsActionStack{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 120px)}#nsServe{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}#nsServeType{left:calc(env(safe-area-inset-left,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);max-width:calc(100vw - 120px)}}
 `;
 overlay.appendChild(style);
 const cvs=el('div','position:absolute;inset:0;');cvs.id='newSportCanvas';overlay.appendChild(cvs);
