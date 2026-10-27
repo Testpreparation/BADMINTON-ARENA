@@ -908,11 +908,18 @@ function playerShot(who=1){
  else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?-10:16):c.thP;tx+=(R()-.5)*.6}
  else dz=c.hl-1.2-R()*3;
  if(mode==='badminton'&&!actionDash&&!actionDrop){deg=ball.pos.y>2.2?18:ball.pos.y<.85?38:ball.pos.y<1.5?34:ball.pos.y<2.2?29:24}
- else if(mode==='tennis'){deg=ball.pos.y>2.15?10:ball.pos.y>1.55?13:17}
- // ドロップボタンは両競技で専用の短い軌道を使う。バドミントンはネット際、テニスは短い角度で落とす
+ // テニスは高い打点からの打撃を、サーブのように上から下へ叩き込む軌道にする
  if(actionDrop){
   if(mode==='badminton'){dz=2.2+R()*.8;deg=8}
   else{dz=1.7+R()*.45;deg=7}
+ }else if(mode==='tennis'){
+  if(ball.pos.y>=2.0){
+   deg=actionDash?-19:-13;
+   // 高い打点では相手コートの奥を狙い、ネット前に落ちすぎるのを防ぐ
+   if(i.z>=-.6)dz=c.hl-1.25-R()*1.1;
+  }else{
+   deg=ball.pos.y>1.55?13:17;
+  }
  }
  hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(actionDrop?0:(actionDash?60:(i.z<-.6?-120:180))):0);
  if(mode==='badminton'){const shuttleShotMultiplier=clamp(1.12+Math.max(.25,Math.min(1,chargedPower))*.22,1.18,1.4);ball.vel.multiplyScalar(shuttleShotMultiplier);if(ball.vel.length()>80)ball.vel.setLength(80);/* 強打時の画面フラッシュ演出を無効化 */if(who===1)pendingShotPower=.65;else remoteInput.power=.65}
