@@ -101,7 +101,7 @@ function close(){active=false;cancelAnimationFrame(raf);removeEventListener('res
 window.startNewSportGame=launch;
 document.addEventListener('DOMContentLoaded',()=>{
 const cpu=$('newSportCpu'),practice=$('newSportPractice');
-function startFromButton(){const s=window.selectedSport;launch(s==='tabletennis'?'tabletennis':'volleyball',window.selectedFormat||'singles')}
+function startFromButton(){const s=window.nsSelectedSport;launch(s==='tabletennis'?'tabletennis':'volleyball',window.nsSelectedFormat||'singles')}
 if(cpu)cpu.onclick=startFromButton;if(practice)practice.onclick=startFromButton;
 });
 })();
