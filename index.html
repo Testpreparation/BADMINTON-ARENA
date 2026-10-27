@@ -151,21 +151,6 @@ button.mode em{background:#ff5a3c;color:#fff;border-radius:20px;padding:4px 12px
 #chatInput{flex:1;min-width:0;box-sizing:border-box;padding:13px;border:1px solid #52677e;border-radius:10px;background:#fff;color:#17202a;font-size:16px}
 #chatSend{border:0;border-radius:10px;min-width:76px;padding:0 16px;background:#ffd23f;color:#17202a;font-weight:800;font-size:16px}
 #chatHint{font-size:11px;color:#b8c6d5;margin-top:6px}
-/* レスポンシブデザイン：基本レイアウトの後に、タッチ端末・横画面・小型画面の順で上書き */
-@media (pointer:coarse) and (max-width:900px){
-  #score{font-size:clamp(11px,2.2vw,15px);left:env(safe-area-inset-left,0px)!important;top:env(safe-area-inset-top,0px)!important;}
-  .sr{grid-template-columns:minmax(40px,auto) 22px 34px;gap:3px;padding:4px 7px}
-  #spd{font-size:clamp(13px,2.8vw,18px);top:calc(env(safe-area-inset-top,0px) + 68px)}
-  #mb{top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);padding:clamp(6px,1.5vw,9px) clamp(9px,2vw,12px);font-size:clamp(12px,2.2vw,14px)}
-  #joy{left:calc(env(safe-area-inset-left,0px) + 2vw);bottom:calc(env(safe-area-inset-bottom,0px) + 2vh);width:clamp(88px,19vw,130px);height:clamp(88px,19vw,130px)}
-  #knob{left:27%;top:27%;width:46%;height:46%}
-  #bs{right:calc(env(safe-area-inset-right,0px) + 3vw);bottom:calc(env(safe-area-inset-bottom,0px) + 4vh);width:clamp(68px,14vw,96px);height:clamp(68px,14vw,96px);font-size:clamp(13px,2.5vw,18px)}
-  #bp,#bd{width:clamp(48px,9.5vw,64px);height:clamp(48px,9.5vw,64px);font-size:clamp(10px,1.8vw,13px)}
-  #bp{right:calc(env(safe-area-inset-right,0px) + 20vw);bottom:calc(env(safe-area-inset-bottom,0px) + 3vh)}
-  #bd{right:calc(env(safe-area-inset-right,0px) + 4vw);bottom:calc(env(safe-area-inset-bottom,0px) + 20vh)}
-  #chatFab{left:calc(env(safe-area-inset-left,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:clamp(42px,8vw,54px);height:clamp(42px,8vw,54px);font-size:clamp(20px,3.5vw,25px)}
-  #help{font-size:clamp(9px,1.5vw,12px)}
-}
 @media (pointer:coarse) and (max-width:900px) and (orientation:landscape){
   .home{width:min(92vw,920px);gap:2vw}
   .logo h1{font-size:clamp(38px,9vw,80px)}
@@ -385,40 +370,6 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 @media (pointer:coarse) and (max-width:640px){#menu #fs{display:none!important}}
 @media (pointer:coarse) and (max-height:500px){#menu #fs{display:none!important}}
 
-/* Mobile landscape: keep gameplay controls separated and inside the safe area */
-@media (pointer:coarse) and (orientation:landscape) and (max-width:900px) {
-  #touch { overflow:visible; }
-  #bs {
-    right:calc(env(safe-area-inset-right,0px) + 2vw)!important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh)!important;
-    width:clamp(54px,12vh,68px)!important;
-    height:clamp(54px,12vh,68px)!important;
-  }
-  #bp {
-    right:calc(env(safe-area-inset-right,0px) + 2vw + clamp(54px,12vh,68px) + 10px)!important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh)!important;
-    width:clamp(48px,10vh,58px)!important;
-    height:clamp(48px,10vh,58px)!important;
-  }
-  #bd {
-    right:calc(env(safe-area-inset-right,0px) + 2vw + clamp(54px,12vh,68px) + clamp(48px,10vh,58px) + 20px)!important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh)!important;
-    width:clamp(48px,10vh,58px)!important;
-    height:clamp(48px,10vh,58px)!important;
-  }
-  #serveMeter {
-    right:calc(env(safe-area-inset-right,0px) + 2vw + clamp(54px,12vh,68px) + clamp(48px,10vh,58px) + clamp(48px,10vh,58px) + 30px)!important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh)!important;
-    height:clamp(72px,24vh,110px)!important;
-    width:18px!important;
-  }
-}
-@media (pointer:coarse) and (orientation:landscape) and (max-height:380px) {
-  #bs {width:52px!important;height:52px!important;right:calc(env(safe-area-inset-right,0px) + 2vw)!important}
-  #bp {width:46px!important;height:46px!important;right:calc(env(safe-area-inset-right,0px) + 2vw + 62px)!important}
-  #bd {width:46px!important;height:46px!important;right:calc(env(safe-area-inset-right,0px) + 2vw + 118px)!important}
-  #serveMeter {right:calc(env(safe-area-inset-right,0px) + 2vw + 174px)!important;height:70px!important}
-}
 
 
 /* 待機ルーム：競技変更欄を必要な幅だけにし、画面の高さに合わせて自動縮小 */
@@ -482,23 +433,6 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 
 
 
-/* ドロップボタンをスマホ・タブレットで押しやすい位置に固定 */
-@media (any-pointer:coarse) and (max-width:1100px){
-  #bd{
-    right:calc(env(safe-area-inset-right,0px) + 2vw)!important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh + clamp(54px,12vh,68px) + 10px)!important;
-    width:clamp(48px,10vh,58px)!important;
-    height:clamp(48px,10vh,58px)!important;
-    z-index:5;
-  }
-}
-@media (any-pointer:coarse) and (max-width:1100px) and (max-height:380px){
-  #bd{
-    right:calc(env(safe-area-inset-right,0px) + 2vw)!important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh + 60px)!important;
-    width:46px!important;height:46px!important;
-  }
-}
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
  <div class="splashGlow" aria-hidden="true"></div>
