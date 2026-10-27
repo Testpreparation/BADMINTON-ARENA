@@ -115,7 +115,7 @@ scene.add(providedGym);
 }
 function court(){
 if(sport==='volleyball'){
-if(!providedVolleyCourt)providedVolleyCourt=providedModels.volleyCourt();
+if(!providedVolleyCourt){providedVolleyCourt=providedModels.volleyCourt();providedVolleyCourt.position.y=.012;}
 scene.add(providedVolleyCourt);
 }else{
 if(!providedTable){providedTable=providedModels.ttTable();const floor=providedTable.children[0];if(floor)providedTable.remove(floor);}
