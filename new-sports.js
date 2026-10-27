@@ -3,8 +3,8 @@
 'use strict';
 const $=id=>document.getElementById(id);
 let overlay,renderer,scene,camera,clock,raf=0,active=false,sport='volleyball',format='singles';
-let ball,ballV,players=[],score=[0,0],sets=[0,0],points=0,serveType='normal',phase='ready',lastHit=0,teamTurn=0,serveCount=0,matchText='';
-const keys={};
+let ball,ballV,players=[],score=[0,0],sets=[0,0],points=0,phase='ready',lastHit=0,teamTurn=0,serveCount=0,matchText='';
+const input={x:0,z:0}; let joyPointer=null;
 function buildProvidedModels(){
 const V3=THREE.Vector3;
 const M=(c,r=.8,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
@@ -154,7 +154,7 @@ style.textContent=`
 #nsServe{position:absolute;right:calc(env(safe-area-inset-right,0px) + 24px);bottom:calc(env(safe-area-inset-bottom,0px) + 28px);width:clamp(82px,11vw,100px);height:clamp(82px,11vw,100px);border-radius:50%;background:linear-gradient(145deg,#ffe66b,#ffbd28);color:#14202d;font-size:clamp(14px,2vw,18px);border:3px solid rgba(255,255,255,.9)!important;box-shadow:0 0 0 5px rgba(255,210,63,.16),0 8px 22px #0005!important}
 #nsActionStack{position:absolute;right:calc(env(safe-area-inset-right,0px) + 34px);bottom:calc(env(safe-area-inset-bottom,0px) + 140px);display:flex;flex-direction:column;gap:9px;pointer-events:auto}
 #nsActionStack button{min-width:clamp(70px,9vw,86px);min-height:48px;border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.88),rgba(218,236,250,.76));color:#17304a;font-size:clamp(11px,1.6vw,14px);padding:8px 10px}
-#nsServeType{position:absolute;left:calc(env(safe-area-inset-left,0px) + 16px);bottom:calc(env(safe-area-inset-bottom,0px) + 24px);max-width:calc(100vw - 170px);background:rgba(8,18,32,.78);color:white;border:1px solid rgba(255,255,255,.35);border-radius:13px;padding:11px 12px;font-size:13px;box-shadow:0 5px 16px #0004}
+#nsServeType{display:none}#nsJoystick{position:absolute;left:calc(env(safe-area-inset-left,0px) + 22px);bottom:calc(env(safe-area-inset-bottom,0px) + 24px);width:124px;height:124px;border-radius:50%;border:1px solid rgba(255,255,255,.36);background:radial-gradient(circle,rgba(255,255,255,.16),rgba(8,18,32,.32));box-shadow:inset 0 2px 12px #0004;pointer-events:auto;touch-action:none}#nsKnob{position:absolute;width:48px;height:48px;left:38px;top:38px;border-radius:50%;background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(183,213,239,.72));border:1px solid rgba(255,255,255,.8);box-shadow:0 4px 12px #0005;pointer-events:none}
 @media (orientation:portrait){#nsTitle{top:calc(env(safe-area-inset-top,0px) + 12px);max-width:58vw;font-size:11px}#nsScore{min-width:116px;padding:7px 9px;font-size:13px}#nsMessage{top:calc(env(safe-area-inset-top,0px) + 52px);max-width:76vw;font-size:11px}#nsActionStack{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 118px)}#nsActionStack button{min-width:66px;min-height:42px}#nsServe{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:76px;height:76px}#nsServeType{left:calc(env(safe-area-inset-left,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);max-width:calc(100vw - 110px);font-size:11px}#nsUtility{top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);gap:4px}#nsUtility button{font-size:11px;padding:7px 8px}}
 `;
 overlay.appendChild(style);
@@ -169,28 +169,18 @@ pause.onclick=()=>{if(!active){active=true;clock.start();pause.textContent='一�
 button('nsExit','メニューへ',utility).onclick=close;
 controls.appendChild(utility);
 const actions=el('div','');actions.id='nsActionStack';controls.appendChild(actions);
-if(sport==='volleyball'){
-const serve=button('nsServe','サーブ');serve.onclick=doServe;
-const selector=el('select','');selector.id='nsServeType';
-selector.innerHTML='<option value="normal">通常サーブ</option><option value="jump">ジャンプサーブ</option><option value="floater">フローターサーブ</option><option value="jumpfloater">ジャンプフローター</option>';
-selector.onchange=()=>{serveType=selector.value;status('サーブ：'+selector.options[selector.selectedIndex].text+'を選択')};
-controls.appendChild(selector);
-button('nsReceive','レシーブ',actions).onclick=()=>hit('receive');
-button('nsSet','トス',actions).onclick=()=>hit('set');
-button('nsSpike','スパイク',actions).onclick=()=>hit('spike');
-button('nsBlock','ブロック',actions).onclick=()=>hit('block');
-}else{
+const joy=el('div','');joy.id='nsJoystick';joy.innerHTML='<div id="nsKnob"></div>';controls.appendChild(joy);
+const moveJoy=e=>{const r=joy.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),lim=r.width*.34,d=Math.hypot(dx,dy),q=d>lim?lim/d:1;input.x=dx*q/lim;input.z=dy*q/lim;const k=$('nsKnob');if(k)k.style.transform='translate('+dx*q+'px,'+dy*q+'px)'};
+joy.addEventListener('pointerdown',e=>{e.preventDefault();joyPointer=e.pointerId;joy.setPointerCapture(joyPointer);moveJoy(e)});joy.addEventListener('pointermove',e=>{if(e.pointerId===joyPointer)moveJoy(e)});const endJoy=e=>{if(e.pointerId===joyPointer){joyPointer=null;input.x=input.z=0;const k=$('nsKnob');if(k)k.style.transform=''}};joy.addEventListener('pointerup',endJoy);joy.addEventListener('pointercancel',endJoy);
 button('nsServe','サーブ').onclick=doServe;
-button('nsHit','打ち返す',actions).onclick=()=>hit('hit');
-button('nsSpin','強打',actions).onclick=()=>hit('smash');
-}
+button('nsAction',sport==='volleyball'?'レシーブ':'打ち返す',actions).onclick=()=>hit(sport==='volleyball'?'receive':'hit');
 overlay.appendChild(controls);document.body.appendChild(overlay);
 }
 function status(t){const n=$('nsMessage');if(n)n.textContent=t}
 function scorePoint(team,reason){score[team]++;phase='point';status((team===0?'あなたのチーム':'CPUチーム')+'の得点：'+reason);if(sport==='volleyball'){const target=sets[0]===2||sets[1]===2?15:25;if(score[team]>=target&&Math.abs(score[0]-score[1])>=2){sets[team]++;score=[0,0];if(sets[team]>=3){status((team===0?'勝利！':'CPUの勝利')+'　セット '+sets[0]+' - '+sets[1]);phase='matchover'}}}else if(score[team]>=11&&Math.abs(score[0]-score[1])>=2){sets[team]++;score=[0,0];if(sets[team]>=3){status((team===0?'勝利！':'CPUの勝利')+'　ゲーム '+sets[0]+' - '+sets[1]);phase='matchover'}}
 updateScore();ballV.set(0,0,0);ball.position.set(0,sport==='volleyball'?2.5:1.1,0)}
 function updateScore(){const n=$('nsScore');if(n)n.textContent=sport==='volleyball'?score[0]+' - '+score[1]+'　|　'+sets[0]+':'+sets[1]:score[0]+' - '+score[1]+'　|　'+sets[0]+':'+sets[1]}
-function doServe(){if(!active||phase==='matchover')return;if(phase!=='ready'&&phase!=='point'){status('ラリー中です');return}phase='rally';const dir=sport==='volleyball'?-1:1;ball.position.set((Math.random()-.5)*.7,sport==='volleyball'?(serveType.includes('jump')?3.2:2.1):1.15,sport==='volleyball'?7:3.5);ballV.set((Math.random()-.5)*.7,sport==='volleyball'?(serveType.includes('jump')?6.8:4.4):1.5,dir*(sport==='volleyball'?(serveType.includes('floater')?10:8):7));if(sport==='volleyball')status('サーブ！ '+({normal:'通常サーブ',jump:'ジャンプサーブ',floater:'フローターサーブ',jumpfloater:'ジャンプフローター'}[serveType]));else status('サーブを打ちました')}
+function doServe(){if(!active||phase==='matchover')return;if(phase!=='ready'&&phase!=='point'){status('ラリー中です');return}phase='rally';const dir=sport==='volleyball'?-1:1;ball.position.set((Math.random()-.5)*.7,sport==='volleyball'?2.1:1.15,sport==='volleyball'?7:3.5);ballV.set((Math.random()-.5)*.7,sport==='volleyball'?4.4:1.5,dir*(sport==='volleyball'?8:7));status('サーブ！')}
 function hit(type){if(!active||phase!=='rally'){status('まずサーブを打ってください');return}const near=ball.position.z>0;const own=near?0:1;if(sport==='volleyball'){if(type==='block'&&near){status('ネット際でブロック！');ballV.y=Math.max(ballV.y,4);ballV.z=-Math.abs(ballV.z)*1.1;ballV.x+=(Math.random()-.5)*2;lastHit=performance.now();return}
 if(near){if(type==='receive'){ballV.y=5.5;ballV.z=-1.6;status('レシーブ！次はトス');}else if(type==='set'){ballV.y=7.3;ballV.z=-2.2;status('トス！スパイクできます');}else{ballV.y=8.5;ballV.z=-Math.abs(ballV.z||7)-2;ballV.x+=(Math.random()-.5)*4;status('スパイク！');}lastHit=performance.now();}else status('相手コートにボールがあります');
 }else{if(near){ballV.y=2.3+(type==='smash'?2:0);ballV.z=-Math.abs(ballV.z||5)-1;ballV.x+=(Math.random()-.5)*(type==='smash'?2:1);status(type==='smash'?'強打！':'打ち返した！');lastHit=performance.now()}else status('ボールが遠いです')}
@@ -212,10 +202,10 @@ renderer.render(scene,camera)
 }
 function resize(){if(!renderer||!camera)return;renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}
 function launch(s,f){
-sport=s;format=f||'singles';score=[0,0];sets=[0,0];phase='ready';serveType='normal';active=true;
+sport=s;format=f||'singles';score=[0,0];sets=[0,0];phase='ready';active=true;input.x=input.z=0;joyPointer=null;
 createUI();scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,100);camera.position.set(0,sport==='volleyball'?12:5.2,sport==='volleyball'?25:8.5);camera.lookAt(0,sport==='volleyball'?1.1:.72,0);clock=new THREE.Clock();
 renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;$('newSportCanvas').appendChild(renderer.domElement);
-gym();court();makeTeams();ball=ballMesh(sport==='volleyball'?0xf4f3eb:0xffa83c);ball.position.set(0,sport==='volleyball'?2.5:1.1,0);ballV=new THREE.Vector3();$('nsTitle').textContent=sport==='volleyball'?'🏐 バレーボール 3対3':'🏓 卓球 '+(format==='doubles'?'ダブルス':'シングルス');status(sport==='volleyball'?'サーブを選んで「サーブ」を押してください。':'サーブを打って試合開始。');updateScore();addEventListener('resize',resize);resize();tick()
+gym();court();makeTeams();ball=ballMesh(sport==='volleyball'?0xf4f3eb:0xffa83c);ball.position.set(0,sport==='volleyball'?2.5:1.1,0);ballV=new THREE.Vector3();$('nsTitle').textContent=sport==='volleyball'?'🏐 バレーボール 3対3':'🏓 卓球 '+(format==='doubles'?'ダブルス':'シングルス');status('ジョイスティックで移動し、サーブで試合開始。');updateScore();addEventListener('resize',resize);resize();tick()
 }
 function close(){active=false;cancelAnimationFrame(raf);removeEventListener('resize',resize);if(renderer){renderer.dispose();renderer=null}if(overlay)overlay.remove();overlay=null;scene=null;camera=null;ball=null;players=[];phase='ready';if(typeof showMainHome==='function')showMainHome()}
 window.startNewSportGame=launch;
