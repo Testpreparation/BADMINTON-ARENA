@@ -155,7 +155,6 @@ function onKeyDown(e){
  if(sport==='volleyball'&&e.code>='Digit1'&&e.code<='Digit4'){serveType=Number(e.code.slice(-1))-1;buildActionButtons()}
 }
 function onKeyUp(e){keys[e.code]=false}
-function togglePause(){if(!active||!root.querySelector('#seSetup').classList.contains('seHidden'))return;paused=!paused;root.querySelector('#sePause').classList.toggle('seHidden',!paused);if(!paused)lastTime=performance.now()}
 function hitAction(){
  if(!active||paused||!userPlayer||!ball||!root.querySelector('#seSetup').classList.contains('seHidden'))return;
  if(gameState==='serve'){
@@ -242,7 +241,7 @@ function updateTableTennis(dt){
 }
 function point(winner,reason){
  if(practice){resetBall();root.querySelector('#seStatus').textContent='ラリー終了：'+reason+'。もう一度プレイできます';return}
- score[winner]++;updateScore();gameState='point';pointWait=1.1;serveTeam=winner;
+ score[winner]++;updateScore();gameState='point';pointWait=1.1;serveTeam=winner;if(sport==='tabletennis'){const total=score[0]+score[1];serveTeam=(total>=20&&score[0]>=10&&score[1]>=10)?1-serveTeam:(Math.floor(total/2)%2===0?0:1);}
  const won=sport==='volleyball'?(score[winner]>=25&&score[winner]-score[1-winner]>=2):(score[winner]>=11&&score[winner]-score[1-winner]>=2);
  if(won){gameState='finished';root.querySelector('#seResultTitle').textContent=winner===0?'🏆 あなたの勝利！':'試合終了';root.querySelector('#seResultText').textContent=(sport==='volleyball'?'バレーボール 3対3':'卓球 '+(format==='doubles'?'ダブルス':'シングルス'))+'　最終スコア '+score[0]+' - '+score[1];root.querySelector('#seResult').classList.remove('seHidden');return}
  root.querySelector('#seStatus').textContent=(winner===0?'あなたの得点！':'相手の得点')+' · '+reason;
