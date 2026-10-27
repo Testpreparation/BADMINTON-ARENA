@@ -56,11 +56,11 @@ function makeRoot(){
  const canvas=document.createElement('canvas');canvas.className='seCanvas';root.prepend(canvas);
  renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
  scene=new THREE.Scene();scene.background=new THREE.Color(0x9baec2);scene.fog=new THREE.Fog(0x9baec2,30,75);
- camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,120);
+ camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,120);camera.position.set(0,8,25);camera.lookAt(0,3,0);
  scene.add(new THREE.HemisphereLight(0xf1f7ff,0x716b5c,1.05));
  const key=new THREE.DirectionalLight(0xfff1d4,1.65);key.position.set(-8,18,10);key.castShadow=true;key.shadow.mapSize.set(1536,1536);key.shadow.camera.left=-18;key.shadow.camera.right=18;key.shadow.camera.top=22;key.shadow.camera.bottom=-22;scene.add(key);
  const fill=new THREE.DirectionalLight(0xc4e4ff,.5);fill.position.set(10,8,-12);scene.add(fill);
- try{gym=MODELS.gymModel();if(gym.children[0])gym.children[0].rotation=new THREE.Euler(-Math.PI/2,0,0);scene.add(gym)}catch(e){gym=new THREE.Group();scene.add(gym);console.warn('体育館モデルを読み込めませんでした',e)}
+ try{gym=MODELS.gymModel();if(gym.children[0])gym.children[0].rotation.x=-Math.PI/2;gym.position.set(0,0,0);scene.add(gym)}catch(e){console.error('体育館モデルの生成に失敗:',e);gym=new THREE.Group();scene.add(gym)}
  active=true;window.addEventListener('resize',resize);window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',onKeyUp);
  tick(performance.now());
 }
