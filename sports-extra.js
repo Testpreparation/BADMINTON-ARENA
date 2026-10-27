@@ -161,7 +161,7 @@ function hitAction(){
   if(serveTeam!==0)return;
   if(sport==='volleyball'){
    const sv=SERVES[serveType];ball.vel.set(aimX*1.3,sv.vy,sv.vz);ball.spin=sv.drift;serveStage=1;gameState='rally';lastHitter=0;root.querySelector('#seStatus').textContent='サーブ！ '+sv.name;
-   userPlayer.position.z=-7.5;try{userPlayer.pose(MODELS.POSES[(serveType===1||serveType===3)?'ジャンプサーブ':'立ち']);userPlayer.userData.swing=(serveType===1||serveType===3)?.58:.35}catch(e){}
+   userPlayer.position.z=-7.5;try{userPlayer.pose(MODELS.POSES[(serveType===1||serveType===3)?'ジャンプサーブ':'立ち']);userPlayer.userData.swing=(serveType===1||serveType===3) ? 0.58 : 0.35}catch(e){}
   }else{
    ball.vel.set(aimX*1.2,2.8,.65);serveStage=1;lastHitter=0;lastBounceSide=null;sameSideBounces=0;gameState='rally';root.querySelector('#seStatus').textContent='サーブ！';
   }
