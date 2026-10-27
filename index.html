@@ -370,6 +370,16 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 @media(orientation:landscape) and (max-height:520px){#appSplash{padding:8px}.splashContent{display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(90vw,900px);text-align:center;padding:0}.splashMark{width:64px;height:64px;margin:0 auto 10px;border-radius:21px}.splashEyebrow{margin:0 0 6px}.splashContent h1{font-size:clamp(42px,9vmin,72px)}.splashSub{margin:10px 0 0}.splashOrb.one{top:-30%;left:-5%}.splashOrb.two{bottom:-18%}}
 @media(max-width:420px){.splashMark{width:68px;height:68px;margin-bottom:20px;border-radius:23px}.splashMark:after{border-radius:16px}#appSplash h1{font-size:clamp(50px,13.5vmin,70px)}.splashSub{font-size:10px;letter-spacing:.22em;margin-top:19px}}
 @media(prefers-reduced-motion:reduce){#appSplash,.splashContent,.splashMark,#appSplash:after,.splashGlow,.splashOrb{animation:none!important;transition:none!important}}
+
+/* スマホ横画面のメインメニュー：設定と全画面ボタンを操作エリアから分離 */
+@media (pointer:coarse) and (orientation:landscape) and (max-width:900px) and (max-height:520px){
+  #menu{box-sizing:border-box;padding-bottom:72px}
+  #menu .home{transform:translateY(-8px)}
+  .set{left:calc(env(safe-area-inset-left,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:clamp(140px,23vw,190px);padding:5px 9px;z-index:21}
+  .set[open]{max-height:42vh;overflow-y:auto;box-sizing:border-box}
+  #fs{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);z-index:21}
+  .hint{display:none}
+}
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
  <div class="splashGlow" aria-hidden="true"></div>
