@@ -874,7 +874,7 @@ function triggerPowerImpact(){}
 let powerImpactTimer=null;
 function beginServe(){replayFrames=[];replayRecordT=0;replayAutoPending=false;suppressPointScore=false;serveCharging=false;shotCharging=false;chargeKind='';servePower=.65;shotPower=.65;pendingShotPower=.65;$('serveMeter').hidden=true;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
  $('msg').textContent=servePrompt();syncTouchActions()}
-function servePrompt(){return server===(netRole==='guest'?-1:1)?(mode==='tennis'?'サーブ：Space長押しで威力調整':'サーブ'):'相手のサーブ'}
+function servePrompt(){return server===(netRole==='guest'?-1:1)?'サーブ：ボタン／Space長押しで威力調整':'相手のサーブ'}
 let matchIntro=null;
 function introSound(phase){
  const v=+$('vol').value;if(!v)return;
@@ -1152,7 +1152,7 @@ function guestFrame(dt){if(!netConn||!netConn.open)return;const input={...inp(),
 function currentFov(){const saved=localStorage.getItem('rsFov_'+(mode||'tennis'));return clamp(saved===null?(mode==='badminton'?72:60):Number(saved),50,100)}
 function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=currentFov();camera.updateProjectionMatrix()}
 addEventListener('resize',rs);
-addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Escape'&&state!=='menu'){e.preventDefault();togglePause();return}if(paused)return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;if(state==='serveWait'&&isLocalServer()){if(mode==='tennis')startServeCharge();else swing();return}swing()}});
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Escape'&&state!=='menu'){e.preventDefault();togglePause();return}if(paused)return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;if(state==='serveWait'&&isLocalServer()){startServeCharge();return}swing()}});
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&serveCharging)releaseServeCharge();else if(e.code==='Space'&&shotCharging)releaseShotCharge()});
 function swing(){if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'input',input:{...inp(),swing:true,power:pendingShotPower,aim:shotAim&&shotAimExpires>performance.now()?shotAim:null,kind:pendingShotKind,drop:pendingShotKind==='drop'}});return}if(state==='serveWait'&&server===1&&serveT<=0){serveT=.001}else if(state==='rally'&&P.swingT<=0){P.swingT=.3;P.swingReqT=.22;tryHit(P)}}
  function isLocalServer(){return netRole==='guest'?server===-1:server===1}
@@ -1201,8 +1201,7 @@ bp.addEventListener('pointerdown',e=>{e.preventDefault();if(!beginShotGesture(bp
 bs.addEventListener('pointerdown',e=>{
  e.preventDefault();
  if(paused||bs.hidden)return;
- if(state==='serveWait'&&isLocalServer()&&mode==='tennis'){servePointerId=e.pointerId;bs.setPointerCapture(e.pointerId);startServeCharge();return}
- if(state==='serveWait'&&isLocalServer()&&mode==='badminton'){swing();return}
+ if(state==='serveWait'&&isLocalServer()){servePointerId=e.pointerId;bs.setPointerCapture(e.pointerId);startServeCharge();return}
  beginShotGesture(bs,e,'swing')
 });
 [bd,bp,bs].forEach(button=>{
