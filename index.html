@@ -634,12 +634,14 @@ function mkPlayer(c){
  limb([0,0,0],[.025,.205,-.018],.058,.047,sk,fa);
  mm(new THREE.SphereGeometry(.057,12,10),sk,.025,.215,-.018,fa);
  const rk=mkRacket();rk.position.set(.025,.235,-.018);rk.rotation.x=-.08;fa.add(rk);
- // 左腕は独立した関節を持ち、従来の回転アニメーションを維持
+ // 左腕も肘を独立させ、上腕・前腕が関節で連動する構造にする
  const la=new THREE.Group();la.position.set(-.235,.47,0);tor.add(la);
  mm(new THREE.SphereGeometry(.105,16,12),sh,0,0,0,la).scale.set(1,.92,.95);
  limb([0,.015,0],[-.035,-.13,-.005],.075,.06,sh,la);
- limb([-.035,-.13,-.005],[-.075,-.31,-.02],.052,.043,sk,la);
- mm(new THREE.SphereGeometry(.056,12,10),sk,-.075,-.33,-.02,la);
+ const leftElbow=new THREE.Group();leftElbow.position.set(-.035,-.13,-.005);la.add(leftElbow);
+ mm(new THREE.SphereGeometry(.052,12,10),sh,0,0,0,leftElbow);
+ limb([0,0,0],[-.04,-.18,-.015],.052,.043,sk,leftElbow);
+ mm(new THREE.SphereGeometry(.056,12,10),sk,-.04,-.20,-.015,leftElbow);
  // 脚グループの位置と rotation.x 操作を維持。ショーツから自然につながる脚とシューズ
  const mk=x=>{
   const lg=new THREE.Group();lg.position.set(x,.70,0);g.add(lg);
@@ -656,7 +658,7 @@ function mkPlayer(c){
   return lg
  };
  const L1=mk(-.105),L2=mk(.105);
- g.userData.rk=rk;g.userData.arm=a;g.userData.elbow=fa;g.userData.leftArm=la;g.userData.torso=tor;g.userData.head=hdG;g.userData.legs=[L1,L2];
+ g.userData.rk=rk;g.userData.arm=a;g.userData.elbow=fa;g.userData.leftArm=la;g.userData.leftElbow=leftElbow;g.userData.torso=tor;g.userData.head=hdG;g.userData.legs=[L1,L2];
  // 既存アニメーションとの互換性を保ったまま、頭と上半身に小さな自然な動きを付ける
  const ph=Math.random()*6,cl01=v=>Math.max(0,Math.min(1,v));
  tor.onBeforeRender=function(){
@@ -669,7 +671,6 @@ function mkPlayer(c){
   if(L1.userData.foot)L1.userData.foot.rotation.x=-Math.max(0,-stride1)*.28;
   if(L2.userData.foot)L2.userData.foot.rotation.x=-Math.max(0,-stride2)*.28;
   // 動作中の体幹ひねり・前傾はゲーム側の打撃フェーズから受け取り、歩行の揺れを重ねる
-  la.rotation.x=L2.rotation.x*.72;la.rotation.z=-(.08+s*.45);
   tor.position.y=.77+Math.abs(stride1)*.035+Math.sin(t*2.2)*.003+run*.025;
   tor.rotation.y=s*.18+(tor.userData.actionTwist||0);
   tor.rotation.x=-s*.05-w*.035+Math.sin(stride1)*.018+(tor.userData.actionLean||0);
@@ -1152,7 +1153,7 @@ function update(dt){if(matchIntro||replayPlaying)return;const c=cfg;hitCd-=dt;co
  if(state==='serveWait'){if(server===1){if(serveT>0){serveT+=dt;ball.pos.set(P.x+.5,1.1+2.1*Math.sin(Math.PI/2*clamp(serveT/.42,0,1))-Math.max(0,serveT-.55)*1.4,P.z);if(serveT>=.72)doServe(1)}else ball.pos.set(P.x+.5,1.1,P.z)}else{serveT+=dt;ball.pos.set(C.x+.5,1.1+2.1*Math.sin(Math.PI/2*clamp(serveT/.42,0,1))-Math.max(0,serveT-.55)*1.4,C.z);if(!(netRole==='host'&&netConn&&netConn.open)&&serveT>=.72)doServe(-1)}}
  if(state==='rally'){acc+=dt;while(acc>=DT&&state==='rally'){stepBall();acc-=DT}tryHit(P);tryHit(C);if(selectedFormat==='doubles'){tryHit(P2);tryHit(C2)}}
  if(state==='point'){msgT-=dt;if(!practice&&!replayAutoPending&&!replayPlaying&&!suppressPointScore&&msgT<=1.7&&!pointScoreShown){pointScoreShown=true;$('msg').textContent='';showPointScore(pointWinner)}if(msgT<=.4&&$('pointScore')&&!$('pointScore').hidden)$('pointScore').classList.add('fadeOut');if(msgT<=0){if(over){finish()}else beginServe()}}
- [P,C,...(selectedFormat==='doubles'?[P2,C2]:[])].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.diveT=Math.max(0,p.diveT-dt);p.jumpT=Math.max(0,(p.jumpT||0)-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm,elbow=p.g.userData.elbow,torso=p.g.userData.torso,leftArm=p.g.userData.leftArm,racket=p.g.userData.rk,head=p.g.userData.head;const u=clamp(1-p.swingT/.3,0,1),ez=p.swingT>0?Math.sin(u*Math.PI):0;
+ [P,C,...(selectedFormat==='doubles'?[P2,C2]:[])].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.diveT=Math.max(0,p.diveT-dt);p.jumpT=Math.max(0,(p.jumpT||0)-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm,elbow=p.g.userData.elbow,torso=p.g.userData.torso,leftArm=p.g.userData.leftArm,leftElbow=p.g.userData.leftElbow,racket=p.g.userData.rk,head=p.g.userData.head;const u=clamp(1-p.swingT/.3,0,1),ez=p.swingT>0?Math.sin(u*Math.PI):0;
   const smooth=(x)=>{x=clamp(x,0,1);return x*x*(3-2*x)};
   const backswing=1-smooth(u/.34),drive=smooth((u-.22)/.38),follow=smooth((u-.58)/.42);
   // 両競技とも待機時から肘を曲げた構えを維持し、打撃時だけ自然に伸ばす
@@ -1191,6 +1192,7 @@ function update(dt){if(matchIntro||replayPlaying)return;const c=cfg;hitCd-=dt;co
   racket.rotation.z+=(racketZ-racket.rotation.z)*(1-Math.exp(-18*dt));
   if(torso){const oldTwist=torso.userData.actionTwist||0,oldLean=torso.userData.actionLean||0;torso.userData.actionTwist=oldTwist+(twist-oldTwist)*(1-Math.exp(-11*dt));torso.userData.actionLean=oldLean+(lean-oldLean)*(1-Math.exp(-11*dt))}
   if(leftArm){const leftTarget=-.12-.32*drive+.20*follow;leftArm.rotation.x+=(leftTarget-leftArm.rotation.x)*(1-Math.exp(-12*dt));leftArm.rotation.z+=((.08+.18*drive)-leftArm.rotation.z)*(1-Math.exp(-12*dt))}
+  if(leftElbow){const leftElbowTarget=-.32-.30*backswing-.18*drive-.26*follow;leftElbow.rotation.x+=(leftElbowTarget-leftElbow.rotation.x)*(1-Math.exp(-14*dt))}
   if(head)head.rotation.z+=((-twist*.22-head.rotation.z)*(1-Math.exp(-10*dt)));
   p.g.rotation.z+=(clamp(-(p.vx||0)*(p===P?1:-1)*.03,-.22,.22)-p.g.rotation.z)*(1-Math.exp(-8*dt))})}
 function cam(){if(isSpectatingTournament&&spectatorView==='stands'){camera.position.lerp(new THREE.Vector3(0,Math.max(9,cfg.hl*.9),cfg.hl+13),1-Math.exp(-5*fdt));lk.lerp(new THREE.Vector3(0,1,0),1-Math.exp(-5*fdt));camera.lookAt(lk);return}const p=netRole==='guest'?C:P;
