@@ -890,9 +890,9 @@ function missReaction(){
 // 効果音を事前に準備して、打球・得点時の読み込み待ちを減らす
 [REAL_SFX.badmintonHit,REAL_SFX.tennisBall,'https://sfxmint.com/dl/crowd-cheer-44.mp3'].forEach(prepareRealAudio);
 function hit(who,tx,tz,deg,sp){sp=sp||0;const p=ball.pos,c=cfg,th=deg*D2R;ball.lastHitter=who;ball.bounces=0;ball.net=false;aiL=null;hitCd=.25;const q=(who===1?P:C).q||0;tx+=(R()-.5)*q*3;tz+=(R()-.5)*q*2;
- let dx=tx-p.x,dz=tz-p.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let s=Math.max(10,L*1.4);const v={x:0,y:0,z:0},w={x:dz*sp,y:0,z:-dx*sp};
+ let dx=tx-p.x,dz=tz-p.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let s=Math.max(10,L*1.4);const v={x:0,y:0,z:0},spinPower=mode==='tennis'?Math.sign(sp)*Math.min(65,Math.abs(sp)*.45):sp,w={x:dz*spinPower,y:0,z:-dx*spinPower};
  for(let i=0;i<16;i++){v.x=dx*s*Math.cos(th);v.z=dz*s*Math.cos(th);v.y=s*Math.sin(th);const l=simLand(p,v,c,w),Ld=Math.hypot(l.x-p.x,l.z-p.z)||.1;s=clamp(s*Math.pow(L/Ld,.6),3,70)}
- ball.vel.set(v.x,v.y,v.z);if(mode==='tennis')ball.vel.multiplyScalar(1.35);ball.spin.set(w.x,mode==='tennis'?(sp===0?0:Math.sign(sp)*Math.min(22,Math.abs(sp)*.09)):0,w.z);(who===1?P:C).swingT=.3;spawn(ball.pos,6,3);if(practice&&who===1){rally++;updScore()}$('spd').textContent=Math.round(ball.vel.length()*3.6)+' km/h';racketSound(mode,who,ball.vel.length()*3.6)}
+ ball.vel.set(v.x,v.y,v.z);ball.spin.set(w.x,mode==='tennis'?(sp===0?0:Math.sign(sp)*Math.min(22,Math.abs(sp)*.09)):0,w.z);(who===1?P:C).swingT=.3;spawn(ball.pos,6,3);if(practice&&who===1){rally++;updScore()}$('spd').textContent=Math.round(ball.vel.length()*3.6)+' km/h';racketSound(mode,who,ball.vel.length()*3.6)}
 const tc={x:0,z:0,dash:false,drop:false};
 function inp(){let x=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+tc.x,z=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+tc.z;x=clamp(x,-1,1);z=clamp(z,-1,1);return{x,z,dash:!!(keys.ShiftLeft||keys.ShiftRight||tc.dash)}}
 function playerShot(who=1){
