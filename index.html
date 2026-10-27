@@ -790,7 +790,7 @@ function playerShot(who=1){
 function cpuShot(){cpuShotFor(-1,C)}
 function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>0)return;const b=ball.pos;
   const powerShot=p===P&&!!inp().dash;
- const controlled=p===P||(p===C&&netRole==='host'&&netConn&&netConn.open);if(mode==='badminton'&&controlled&&p.swingReqT<=0)return;
+ const controlled=p===P||(p===C&&netRole==='host'&&netConn&&netConn.open);if(controlled&&p.swingReqT<=0)return;
  const hd=Math.hypot(b.x-p.x,b.z-p.z),reach=cfg.reach*(mode==='badminton'?.98:.9),lowBadminton=mode==='badminton'&&b.y<1.1,isDoublesNpc=selectedFormat==='doubles'&&(p===P2||p===C2),hitReach=isDoublesNpc?Math.max(2.15,mode==='badminton'?1.7:reach):(mode==='badminton'?2.35+(lowBadminton?.15:0):(mode==='tennis'?2.8:reach)),diveShot=mode==='tennis'&&p.swingT>0&&b.z*p.who>=.3&&((Math.abs(b.x)>=cfg.hw*.68&&Math.abs(b.x-p.x)>reach*.45)||((b.z-p.z)*p.who>.45&&Math.abs(b.z-p.z)<1.8));
   // バドミントンは低いシャトルも拾えるようにし、床に触れる直前まで打てるようにする
   if(b.z*p.who<-.3||b.y>cfg.hMax||b.y<.07||hd>hitReach)return;
