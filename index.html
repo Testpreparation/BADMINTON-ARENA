@@ -681,59 +681,73 @@ $('chatForm').addEventListener('submit',async e=>{
 function makeFirebaseConnection(){return {open:true,send(d){if(!activeRoomRef||!this.open)return;const side=netRole==='host'?'hostMessage':'guestMessage';const makePayload=data=>({nonce:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),data,ts:Date.now()});if(netRole==='guest'&&d&&d.type==='input'&&d.input&&d.input.swing){const normalInput={...d.input,swing:false};Promise.all([activeRoomRef.child('guestSwing').set(makePayload(d)),activeRoomRef.child(side).set(makePayload({...d,input:normalInput}))]).catch(e=>roomMessage('Firebase送信エラー：'+e.message));return}activeRoomRef.child(side).set(makePayload(d)).catch(e=>roomMessage('Firebase送信エラー：'+e.message))},close(){this.open=false}}}
 
 function buildCourt(m){
- mode=m;cfg=CFG[m];courtG.clear();
- const{hw,hl,netH}=cfg,T=m==='tennis';
- const bgc=T?0x1b2548:0x071426;
- scene.background.set(bgc);scene.fog.color.set(bgc);scene.fog.near=T?45:60;scene.fog.far=T?110:140;
- skyM.visible=T;sun.intensity=T?1.1:.6;
- const pl=(w,d,mt,y)=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mt);p.rotation.x=-Math.PI/2;p.position.y=y;p.receiveShadow=true;courtG.add(p)};
- const gm=(c,w,d)=>{const mt=M(c,{roughness:.55});mt.map=grain(w,d);return mt};
- const HX=hw+15,HZ=hl+19,ps=[];
- const ln=(a,b,c,d)=>box(Math.abs(c-a)+.035,.022,Math.abs(d-b)+.035,0xffffff,(a+c)/2,.018,(b+d)/2);
- if(T){
-  pl(160,160,M(0x1a3324,{roughness:1}),0);
-  pl(2*hw+8,2*hl+10,gm(0x2f7a4a,2*hw+8,2*hl+10),.004);
-  pl(2*hw,2*hl,gm(0x2b6cb0,2*hw,2*hl),.008);
+  mode=m;cfg=CFG[m];courtG.clear();
+  const{hw,hl,netH}=cfg,T=m==='tennis';
+  // Each sport receives its own complete court + arena. Keep gameplay dimensions in CFG unchanged.
+  const bgc=T?0x10243b:0x071426;
+  scene.background.set(bgc);scene.fog.color.set(bgc);scene.fog.near=T?48:60;scene.fog.far=T?125:145;
+  skyM.visible=false;sun.intensity=T?1.0:.62;
+  const pl=(w,d,mt,y)=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mt);p.rotation.x=-Math.PI/2;p.position.y=y;p.receiveShadow=true;courtG.add(p);return p};
+  const gm=(c,w,d)=>{const mt=M(c,{roughness:.55});mt.map=grain(w,d);return mt};
+  const HX=hw+15,HZ=hl+19,ps=[];
+  const ln=(a,b,c,d,y=.018,thick=.035)=>box(Math.abs(c-a)+thick,.022,Math.abs(d-b)+thick,0xffffff,(a+c)/2,y,(b+d)/2,{roughness:.7});
+  pl(2*HX,2*HZ,M(T?0x101b2a:0x101827,{roughness:.86}),0);
+  pl(2*hw+7,2*hl+8,gm(T?0x173c35:0x12365b,2*hw+7,2*hl+8),.004);
+  pl(2*hw,2*hl,gm(T?0x287b55:0x1478c9,2*hw,2*hl),.009);
   ln(-hw,-hl,hw,-hl);ln(-hw,hl,hw,hl);ln(-hw,-hl,-hw,hl);ln(hw,-hl,hw,hl);
-  ln(-hw,6.4,hw,6.4);ln(-hw,-6.4,hw,-6.4);ln(0,-6.4,0,6.4);
-  [-1,1].forEach(s=>{stand('z',s,hl+6.4,2*hw+13,4,ps);stand('x',s,hw+6.4,2*hl+8,4,ps)});
-  [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(s=>{const x=s[0]*(hw+13),z=s[1]*(hl+13);cyl(.2,.3,17,0x777f8a,x,8.5,z);const lp=plain(3.6,1.8,.3,0xfffbe6,x,17.4,z);lp.lookAt(0,1,0);if(!COARSE){const sl=new THREE.SpotLight(0xfff2d0,1.1,90,.8,.6);sl.position.set(x,17,z);sl.target.position.set(0,0,0);courtG.add(sl,sl.target)}});
- }else{
-  // Indoor badminton arena: dark sports flooring, vivid blue court, white regulation lines.
-  pl(2*HX,2*HZ,M(0x101827,{roughness:.82}),0);
-  pl(2*hw+7,2*hl+8,gm(0x12365b,2*hw+7,2*hl+8),.004);
-  pl(2*hw,2*hl,gm(0x1478c9,2*hw,2*hl),.009);
-  ln(-hw,-hl,hw,-hl);ln(-hw,hl,hw,hl);ln(-hw,-hl,-hw,hl);ln(hw,-hl,hw,hl);
-  const sw=Math.min(2.59,hw-.25);
-  ln(-sw,-hl, -sw,hl);ln(sw,-hl,sw,hl);
-  ln(-hw,hl-.76,hw,hl-.76);ln(-hw,-hl+.76,hw,-hl+.76);
-  ln(-hw,1.98,hw,1.98);ln(-hw,-1.98,hw,-1.98);
-  ln(0,1.98,0,hl);ln(0,-hl,0,-1.98);
-  // Tiered seating on all four sides.
-  [-1,1].forEach(s=>{stand('z',s,hl+5.5,2*hw+12,5,ps);stand('x',s,hw+5.5,2*hl+10,5,ps)});
-  // Arena walls, roof trusses, scoreboards and ceiling lights.
-  [-1,1].forEach(s=>{
-   plain(2*HX+1,12,.45,0x101c32,0,6.2,s*(HZ-.25));
-   plain(.45,12,2*HZ,0x101c32,s*(HX-.25),6.2,0);
-   plain(2*HX,.18,.12,0x20c7e8,0,5.1,s*(HZ-.48),{emissive:0x087caa,emissiveIntensity:.65});
+  if(T){
+   ln(-hw,6.4,hw,6.4);ln(-hw,-6.4,hw,-6.4);ln(0,-6.4,0,6.4);
+   ln(-hw,-5.5,hw,-5.5);ln(-hw,5.5,hw,5.5);
+  }else{
+   const sw=Math.min(2.59,hw-.25);
+   ln(-sw,-hl,-sw,hl);ln(sw,-hl,sw,hl);
+   ln(-hw,hl-.76,hw,hl-.76);ln(-hw,-hl+.76,hw,-hl+.76);
+   ln(-hw,1.98,hw,1.98);ln(-hw,-1.98,hw,-1.98);
+   ln(0,1.98,0,hl);ln(0,-hl,0,-1.98);
+  }
+  // Visible net and support posts; physics/collision rules remain unchanged.
+  const netMaterial=new THREE.MeshStandardMaterial({color:T?0x202a35:0x101820,map:netTex(2*hw,netH),transparent:true,opacity:.9,side:THREE.DoubleSide,roughness:.9,depthWrite:true});
+  const netMesh=new THREE.Mesh(new THREE.PlaneGeometry(2*hw,netH),netMaterial);
+  netMesh.position.set(0,netH/2+.035,0);courtG.add(netMesh);
+  box(2*hw+.12,.075,.065,0xf8fafc,0,netH+.035,0,{roughness:.45,metalness:.05});
+  const postH=netH+(T?.18:.06);
+  [-1,1].forEach(side=>{
+   cyl(.045,.055,postH,T?0xe5e7eb:0xdbeafe,side*(hw+.025),postH/2+.025,0,{metalness:.25,roughness:.35});
+   cyl(.07,.07,.08,0x334155,side*(hw+.025),.04,0);
+  });
+  // Tiered spectator seating on every side.
+  [-1,1].forEach(side=>{
+   stand('z',side,hl+(T?6.4:5.5),2*hw+13,4,ps);
+   stand('x',side,hw+(T?6.4:5.5),2*hl+10,4,ps);
+  });
+  // Shared indoor arena architecture: walls, roof trusses, signs and ceiling lights.
+  [-1,1].forEach(side=>{
+   plain(2*HX+1,12,.45,T?0x17283a:0x101c32,0,6.2,side*(HZ-.25));
+   plain(.45,12,2*HZ,T?0x17283a:0x101c32,side*(HX-.25),6.2,0);
+   plain(2*HX,.18,.12,T?0x55d6b2:0x20c7e8,0,5.1,side*(HZ-.48),{emissive:T?0x167b62:0x087caa,emissiveIntensity:.65});
    const sign=signTex();
-   plain(14,3.2,.12,0xffffff,0,8.2,s*(HZ-.48),{map:sign,emissiveMap:sign,emissive:0xffffff,emissiveIntensity:.65});
+   plain(14,3.2,.12,0xffffff,0,8.2,side*(HZ-.48),{map:sign,emissiveMap:sign,emissive:0xffffff,emissiveIntensity:.65});
   });
   plain(2*HX,.35,2*HZ,0x0a1020,0,14,0);
   for(let z=-HZ+2;z<HZ;z+=5)plain(2*HX,.22,.22,0x334155,0,13.65,z);
   for(let x=-HX+3;x<HX;x+=6)plain(.22,.22,2*HZ,0x334155,x,13.65,0);
   [-10,-5,0,5,10].forEach(x=>[-11,0,11].forEach(z=>{
    plain(2.1,.12,.8,0xf8fafc,x,13.2,z,{emissive:0xffffff,emissiveIntensity:1.25});
-   if(!COARSE){const light=new THREE.PointLight(0xfff4d6,1.15,20);light.position.set(x,12.9,z);courtG.add(light)}
+   if(!COARSE){const light=new THREE.PointLight(0xfff4d6,T?.85:1.15,20);light.position.set(x,12.9,z);courtG.add(light)}
   }));
-  const score=signTex();plain(7,2.2,.18,0x0b1220,0,10.2,0,{map:score,emissiveMap:score,emissive:0xffffff,emissiveIntensity:.8});
+  const scoreTex=signTex();plain(7,2.2,.18,0x0b1220,0,10.2,0,{map:scoreTex,emissiveMap:scoreTex,emissive:0xffffff,emissiveIntensity:.8});
+  if(T)[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(side=>{
+   const x=side[0]*(hw+13),z=side[1]*(hl+13);
+   cyl(.2,.3,10,0x777f8a,x,5,z);
+   plain(2.8,1.2,.3,0xfffbe6,x,10.2,z);
+   if(!COARSE){const sl=new THREE.SpotLight(0xfff2d0,.55,70,.8,.6);sl.position.set(x,10,z);sl.target.position.set(0,1,0);courtG.add(sl,sl.target)}
+  });
+  crowd(ps);addExtras(T,hw,hl);
+  tb.visible=T;sh.visible=!T;
+  [P,C].forEach(p=>{const hd=p.g.userData.rk.userData.head;hd.scale.set(T?1:.75,T?1:.8,1);hd.position.y=T?.56:.62});
+  shadow.scale.setScalar(T?1:.6)
  }
- crowd(ps);addExtras(T,hw,hl);
- tb.visible=T;sh.visible=!T;
- [P,C].forEach(p=>{const hd=p.g.userData.rk.userData.head;hd.scale.set(T?1:.75,T?1:.8,1);hd.position.y=T?.56:.62});
- shadow.scale.setScalar(T?1:.6)
-}
-function simLand(p,v,c,w){w=w||{x:0,y:0,z:0};const km=c.km||0,drag=c.k*(mode==='badminton'?1.35:1);let x=p.x,y=p.y,z=p.z,vx=v.x,vy=v.y,vz=v.z,t=0;
+ function simLand(p,v,c,w){w=w||{x:0,y:0,z:0};const km=c.km||0,drag=c.k*(mode==='badminton'?1.35:1);let x=p.x,y=p.y,z=p.z,vx=v.x,vy=v.y,vz=v.z,t=0;
  while(t<8){const s=Math.hypot(vx,vy,vz);const ax=-drag*s*vx+km*(w.y*vz-w.z*vy),az=-drag*s*vz+km*(w.x*vy-w.y*vx),ay=-c.g-drag*s*vy+km*(w.z*vx-w.x*vz);vx+=ax*DT;vz+=az*DT;vy+=ay*DT;x+=vx*DT;y+=vy*DT;z+=vz*DT;t+=DT;if(y<=0)break}
  return{x,z,t}}
 function hideAimPreview(){aimLine.visible=false;aimLanding.visible=false}
