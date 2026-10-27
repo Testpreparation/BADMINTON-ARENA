@@ -695,8 +695,8 @@ function updateAimPreview(aim,kind){
  const depth=aim.y<-.18?c.hl-.45:aim.y>.18?(mode==='badminton'?2.5:2.0):c.hl-2.2;
  const tz=who===1?-depth:depth,dx=tx-ball.pos.x,dz=tz-ball.pos.z,L=Math.hypot(dx,dz)||1;
  let deg=mode==='tennis'&&kind==='power'?c.thP:c.th;
- if(mode==='badminton'&&kind!=='power'&&kind!=='drop')deg=ball.pos.y>2.2?8:ball.pos.y<.85?68:ball.pos.y<1.5?58:ball.pos.y<2.2?46:42;
- else if(mode==='tennis'&&ball.pos.y>1.55)deg=ball.pos.y>2.15?-10:ball.pos.y>1.85?2:14;
+ if(mode==='badminton'&&kind!=='power'&&kind!=='drop')deg=ball.pos.y>2.2?14:ball.pos.y<.85?70:ball.pos.y<1.5?62:ball.pos.y<2.2?51:47;
+ else if(mode==='tennis'&&ball.pos.y>1.55)deg=ball.pos.y>2.15?0:ball.pos.y>1.85?8:18;
  const th=deg*Math.PI/180,sp=mode==='tennis'?(kind==='power'?60:180):0,ux=dx/L,uz=dz/L,w={x:uz*sp,y:0,z:-ux*sp};
  let speed=Math.max(10,L*1.4),land={x:tx,z:tz,t:1};
  for(let j=0;j<10;j++){const v={x:ux*speed*Math.cos(th),y:speed*Math.sin(th),z:uz*speed*Math.cos(th)};land=simLand(ball.pos,v,c,w);const ld=Math.hypot(land.x-ball.pos.x,land.z-ball.pos.z)||.1;speed=clamp(speed*Math.pow(L/ld,.6),3,70)}
@@ -791,10 +791,10 @@ function playerShot(who=1){
  if(mode==='badminton'&&actionDash&&ball.pos.y>2.2)hitter.jumpT=.48;
  let tx=i.x*(c.hw-.5)+(R()-.5)*(i.x?.8:3),dz,deg=c.th;
  if(i.z<-.6&&!actionDash){dz=mode==='badminton'?2.2+R()*.8:1.8+R()*1.4;deg=mode==='badminton'?12:32}
- else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?-8:12):c.thP;tx+=(R()-.5)*.6}
+ else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?2:16):c.thP;tx+=(R()-.5)*.6}
  else dz=c.hl-1.2-R()*3;
- if(mode==='badminton'&&!actionDash&&!actionDrop){deg=ball.pos.y>2.2?8:ball.pos.y<.85?68:ball.pos.y<1.5?58:ball.pos.y<2.2?46:42}
- else if(mode==='tennis'&&ball.pos.y>1.55){deg=ball.pos.y>2.15?-10:ball.pos.y>1.85?2:14}
+ if(mode==='badminton'&&!actionDash&&!actionDrop){deg=ball.pos.y>2.2?14:ball.pos.y<.85?70:ball.pos.y<1.5?62:ball.pos.y<2.2?51:47}
+ else if(mode==='tennis'&&ball.pos.y>1.55){deg=ball.pos.y>2.15?0:ball.pos.y>1.85?8:18}
  const aim=who===1?(shotAim&&shotAimExpires>performance.now()?shotAim:null):(remoteInput.aim||null);
  if(aim){
   tx=clamp((who===1?1:-1)*aim.x*(c.hw-.3),-c.hw+.3,c.hw-.3);
@@ -809,7 +809,7 @@ function playerShot(who=1){
  if(who===1){shotAim=null;shotAimExpires=0;pendingShotKind='normal'}
  else{remoteInput.aim=null;remoteInput.kind='normal';remoteInput.drop=false;remoteInput.dash=false}
 }function cpuShotFor(who,p){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=c.th+R()*3;
- if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)p.jumpT=.48;if(R()<.35){deg=-8;dz=c.hl-1}}hit(who,tx,who===1?-dz:dz,deg,mode==='tennis'?(R()<.25?-100:160):0)}
+ if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)p.jumpT=.48;if(R()<.35){deg=2;dz=c.hl-1}}hit(who,tx,who===1?-dz:dz,deg,mode==='tennis'?(R()<.25?-100:160):0)}
 function cpuShot(){cpuShotFor(-1,C)}
 function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>0)return;const b=ball.pos;
   const powerShot=p===P&&!!inp().dash;
