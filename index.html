@@ -548,7 +548,7 @@ const shadow=new THREE.Mesh(new THREE.CircleGeometry(.22,16),new THREE.MeshBasic
 const ball={pos:new THREE.Vector3(),vel:new THREE.Vector3(),spin:new THREE.Vector3(),prev:new THREE.Vector3(),net:false,lastHitter:1,bounces:0};
 let shotAim=null,shotAimExpires=0,pendingShotKind='normal',aimGesture=null;
 const aimLinePositions=new Float32Array(150*3),aimLineGeometry=new THREE.BufferGeometry();aimLineGeometry.setAttribute('position',new THREE.BufferAttribute(aimLinePositions,3));
-const aimLine=new THREE.Line(aimLineGeometry,new THREE.LineBasicMaterial({color:0x8be9ff,transparent:true,opacity:.88,depthTest:false}));aimLine.frustumCulled=false;aimLine.renderOrder=20;aimLine.visible=false;scene.add(aimLine);
+const aimLine=new THREE.Line(aimLineGeometry,new THREE.LineBasicMaterial({color:0x3399ff,transparent:true,opacity:.88,depthTest:false}));aimLine.frustumCulled=false;aimLine.renderOrder=20;aimLine.visible=false;scene.add(aimLine);
 const aimLanding=new THREE.Mesh(new THREE.RingGeometry(.18,.29,24),new THREE.MeshBasicMaterial({color:0x8be9ff,transparent:true,opacity:.9,side:THREE.DoubleSide,depthTest:false}));aimLanding.rotation.x=-Math.PI/2;aimLanding.position.y=.035;aimLanding.renderOrder=21;aimLanding.visible=false;scene.add(aimLanding);
 let cfg=CFG.tennis,mode='tennis',state='menu',server=1,score,msgT=0,acc=0,hitCd=0,serveT=0,aiT=0,aiL=null,over=null,tm=0,paused=false,pointScoreShown=false,pointWinner=1,suppressPointScore=false;const keys={};let serveCharging=false,serveChargeStart=0,servePower=.65,shotCharging=false,shotPower=.65,pendingShotPower=.65,chargeKind='';
 let selectedSport='tennis',selectedFormat='singles',netRole='offline',netPeer=null,netConn=null,roomBusy=false,roomTimeout=null,screenMode='sport',remoteInput={x:0,z:0,dash:false,power:.65},netLastSnapshot=0,netInputTimer=0,netLastInputSignature='',netLastInputSentAt=0,netGuestSnapshotSeen=false,friendNames={host:'部屋主',guest:'フレンド'};
@@ -1166,21 +1166,25 @@ const je=e=>{if(e.pointerId===jid){jid=null;tc.x=tc.z=0;kn.style.transform=''}};
 function beginShotGesture(button,e,kind){
  if(paused||button.hidden)return false;
  shotAim=null;shotAimExpires=0;hideAimPreview();pendingShotKind=kind;
- aimGesture={id:e.pointerId,button,kind,startX:e.clientX,startY:e.clientY,moved:false,aim:null};
+ const g={id:e.pointerId,button,kind,startX:e.clientX,startY:e.clientY,moved:false,longPressed:false,aim:null,timer:null};
+ aimGesture=g;
+ g.timer=setTimeout(()=>{if(aimGesture!==g)return;g.longPressed=true;if(!g.aim)g.aim={x:0,y:0};shotAim=g.aim;shotAimExpires=performance.now()+1800;updateAimPreview(g.aim,g.kind)},240);
  button.setPointerCapture(e.pointerId);return true
 }
 function moveShotGesture(e){
  const g=aimGesture;if(!g||e.pointerId!==g.id)return;
  const dx=e.clientX-g.startX,dy=e.clientY-g.startY,dist=Math.hypot(dx,dy);
  if(dist<14)return;
- g.moved=true;g.aim={x:clamp(dx/70,-1,1),y:clamp(dy/70,-1,1)};
+ if(g.timer){clearTimeout(g.timer);g.timer=null}
+ g.moved=true;g.longPressed=true;g.aim={x:clamp(dx/70,-1,1),y:clamp(dy/70,-1,1)};
  shotAim=g.aim;shotAimExpires=performance.now()+1800;updateAimPreview(g.aim,g.kind)
 }
 function finishShotGesture(e,cancelled=false){
  const g=aimGesture;if(!g||e.pointerId!==g.id)return;
+ if(g.timer)clearTimeout(g.timer);
  aimGesture=null;hideAimPreview();
  if(cancelled){shotAim=null;shotAimExpires=0;tc.dash=false;tc.drop=false;if(g.kind==='power'&&shotCharging){releaseShotCharge()}return}
- if(g.moved){shotAim=g.aim;shotAimExpires=performance.now()+1800}else{shotAim=null;shotAimExpires=0}
+ if(g.longPressed||g.moved){shotAim=g.aim||{x:0,y:0};shotAimExpires=performance.now()+1800}else{shotAim=null;shotAimExpires=0}
  pendingShotKind=g.kind;
  if(g.kind==='power'&&shotCharging){releaseShotCharge()}
  else swing();
