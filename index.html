@@ -602,9 +602,9 @@ function mkPlayer(c){
  const torsoGeo=new THREE.CylinderGeometry(.235,.19,.55,24,1,false);torsoGeo.translate(0,.28,0);
  const tor=mm(torsoGeo,sh,0,.77,0);
  // 肩・腰・ショーツ。身体の輪郭を丸みのあるアスリート体型に
- mm(new THREE.SphereGeometry(.235,20,14),sh,0,.99,0,tor).scale.set(1.18,.56,.88);
- mm(new THREE.CylinderGeometry(.19,.205,.19,20),trim,0,.06,0,tor);
- mm(new THREE.CylinderGeometry(.205,.17,.27,20),dk,0,-.13,0,tor);
+ mm(new THREE.SphereGeometry(.235,20,14),sh,0,.20,0,tor).scale.set(1.18,.56,.88);
+ mm(new THREE.CylinderGeometry(.19,.205,.19,20),trim,0,-.025,0,tor);
+ mm(new THREE.CylinderGeometry(.205,.17,.27,20),dk,0,-.20,0,tor);
  // 首と頭
  mm(new THREE.CylinderGeometry(.075,.09,.13,14),sk,0,.57,0,tor);
  const hdG=new THREE.Group();hdG.position.set(0,.79,-.005);tor.add(hdG);
