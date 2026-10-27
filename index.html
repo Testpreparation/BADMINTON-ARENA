@@ -368,32 +368,6 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 @media(orientation:landscape) and (max-height:520px){#appSplash{padding:8px}.splashContent{display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(90vw,900px);text-align:center;padding:0}.splashMark{width:64px;height:64px;margin:0 auto 10px;border-radius:21px}.splashEyebrow{margin:0 0 6px}.splashContent h1{font-size:clamp(42px,9vmin,72px)}.splashSub{margin:10px 0 0}.splashOrb.one{top:-30%;left:-5%}.splashOrb.two{bottom:-18%}}
 @media(max-width:420px){.splashMark{width:68px;height:68px;margin-bottom:20px;border-radius:23px}.splashMark:after{border-radius:16px}#appSplash h1{font-size:clamp(50px,13.5vmin,70px)}.splashSub{font-size:10px;letter-spacing:.22em;margin-top:19px}}
 @media(prefers-reduced-motion:reduce){#appSplash,.splashContent,.splashMark,#appSplash:after,.splashGlow,.splashOrb{animation:none!important;transition:none!important}}
-/* メインメニューの横画面レイアウトのみ調整 */
-@media (orientation:landscape) and (max-height:600px){
- #menu{padding:0;box-sizing:border-box}
- #menu .home{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:center;gap:clamp(14px,3vw,34px);width:min(1000px,88vw);height:calc(100dvh - 96px);max-height:460px;min-height:0;margin:38px auto 48px}
- #menu .logo{text-align:center;min-width:0}
- #menu .logo h1{font-size:clamp(36px,8.5vh,68px);line-height:.9}
- #menu .logo small{font-size:clamp(9px,1.8vh,12px)}
- #menu .logo p{font-size:clamp(10px,2vh,14px);margin-top:8px}
- #menu #homeActions{gap:clamp(6px,1.5vh,12px);min-width:0}
- #menu button.mode{padding:clamp(7px,1.6vh,13px) clamp(10px,1.8vw,20px);gap:clamp(8px,1.5vw,14px);border-radius:14px}
- #menu button.mode span{font-size:clamp(24px,5.5vh,42px)}
- #menu button.mode b{font-size:clamp(16px,3.4vh,25px)}
- #menu button.mode em{font-size:clamp(9px,1.8vh,12px)}
- #menu .set{width:clamp(145px,22vw,190px);bottom:calc(env(safe-area-inset-bottom,0px) + 7px);padding:5px 9px;font-size:11px}
- #menu .hint{right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 9px);font-size:10px}
- #menu #fs{top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);padding:6px 9px;font-size:12px}
-}
-@media (orientation:landscape) and (max-height:420px){
- #menu .home{width:84vw;height:calc(100dvh - 82px);margin:30px auto 40px;gap:2vw}
- #menu .logo h1{font-size:clamp(32px,8vh,52px)}
- #menu button.mode{padding:5px 10px}
- #menu button.mode span{font-size:clamp(22px,5vh,32px)}
- #menu button.mode b{font-size:clamp(14px,3vh,20px)}
- #menu #homeActions{gap:5px}
- #menu .set{max-height:25vh;overflow:auto}
-}
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
  <div class="splashGlow" aria-hidden="true"></div>
