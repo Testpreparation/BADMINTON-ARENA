@@ -1094,16 +1094,24 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value,3));rs();buildCou
 (()=>{
  const splash=document.getElementById('appSplash');
  if(!splash)return;
- let started=false;
+ let started=false,finished=false;
+ function finish(){
+  if(finished)return;
+  finished=true;
+  splash.hidden=true;
+  splash.setAttribute('aria-hidden','true');
+  splash.classList.remove('leaving');
+ }
  function enterApp(){
-  if(started)return;
+  if(started||finished)return;
   started=true;
   splash.classList.add('leaving');
-  const finish=()=>{splash.hidden=true;splash.setAttribute("aria-hidden","true")};
-  splash.addEventListener("transitionend",finish,{once:true});
-  window.setTimeout(finish,420);
+  splash.addEventListener('transitionend',finish,{once:true});
+  window.setTimeout(finish,550);
  }
- window.setTimeout(enterApp,1850);
+ // transitionイベントが発生しない環境でも必ずメニューへ進む
+ window.setTimeout(enterApp,1200);
+ window.setTimeout(finish,2200);
 })();
 
 </script>
