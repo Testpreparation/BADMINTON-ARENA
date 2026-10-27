@@ -1,4 +1,4 @@
-const CACHE_NAME='racket-stars-shell-v2';
+const CACHE_NAME='racket-stars-shell-v3';
 const INDEX_URL=new URL('./index.html',self.registration.scope).href;
 
 self.addEventListener('install',event=>{
