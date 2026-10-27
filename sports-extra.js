@@ -157,7 +157,7 @@ function onKeyDown(e){
 function onKeyUp(e){keys[e.code]=false}
 function togglePause(){if(!active||!root.querySelector('#seSetup').classList.contains('seHidden'))return;paused=!paused;root.querySelector('#sePause').classList.toggle('seHidden',!paused);if(!paused)lastTime=performance.now()}
 function hitAction(){
- if(!active||paused||!userPlayer||!ball||!root.querySelector('#seSetup').classList.contains('seHidden')===false)return;
+ if(!active||paused||!userPlayer||!ball||!root.querySelector('#seSetup').classList.contains('seHidden'))return;
  if(gameState==='serve'){
   if(serveTeam!==0)return;
   if(sport==='volleyball'){
