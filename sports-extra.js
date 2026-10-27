@@ -161,7 +161,7 @@ function hitAction(){
   if(serveTeam!==0)return;
   if(sport==='volleyball'){
    const sv=SERVES[serveType];ball.vel.set(aimX*1.3,sv.vy,sv.vz);ball.spin=sv.drift;serveStage=1;gameState='rally';lastHitter=0;root.querySelector('#seStatus').textContent='サーブ！ '+sv.name;
-   userPlayer.position.z=-7.5;
+   userPlayer.position.z=-7.5;try{userPlayer.pose(MODELS.POSES[(serveType===1||serveType===3)?'ジャンプサーブ':'立ち']);userPlayer.userData.swing=(serveType===1||serveType===3)?.58:.35}catch(e){}
   }else{
    ball.vel.set(aimX*1.2,2.8,.65);serveStage=1;lastHitter=0;lastBounceSide=null;sameSideBounces=0;gameState='rally';root.querySelector('#seStatus').textContent='サーブ！';
   }
@@ -236,6 +236,7 @@ function updateTableTennis(dt){
   }
  }
  players.filter(p=>p.userData.team===1).forEach(p=>{p.position.x+=clamp(ball.pos.x-p.position.x,-.5,.5)*Math.min(1,dt*4);p.position.z=Math.max(1.45,Math.min(2.55,p.position.z))});
+ if(format==='doubles'){const ally=players.find(p=>p.userData.team===0&&p!==userPlayer);if(ally&&ball.pos.z<0){ally.position.x+=clamp(ball.pos.x-ally.position.x,-.55,.55)*Math.min(1,dt*3);ally.position.z=Math.max(-2.75,Math.min(-1.9,ally.position.z))}if(ally&&ball.pos.z<-.35&&ball.vel.z<0&&ball.pos.y<1.55&&ball.pos.y>.76&&Math.hypot(ball.pos.x-ally.position.x,ball.pos.z-ally.position.z)<.72&&lastHitter===1){ball.vel.set(clamp(ball.pos.x*.8,-1.3,1.3),2.0,4.8);lastHitter=0;lastBounceSide=null;sameSideBounces=0;try{ally.pose(MODELS.POSES['卓球の構え'])}catch(e){}}}
  if(ball.pos.y<.72&&!onTable){point(ball.pos.z<0?1:0,'台に入りませんでした');return}
  if(Math.abs(ball.pos.x)>.9||Math.abs(ball.pos.z)>2.8||ball.pos.y>5){point(ball.pos.z<0?1:0,'アウト');return}
 }
