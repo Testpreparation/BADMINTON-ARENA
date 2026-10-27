@@ -683,39 +683,57 @@ function makeFirebaseConnection(){return {open:true,send(d){if(!activeRoomRef||!
 function buildCourt(m){
  mode=m;cfg=CFG[m];courtG.clear();
  const{hw,hl,netH}=cfg,T=m==='tennis';
- const bgc=T?0x1b2548:0x071426;
- scene.background.set(bgc);scene.fog.color.set(bgc);scene.fog.near=T?45:60;scene.fog.far=T?110:140;
- skyM.visible=T;sun.intensity=T?1.1:.6;
+ const bgc=T?0x101a32:0x071426;
+ scene.background.set(bgc);scene.fog.color.set(bgc);scene.fog.near=T?55:60;scene.fog.far=T?145:140;
+ skyM.visible=T;sun.intensity=T?.72:.42;
  const pl=(w,d,mt,y)=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mt);p.rotation.x=-Math.PI/2;p.position.y=y;p.receiveShadow=true;courtG.add(p)};
  const gm=(c,w,d)=>{const mt=M(c,{roughness:.55});mt.map=grain(w,d);return mt};
  const HX=hw+15,HZ=hl+19,ps=[];
  const ln=(a,b,c,d)=>box(Math.abs(c-a)+.035,.022,Math.abs(d-b)+.035,0xffffff,(a+c)/2,.018,(b+d)/2);
  if(T){
-  pl(160,160,M(0x1a3324,{roughness:1}),0);
-  pl(2*hw+8,2*hl+10,gm(0x2f7a4a,2*hw+8,2*hl+10),.004);
-  pl(2*hw,2*hl,gm(0x2b6cb0,2*hw,2*hl),.008);
+  // Tennis: outdoor night stadium, blue hard court, green runoff and four grandstands.
+  pl(180,180,M(0x07101f,{roughness:1}),-.015);
+  pl(2*hw+9,2*hl+11,gm(0x1b583f,2*hw+9,2*hl+11),.002);
+  pl(2*hw,2*hl,gm(0x174e91,2*hw,2*hl),.008);
   ln(-hw,-hl,hw,-hl);ln(-hw,hl,hw,hl);ln(-hw,-hl,-hw,hl);ln(hw,-hl,hw,hl);
+  const sw=3.66;
+  ln(-sw,-hl,-sw,hl);ln(sw,-hl,sw,hl);
   ln(-hw,6.4,hw,6.4);ln(-hw,-6.4,hw,-6.4);ln(0,-6.4,0,6.4);
-  [-1,1].forEach(s=>{stand('z',s,hl+6.4,2*hw+13,4,ps);stand('x',s,hw+6.4,2*hl+8,4,ps)});
-  [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(s=>{const x=s[0]*(hw+13),z=s[1]*(hl+13);cyl(.2,.3,17,0x777f8a,x,8.5,z);const lp=plain(3.6,1.8,.3,0xfffbe6,x,17.4,z);lp.lookAt(0,1,0);if(!COARSE){const sl=new THREE.SpotLight(0xfff2d0,1.1,90,.8,.6);sl.position.set(x,17,z);sl.target.position.set(0,0,0);courtG.add(sl,sl.target)}});
+  // Four-sided stepped grandstands and back safety walls.
+  [-1,1].forEach(s=>{
+   stand('z',s,hl+6.4,2*hw+13,5,ps);
+   stand('x',s,hw+6.4,2*hl+10,5,ps);
+   plain(2*hw+17,.16,.25,0x17263c,0,2.9,s*(hl+5.0));
+   plain(.25,.16,2*hl+15,0x17263c,s*(hw+5.0),2.9,0);
+  });
+  // Outdoor floodlight towers around the stadium.
+  [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([sx,sz])=>{
+   const x=sx*(hw+13),z=sz*(hl+13);
+   cyl(.19,.27,17,0x68788d,x,8.5,z);
+   const lamp=plain(3.8,1.65,.32,0xf8fafc,x,17.25,z,{emissive:0xffefc2,emissiveIntensity:1.15});
+   lamp.lookAt(0,1,0);
+   if(!COARSE){const light=new THREE.SpotLight(0xffeec7,1.35,100,.82,.55);light.position.set(x,17,z);light.target.position.set(0,0,0);courtG.add(light,light.target)}
+  });
+  // Dark perimeter boards.
+  [-1,1].forEach(s=>{plain(2*hw+10,.9,.18,0x0d1b31,0,.55,s*(hl+4.2));plain(.18,.9,2*hl+10,0x0d1b31,s*(hw+4.2),.55,0)});
  }else{
-  // Indoor badminton arena: dark sports flooring, vivid blue court, white regulation lines.
-  pl(2*HX,2*HZ,M(0x101827,{roughness:.82}),0);
-  pl(2*hw+7,2*hl+8,gm(0x12365b,2*hw+7,2*hl+8),.004);
+  // Badminton: enclosed indoor arena, blue competition court, visible roof and lights.
+  pl(2*HX,2*HZ,M(0x101827,{roughness:.82}),-.015);
+  pl(2*hw+7,2*hl+8,gm(0x12365b,2*hw+7,2*hl+8),.003);
   pl(2*hw,2*hl,gm(0x1478c9,2*hw,2*hl),.009);
   ln(-hw,-hl,hw,-hl);ln(-hw,hl,hw,hl);ln(-hw,-hl,-hw,hl);ln(hw,-hl,hw,hl);
   const sw=Math.min(2.59,hw-.25);
-  ln(-sw,-hl, -sw,hl);ln(sw,-hl,sw,hl);
+  ln(-sw,-hl,-sw,hl);ln(sw,-hl,sw,hl);
   ln(-hw,hl-.76,hw,hl-.76);ln(-hw,-hl+.76,hw,-hl+.76);
   ln(-hw,1.98,hw,1.98);ln(-hw,-1.98,hw,-1.98);
   ln(0,1.98,0,hl);ln(0,-hl,0,-1.98);
-  // Tiered seating on all four sides.
+  // Tiered seating on every side.
   [-1,1].forEach(s=>{stand('z',s,hl+5.5,2*hw+12,5,ps);stand('x',s,hw+5.5,2*hl+10,5,ps)});
-  // Arena walls, roof trusses, scoreboards and ceiling lights.
+  // Enclosed walls, bright trim, roof trusses, scoreboards and ceiling lights.
   [-1,1].forEach(s=>{
    plain(2*HX+1,12,.45,0x101c32,0,6.2,s*(HZ-.25));
    plain(.45,12,2*HZ,0x101c32,s*(HX-.25),6.2,0);
-   plain(2*HX,.18,.12,0x20c7e8,0,5.1,s*(HZ-.48),{emissive:0x087caa,emissiveIntensity:.65});
+   plain(2*HX+1,.16,.14,0x20c7e8,0,5.1,s*(HZ-.48),{emissive:0x087caa,emissiveIntensity:.65});
    const sign=signTex();
    plain(14,3.2,.12,0xffffff,0,8.2,s*(HZ-.48),{map:sign,emissiveMap:sign,emissive:0xffffff,emissiveIntensity:.65});
   });
@@ -728,9 +746,17 @@ function buildCourt(m){
   }));
   const score=signTex();plain(7,2.2,.18,0x0b1220,0,10.2,0,{map:score,emissiveMap:score,emissive:0xffffff,emissiveIntensity:.8});
  }
+ // Shared regulation net: mesh cloth, top tape and both posts are present for BOTH sports.
+ const netMaterial=new THREE.MeshStandardMaterial({color:0xf3f6fb,map:netTex(2*hw,netH),transparent:true,opacity:.92,side:THREE.DoubleSide,alphaTest:.08,roughness:.88,depthWrite:false});
+ const netMesh=new THREE.Mesh(new THREE.PlaneGeometry(2*hw,netH,1,1),netMaterial);
+ netMesh.position.set(0,netH/2,0);netMesh.renderOrder=3;courtG.add(netMesh);
+ const postH=T?1.07:netH+.05;
+ [-1,1].forEach(s=>{cyl(.045,.055,postH,0xe7edf5,s*(hw+.08),postH/2,0,{metalness:.25,roughness:.35});cyl(.075,.075,.06,0x182536,s*(hw+.08),.03,0)});
+ box(2*hw+.18,.055,.045,0xf8fafc,0,netH-.018,0,{roughness:.5,metalness:.08});
+ box(2*hw+.1,.025,.035,0x182536,0,.025,0);
  crowd(ps);addExtras(T,hw,hl);
  tb.visible=T;sh.visible=!T;
- [P,C].forEach(p=>{const hd=p.g.userData.rk.userData.head;hd.scale.set(T?1:.75,T?1:.8,1);hd.position.y=T?.56:.62});
+ [P,C,P2,C2].forEach(p=>{const hd=p.g.userData.rk.userData.head;hd.scale.set(T?1:.75,T?1:.8,1);hd.position.y=T?.56:.62});
  shadow.scale.setScalar(T?1:.6)
 }
 function simLand(p,v,c,w){w=w||{x:0,y:0,z:0};const km=c.km||0,drag=c.k*(mode==='badminton'?1.35:1);let x=p.x,y=p.y,z=p.z,vx=v.x,vy=v.y,vz=v.z,t=0;
