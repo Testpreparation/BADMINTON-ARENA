@@ -1118,9 +1118,13 @@ async function joinRoom(){
  setWaitingPlayerStatus('部屋主を検索中…','あなた（接続中…）');roomMessage('Firebaseで部屋を検索しています…');
  let failTimer=null;
  try{
-  const user=await initFirebase();if(netRole!=='guest')return;
+  // 認証・接続確認と部屋の読み込みを並行して開始し、待ち時間を短縮
+  const firebaseReady=initFirebase();
   const ref=fbDb.ref('badminton_rooms/'+code);
-  const roomSnap=await withTimeout(ref.once('value'),12000,'部屋の検索');
+  const [user,roomSnap]=await Promise.all([
+   firebaseReady,
+   withTimeout(ref.once('value'),12000,'部屋の検索')
+  ]);
   if(netRole!=='guest')return;
   if(!roomSnap.exists()||!roomSnap.child('hostId').exists()){roomBusy=false;netRole='offline';roomMessage('部屋が見つかりません。番号を確認し、部屋主が待機中か確認してください。');setWaitingPlayerStatus('部屋が見つかりません','参加できません');return}
   selectedSport=roomSnap.child('sport').val()||selectedSport;selectedFormat=roomSnap.child('format').val()||'singles';friendNames={host:String(roomSnap.child('hostName').val()||'部屋主').trim().slice(0,12)||'部屋主',guest:pname};const roomDiff=roomSnap.child('npcDiff').val();if(Number.isInteger(roomDiff)&&roomDiff>=0&&roomDiff<=2){OPT.diff=roomDiff;save();paint()}$('doublesNpcSettings').hidden=selectedFormat!=='doubles';$('npcStrength').value=String(OPT.diff);$('npcStrength').disabled=true;
