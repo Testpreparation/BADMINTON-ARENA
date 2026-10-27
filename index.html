@@ -1218,10 +1218,10 @@ function goFS(){try{const el=document.documentElement;(el.requestFullscreen?el.r
 function requestLandscapeOnOpen(){try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{})}catch(e){}}
 requestLandscapeOnOpen();addEventListener('pageshow',requestLandscapeOnOpen);
 document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{showFormatMenu(b.dataset.m);if(COARSE)goFS()});
-function showNewSportMenu(sport){screenTransition();selectedSport=sport;const isVolley=sport==='volleyball';$('menu').hidden=true;$('formatMenu').hidden=true;$('modeMenu').hidden=true;$('newSportFormatMenu').hidden=isVolley;$('newSportModeMenu').hidden=!isVolley;$('newSportModeTitle').textContent=(isVolley?'🏐 バレーボール':'🏓 卓球')+'｜モード選択';$('newSportFormatTitle').textContent='🏓 卓球｜試合形式';$('newSportModeChoices').hidden=navigationIntent==='friend';$('newSportModeNotice').hidden=navigationIntent!=='friend';$('newSportModeNotice').textContent='フレンド対戦ルームへの接続は、次の実装段階で追加します。';$('newSportModeBack').textContent=isVolley?'← 競技選択へ戻る':'← 試合形式へ戻る';}
+function showNewSportMenu(sport){screenTransition();selectedSport=sport;window.nsSelectedSport=sport;window.nsSelectedFormat=selectedFormat;const isVolley=sport==='volleyball';$('menu').hidden=true;$('formatMenu').hidden=true;$('modeMenu').hidden=true;$('newSportFormatMenu').hidden=isVolley;$('newSportModeMenu').hidden=!isVolley;$('newSportModeTitle').textContent=(isVolley?'🏐 バレーボール':'🏓 卓球')+'｜モード選択';$('newSportFormatTitle').textContent='🏓 卓球｜試合形式';$('newSportModeChoices').hidden=navigationIntent==='friend';$('newSportModeNotice').hidden=navigationIntent!=='friend';$('newSportModeNotice').textContent='フレンド対戦ルームへの接続は、次の実装段階で追加します。';$('newSportModeBack').textContent=isVolley?'← 競技選択へ戻る':'← 試合形式へ戻る';}
 document.querySelectorAll('[data-new-sport]').forEach(b=>b.onclick=()=>{showNewSportMenu(b.dataset.newSport);if(COARSE)goFS()});
-$('newTableSingles').onclick=()=>{selectedFormat='singles';$('newSportFormatMenu').hidden=true;$('newSportModeMenu').hidden=false;$('newSportModeTitle').textContent='🏓 卓球｜シングルス｜モード選択';$('newSportModeChoices').hidden=navigationIntent==='friend';$('newSportModeNotice').hidden=navigationIntent!=='friend';};
-$('newTableDoubles').onclick=()=>{selectedFormat='doubles';$('newSportFormatMenu').hidden=true;$('newSportModeMenu').hidden=false;$('newSportModeTitle').textContent='🏓 卓球｜ダブルス｜モード選択';$('newSportModeChoices').hidden=navigationIntent==='friend';$('newSportModeNotice').hidden=navigationIntent!=='friend';};
+$('newTableSingles').onclick=()=>{selectedFormat='singles';window.nsSelectedFormat='singles';$('newSportFormatMenu').hidden=true;$('newSportModeMenu').hidden=false;$('newSportModeTitle').textContent='🏓 卓球｜シングルス｜モード選択';$('newSportModeChoices').hidden=navigationIntent==='friend';$('newSportModeNotice').hidden=navigationIntent!=='friend';};
+$('newTableDoubles').onclick=()=>{selectedFormat='doubles';window.nsSelectedFormat='doubles';$('newSportFormatMenu').hidden=true;$('newSportModeMenu').hidden=false;$('newSportModeTitle').textContent='🏓 卓球｜ダブルス｜モード選択';$('newSportModeChoices').hidden=navigationIntent==='friend';$('newSportModeNotice').hidden=navigationIntent!=='friend';};
 $('newSportFormatBack').onclick=()=>showPlayPanel(navigationIntent);
 $('newSportModeBack').onclick=()=>{if(selectedSport==='tabletennis'&&navigationIntent!=='friend'){$('newSportModeMenu').hidden=true;$('newSportFormatMenu').hidden=false}else showPlayPanel(navigationIntent)};
 function newSportNotReady(){ $('newSportModeNotice').hidden=false;$('newSportModeNotice').textContent='この競技の試合本体はまだ実装していません。既存競技の機能を変更せず、次の段階で追加します。';}
@@ -1275,4 +1275,5 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value,3));rs();buildCou
 })();
 </script>
 
+<script src="./new-sports.js"></script>
 </body></html>
