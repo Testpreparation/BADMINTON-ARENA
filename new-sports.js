@@ -93,7 +93,6 @@ const POSES={
  'レシーブ':[.9,1.5,.5,[-1.05,-.12,-.05],[-1.05,-.12,-.05]],
  'トス':[.35,.7,-.08,[-2.6,.15,-.5],[-2.6,.15,-.5]],
  'スパイク':[.3,.7,-.3,[-1.2,.1,-.3],[-3.05,0,-.9],.55],
- 'ジャンプサーブ':[.3,.7,-.25,[-2.8,.1,-.2],[-3.0,0,-.9],.55],
  '卓球の構え':[.5,.9,.3,[-.4,.3,-.6],[-.9,-.1,-1.0],0,1]}
 
 return {gymModel, human, volleyCourt, ttTable};
@@ -187,7 +186,7 @@ if(near){if(type==='receive'){ballV.y=5.5;ballV.z=-1.6;status('レシーブ！�
 }
 function tick(){
 raf=requestAnimationFrame(tick);if(!renderer||!scene||!camera)return;
-if(active){const moveDt=Math.min(clock.getDelta(),.04),p=players[0];if(p){const speed=sport==='volleyball'?4.8:3.6;p.position.x=THREE.MathUtils.clamp(p.position.x+input.x*speed*moveDt,sport==='volleyball'?-4.1:-.65,sport==='volleyball'?4.1:.65);p.position.z=THREE.MathUtils.clamp(p.position.z+input.z*speed*moveDt,sport==='volleyball'?1.5:1.25,sport==='volleyball'?8:3.15);if(Math.hypot(input.x,input.z)>.08)p.rotation.y=Math.atan2(input.x,input.z||.0001);}}
+if(active){const moveDt=Math.min(clock.getDelta(),.04),p=players[0];if(p){const speed=sport==='volleyball'?4.8:3.6;p.position.x=THREE.MathUtils.clamp(p.position.x+input.x*speed*moveDt,sport==='volleyball'?-4.1:-.65,sport==='volleyball'?4.1:.65);p.position.z=THREE.MathUtils.clamp(p.position.z+input.z*speed*moveDt,sport==='volleyball'?1.5:1.25,sport==='volleyball'?8:3.15);if(Math.hypot(input.x,input.z)>.08){p.rotation.y=Math.atan2(input.x,input.z||.0001);if(p.pose)p.pose(POSES['レシーブ']);}else if(p.pose)p.pose(POSES['立ち']);}}
 if(active&&phase==='rally'){
 const dt=Math.min(clock.getDelta(),.04);ballV.y-=sport==='volleyball'?9.81*dt:8.5*dt;ball.position.addScaledVector(ballV,dt);
 if(sport==='volleyball'){if(ball.position.y<.34){if(Math.abs(ball.position.z)>9||Math.abs(ball.position.x)>4.5)scorePoint(ball.position.z>0?1:0,'アウト');else scorePoint(ball.position.z>0?1:0,'床に落ちました');}
