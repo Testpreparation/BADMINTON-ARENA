@@ -692,7 +692,7 @@ function updateAimPreview(aim,kind){
  if(!aim||state!=='rally'){hideAimPreview();return}
  const c=cfg,who=netRole==='guest'?-1:1;
  const tx=clamp((who===1?1:-1)*aim.x*(c.hw-.3),-c.hw+.3,c.hw-.3);
- const depth=mode==='tennis'?c.hl-2.2:(aim.y<-.18?c.hl-.45:aim.y>.18?2.5:c.hl-2.2);
+ const depth=c.hl-2.2;
  const tz=who===1?-depth:depth,dx=tx-ball.pos.x,dz=tz-ball.pos.z,L=Math.hypot(dx,dz)||1;
  let deg=mode==='tennis'&&kind==='power'?c.thP:c.th;
  if(mode==='badminton'&&kind!=='power'&&kind!=='drop')deg=ball.pos.y>2.2?24:ball.pos.y<.85?72:ball.pos.y<1.5?64:ball.pos.y<2.2?54:50;
@@ -703,7 +703,7 @@ function updateAimPreview(aim,kind){
  let x=ball.pos.x,y=ball.pos.y,z=ball.pos.z,vx=ux*speed*Math.cos(th),vy=speed*Math.sin(th),vz=uz*speed*Math.cos(th),wx=w.x,wy=0,wz=w.z,n=0;
  // 実際の playerShot() と同じ打球後の速度補正を予測にも反映する
  if(mode==='tennis'){vx*=.97;vy*=.97;vz*=.97}
- if(mode==='badminton'){const power=kind==='power'?(shotCharging?currentServePower():shotPower):.65,mul=.82+Math.max(.25,Math.min(1,power))*.48;vx*=mul;vy*=mul;vz*=mul}
+ if(mode==='badminton'){const power=kind==='power'?(shotCharging?currentServePower():shotPower):.65,mul=(.82+Math.max(.25,Math.min(1,power))*.48)*1.15;vx*=mul;vy*=mul;vz*=mul}
  let landingX=x,landingZ=z,landed=false;
  for(let j=0;j<150;j++){
   if(j%2===0&&n<150){const k=n*3;aimLinePositions[k]=x;aimLinePositions[k+1]=Math.max(0,y);aimLinePositions[k+2]=z;n++}
@@ -798,12 +798,11 @@ function playerShot(who=1){
  const aim=who===1?(shotAim&&shotAimExpires>performance.now()?shotAim:null):(remoteInput.aim||null);
  if(aim){
   tx=clamp((who===1?1:-1)*aim.x*(c.hw-.3),-c.hw+.3,c.hw-.3);
-  if(mode==='badminton'){if(aim.y<-.18)dz=c.hl-.45;else if(aim.y>.18)dz=2.5;else dz=c.hl-2.2;}
  }
  // バドミントンのドロップは移動入力に関係なく、常にネット際へ落とす
  if(mode==='badminton'&&actionDrop){dz=2.2+R()*.8;deg=12}
  hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(actionDash?60:(i.z<-.6?-120:180)):0);
- if(mode==='badminton'){const shuttleShotMultiplier=clamp(.88+Math.max(.25,Math.min(1,chargedPower))*.2,.92,1.08);ball.vel.multiplyScalar(shuttleShotMultiplier);if(ball.vel.length()>70)ball.vel.setLength(70);/* 強打時の画面フラッシュ演出を無効化 */if(who===1)pendingShotPower=.65;else remoteInput.power=.65}
+ if(mode==='badminton'){const shuttleShotMultiplier=clamp(.88+Math.max(.25,Math.min(1,chargedPower))*.2,.92,1.08)*1.15;ball.vel.multiplyScalar(shuttleShotMultiplier);if(ball.vel.length()>80)ball.vel.setLength(80);/* 強打時の画面フラッシュ演出を無効化 */if(who===1)pendingShotPower=.65;else remoteInput.power=.65}
  if(who===1){shotAim=null;shotAimExpires=0;pendingShotKind='normal'}
  else{remoteInput.aim=null;remoteInput.kind='normal';remoteInput.drop=false;remoteInput.dash=false}
 }function cpuShotFor(who,p){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=c.th+R()*3;
@@ -1207,7 +1206,7 @@ function handleNetData(d){
 }
 function sendSnapshot(){try{const data={state,server,mode,replayPlaying,P:{x:P.x,z:P.z,swingT:P.swingT,diveT:P.diveT,diveX:P.diveX,diveZ:P.diveZ},C:{x:C.x,z:C.z,swingT:C.swingT,diveT:C.diveT,diveX:C.diveX,diveZ:C.diveZ},P2:{x:P2.x,z:P2.z,swingT:P2.swingT},C2:{x:C2.x,z:C2.z,swingT:C2.swingT},ball:{p:ball.pos.toArray(),v:ball.vel.toArray(),s:ball.spin.toArray(),net:ball.net,lastHitter:ball.lastHitter,bounces:ball.bounces},scoreHtml:$('score').innerHTML,msg:$('msg').textContent,spd:$('spd').textContent,finished:!$('res').hidden,rt:$('rt').textContent,rtClass:$('rt').className,rs:$('rs').textContent};if(netConn&&netConn.open)netConn.send({type:'snapshot',data});if(activeTournamentMatchRef&&activeTournament&&activeTournamentMatchId&&netRole==='host'&&state!=='menu'&&Date.now()-lastTournamentStateAt>=125){lastTournamentStateAt=Date.now();activeTournamentRef.child('live/'+activeTournamentMatchId).set(data).catch(()=>{})}}catch(e){}}
 function guestFrame(dt){if(!netConn||!netConn.open)return;const input={...inp(),swing:false},c=cfg;input.x=-input.x;if(state!=='point'&&C.diveT<=0){moveControlledCharacter(C,input,dt,-1)}const signature=[input.x.toFixed(2),input.z.toFixed(2),input.dash?1:0].join(','),now=performance.now();if((signature!==netLastInputSignature&&now-netLastInputSentAt>=30)||now-netLastInputSentAt>=150){netInputTimer=0;netConn.send({type:'input',input});netLastInputSignature=signature;netLastInputSentAt=now}}
-function currentFov(){const saved=localStorage.getItem('rsFov_'+(mode||'tennis'));return clamp(saved===null?(mode==='badminton'?72:48):Number(saved),40,100)}
+function currentFov(){const saved=localStorage.getItem('rsFov_'+(mode||'tennis'));return clamp(saved===null?(mode==='badminton'?50:48):Number(saved),40,100)}
 function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=currentFov();camera.updateProjectionMatrix()}
 addEventListener('resize',rs);
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Escape'&&state!=='menu'){e.preventDefault();togglePause();return}if(paused)return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;if(state==='serveWait'&&isLocalServer()){if(mode==='tennis')startServeCharge();else{const i=inp();serveAim={x:i.x,y:i.z};swing()}return}swing()}});
