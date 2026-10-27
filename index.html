@@ -1234,6 +1234,8 @@ function beginShotGesture(button,e,kind){
  shotAim=null;shotAimExpires=0;hideAimPreview();pendingShotKind=kind;
  const g={id:e.pointerId,button,kind,startX:e.clientX,startY:e.clientY,moved:false,longPressed:false,aim:null,timer:null};
  aimGesture=g;
+ // 押している間はすぐに軌道予測を表示し、ドラッグで方向を調整できるようにする
+ g.aim={x:0,y:0};shotAim=g.aim;shotAimExpires=performance.now()+1800;updateAimPreview(g.aim,g.kind);
  g.timer=setTimeout(()=>{if(aimGesture!==g)return;g.longPressed=true;if(!g.aim)g.aim={x:0,y:0};shotAim=g.aim;shotAimExpires=performance.now()+1800;updateAimPreview(g.aim,g.kind)},240);
  try{button.setPointerCapture(e.pointerId)}catch(_e){}return true
 }
