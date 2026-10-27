@@ -913,7 +913,7 @@ function togglePause(force){if(state==='menu'||!$('res').hidden)return;paused=ty
 function toMenu(){if(replayPlaying)finishReplay();replayFrames=[];replayAutoPending=false;replayAutoAt=0;if(matchIntro){matchIntro.el.remove();matchIntro=null}paused=false;$('pauseMenu').hidden=true;state='menu';$('modeMenu').hidden=true;$('menu').hidden=false;$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=true;disconnectRoom();bgm(true);paint()}
 function stepBall(){const b=ball,c=cfg,v=b.vel,s=v.length();b.prev.copy(b.pos);
  const sw=b.spin,km=c.km||0,ax=-c.k*s*v.x+km*(sw.y*v.z-sw.z*v.y),az=-c.k*s*v.z+km*(sw.x*v.y-sw.y*v.x),ay=-c.g-c.k*s*v.y+km*(sw.z*v.x-sw.x*v.z);v.x+=ax*DT;v.y+=ay*DT;v.z+=az*DT;sw.multiplyScalar(1-.08*DT);const pz=b.pos.z;b.pos.addScaledVector(v,DT);
- if(!b.net&&pz*b.pos.z<0&&b.pos.y<c.netH){b.net=true;v.z*=-.12;v.x*=.3;v.y=Math.max(v.y,0)*.2;netSound();b.pos.z=pz}
+ if(!b.net&&pz*b.pos.z<0&&b.pos.y<c.netH-(mode==='tennis'?.06:0)){b.net=true;v.z*=-.12;v.x*=.3;v.y=Math.max(v.y,0)*.2;netSound();b.pos.z=pz}
  if(b.pos.y<=c.r){if(b.net){point(-b.lastHitter,'ネット');return}const inb=Math.abs(b.pos.x)<=c.hw&&Math.abs(b.pos.z)<=c.hl,side=b.pos.z>0?1:-1,ok=inb&&side===-b.lastHitter;b.pos.y=c.r;
   if(!c.bounce){point(ok?b.lastHitter:-b.lastHitter,ok?'ラリー決着':inb?'自コート':'アウト');return}
   if(b.bounces>=1){point(b.lastHitter,'ツーバウンド');return}
