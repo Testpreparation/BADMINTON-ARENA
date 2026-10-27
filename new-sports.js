@@ -187,6 +187,7 @@ if(near){if(type==='receive'){ballV.y=5.5;ballV.z=-1.6;status('レシーブ！�
 }
 function tick(){
 raf=requestAnimationFrame(tick);if(!renderer||!scene||!camera)return;
+if(active){const moveDt=Math.min(clock.getDelta(),.04),p=players[0];if(p){const speed=sport==='volleyball'?4.8:3.6;p.position.x=THREE.MathUtils.clamp(p.position.x+input.x*speed*moveDt,sport==='volleyball'?-4.1:-.65,sport==='volleyball'?4.1:.65);p.position.z=THREE.MathUtils.clamp(p.position.z+input.z*speed*moveDt,sport==='volleyball'?1.5:1.25,sport==='volleyball'?8:3.15);if(Math.hypot(input.x,input.z)>.08)p.rotation.y=Math.atan2(input.x,input.z||.0001);}}
 if(active&&phase==='rally'){
 const dt=Math.min(clock.getDelta(),.04);ballV.y-=sport==='volleyball'?9.81*dt:8.5*dt;ball.position.addScaledVector(ballV,dt);
 if(sport==='volleyball'){if(ball.position.y<.34){if(Math.abs(ball.position.z)>9||Math.abs(ball.position.x)>4.5)scorePoint(ball.position.z>0?1:0,'アウト');else scorePoint(ball.position.z>0?1:0,'床に落ちました');}
