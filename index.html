@@ -47,9 +47,9 @@ button,input,summary{touch-action:manipulation}
 button.mode{display:flex;align-items:center;gap:16px;margin:0;padding:2vmin 3vmin;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.06));border:2px solid rgba(255,255,255,.35);color:var(--fg);backdrop-filter:blur(6px);transform:skewX(-6deg);transition:transform .15s,background .15s}
 button.mode:hover,button.mode:active{transform:skewX(-6deg) scale(1.04);background:linear-gradient(135deg,#ffd23f,#ff9a00);color:#111}
 button.mode span{font-size:clamp(30px,9vmin,64px)}button.mode b{font-size:clamp(20px,5.5vmin,34px);flex:1;text-align:left}button.mode em{font-style:normal;font-size:clamp(12px,3vmin,16px);font-weight:800;opacity:.9}
-.set{position:fixed;left:calc(env(safe-area-inset-left,0px) + 16px);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:200px;background:rgba(8,12,18,.7);padding:8px 12px;border-radius:12px;margin:0}
+.set{position:fixed;left:calc(env(safe-area-inset-left,0px) + 16px);bottom:calc(env(safe-area-inset-bottom,0px) + 4px);width:200px;background:rgba(8,12,18,.7);padding:8px 12px;border-radius:12px;margin:0}
 .hint{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);opacity:.6;font-size:11px}
-#fs{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;width:auto;margin:0;padding:8px 12px;font-size:14px;background:rgba(255,255,255,.15);color:var(--fg)}
+#fs{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px);z-index:20;width:auto;margin:0;padding:8px 12px;font-size:14px;background:rgba(255,255,255,.15);color:var(--fg)}
 #rot{position:fixed;inset:0;z-index:9;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#0b111a;font-size:18px;text-align:center}
 #nickSetup{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(5,10,18,.96);padding:20px;box-sizing:border-box}
 #nickSetup .nickCard{width:min(340px,100%);padding:26px 22px;background:#18222e;border:1px solid #2c3b4c;border-radius:18px;text-align:center;box-sizing:border-box}
