@@ -50,20 +50,49 @@ for(let i=0;i<n;i++){human((i-(n-1)/2)*.7,2.5,0x2879e8,i+1);human((i-(n-1)/2)*.7
 }
 function createUI(){
 overlay=el('div','position:fixed;inset:0;z-index:99999;background:#101824;color:#fff;font-family:system-ui,sans-serif;overflow:hidden;');
+const style=el('style','');
+style.textContent=`
+#newSportCanvas{position:absolute;inset:0}
+#nsTop{position:absolute;left:0;right:0;top:env(safe-area-inset-top,8px);display:flex;justify-content:space-between;align-items:center;padding:10px 12px;gap:8px;pointer-events:none}
+#nsTitle{font-weight:800;text-shadow:0 2px 8px #000;font-size:clamp(13px,2.4vw,20px)}
+#nsScore{font-size:clamp(16px,3vw,22px);font-weight:900;background:#111b;padding:8px 12px;border-radius:12px;border:1px solid #ffffff55;white-space:nowrap}
+#nsMessage{position:absolute;top:calc(env(safe-area-inset-top,8px) + 58px);left:50%;transform:translateX(-50%);background:#111d;padding:7px 12px;border-radius:9px;font-size:clamp(11px,1.8vw,14px);white-space:normal;width:max-content;max-width:90vw;text-align:center;box-sizing:border-box}
+#nsControls button{touch-action:manipulation;border:2px solid #ffffffb0;box-shadow:0 3px 12px #0008;font-weight:800;cursor:pointer}
+#nsServe{position:absolute;right:calc(env(safe-area-inset-right,0px) + 22px);bottom:calc(env(safe-area-inset-bottom,0px) + 26px);width:clamp(76px,12vw,96px);height:clamp(76px,12vw,96px);border-radius:50%;background:rgba(255,210,63,.92);color:#111;font-size:clamp(14px,2.3vw,18px)}
+#nsActionStack{position:absolute;right:calc(env(safe-area-inset-right,0px) + 28px);bottom:calc(env(safe-area-inset-bottom,0px) + 132px);display:flex;flex-direction:column;gap:8px}
+#nsActionStack button{min-width:clamp(64px,10vw,82px);min-height:42px;border-radius:14px;background:rgba(255,255,255,.78);color:#111;font-size:clamp(11px,1.8vw,14px);padding:8px}
+#nsServeType{position:absolute;left:calc(env(safe-area-inset-left,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 24px);max-width:calc(100vw - 150px);background:#101c2cdd;color:white;border:1px solid #ffffff70;border-radius:12px;padding:10px;font-size:13px}
+#nsUtility{position:absolute;left:calc(env(safe-area-inset-left,0px) + 12px);top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;gap:6px}
+#nsUtility button{border-radius:10px;background:#111b;color:white;border:1px solid #ffffff55;padding:8px 10px;font-size:12px}
+@media (orientation:portrait){#nsActionStack{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 120px)}#nsServe{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}#nsServeType{left:calc(env(safe-area-inset-left,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);max-width:calc(100vw - 120px)}}
+`;
+overlay.appendChild(style);
 const cvs=el('div','position:absolute;inset:0;');cvs.id='newSportCanvas';overlay.appendChild(cvs);
-const top=el('div','position:absolute;left:0;right:0;top:env(safe-area-inset-top,8px);display:flex;justify-content:space-between;align-items:center;padding:10px 12px;gap:8px;pointer-events:none;');top.innerHTML='<div id="nsTitle" style="font-weight:800;text-shadow:0 2px 8px #000">SPORTS ARENA</div><div id="nsScore" style="font-size:22px;font-weight:900;background:#111b;padding:8px 14px;border-radius:12px;border:1px solid #ffffff55">0 - 0</div>';overlay.appendChild(top);
-const msg=el('div','position:absolute;top:62px;left:50%;transform:translateX(-50%);background:#111b;padding:6px 12px;border-radius:9px;font-size:13px;white-space:nowrap;max-width:92%;text-align:center;');msg.id='nsMessage';overlay.appendChild(msg);
-const controls=el('div','position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,8px) + 12px);display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:0 10px;');
-const button=(id,label)=>{const b=el('button','border:0;border-radius:12px;background:#ffd23f;color:#111;font-weight:800;padding:12px 14px;font-size:14px;min-width:74px;touch-action:manipulation;',label);b.id=id;controls.appendChild(b);return b};
+const top=el('div','');top.id='nsTop';top.innerHTML='<div id="nsTitle">SPORTS ARENA</div><div id="nsScore">0 - 0</div>';overlay.appendChild(top);
+const msg=el('div','');msg.id='nsMessage';overlay.appendChild(msg);
+const controls=el('div','position:absolute;inset:0;pointer-events:none;');controls.id='nsControls';
+const button=(id,label,parent)=>{const b=el('button','',label);b.id=id;b.style.pointerEvents='auto';(parent||controls).appendChild(b);return b};
+const utility=el('div','');utility.id='nsUtility';
+const pause=button('nsPause','一時停止',utility);
+pause.onclick=()=>{if(!active){active=true;clock.start();pause.textContent='一時停止';status('試合再開');return}active=false;status('一時停止中');pause.textContent='再開'};
+button('nsExit','メニューへ',utility).onclick=close;
+controls.appendChild(utility);
+const actions=el('div','');actions.id='nsActionStack';controls.appendChild(actions);
 if(sport==='volleyball'){
 const serve=button('nsServe','サーブ');serve.onclick=doServe;
-['normal','jump','floater','jumpfloater'].forEach((s,i)=>{const b=button('nsServe'+i,['通常','ジャンプ','フローター','ジャンプフローター'][i]);b.onclick=()=>{serveType=s;msg.textContent='サーブ：'+b.textContent+' を選択'}});
-button('nsReceive','レシーブ').onclick=()=>hit('receive');button('nsSet','トス').onclick=()=>hit('set');button('nsSpike','スパイク').onclick=()=>hit('spike');button('nsBlock','ブロック').onclick=()=>hit('block');
+const selector=el('select','');selector.id='nsServeType';
+selector.innerHTML='<option value="normal">通常サーブ</option><option value="jump">ジャンプサーブ</option><option value="floater">フローターサーブ</option><option value="jumpfloater">ジャンプフローター</option>';
+selector.onchange=()=>{serveType=selector.value;status('サーブ：'+selector.options[selector.selectedIndex].text+'を選択')};
+controls.appendChild(selector);
+button('nsReceive','レシーブ',actions).onclick=()=>hit('receive');
+button('nsSet','トス',actions).onclick=()=>hit('set');
+button('nsSpike','スパイク',actions).onclick=()=>hit('spike');
+button('nsBlock','ブロック',actions).onclick=()=>hit('block');
 }else{
-button('nsServe','サーブ').onclick=doServe;button('nsHit','打ち返す').onclick=()=>hit('hit');button('nsSpin','強打').onclick=()=>hit('smash');
+button('nsServe','サーブ').onclick=doServe;
+button('nsHit','打ち返す',actions).onclick=()=>hit('hit');
+button('nsSpin','強打',actions).onclick=()=>hit('smash');
 }
-button('nsPause','一時停止').onclick=()=>{if(!active)return;active=false;msg.textContent='一時停止中';$('nsPause').textContent='再開';$('nsPause').onclick=()=>{active=true;clock.start();$('nsPause').textContent='一時停止';$('nsPause').onclick=()=>{active=false;msg.textContent='一時停止中';$('nsPause').textContent='再開'}}};
-button('nsExit','メニューへ').onclick=close;
 overlay.appendChild(controls);document.body.appendChild(overlay);
 }
 function status(t){const n=$('nsMessage');if(n)n.textContent=t}
