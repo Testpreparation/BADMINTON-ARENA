@@ -384,6 +384,42 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 /* スマートフォンのメインメニューでは全画面ボタンを表示しない。PC・タブレットや試合中の表示は変更しない */
 @media (pointer:coarse) and (max-width:640px){#menu #fs{display:none!important}}
 @media (pointer:coarse) and (max-height:500px){#menu #fs{display:none!important}}
+
+/* Mobile landscape: keep gameplay controls separated and inside the safe area */
+@media (pointer:coarse) and (orientation:landscape) and (max-width:900px) {
+  #touch { overflow:visible; }
+  #bs {
+    right:calc(env(safe-area-inset-right,0px) + 2vw)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh)!important;
+    width:clamp(54px,12vh,68px)!important;
+    height:clamp(54px,12vh,68px)!important;
+  }
+  #bp {
+    right:calc(env(safe-area-inset-right,0px) + 2vw + clamp(54px,12vh,68px) + 10px)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh)!important;
+    width:clamp(48px,10vh,58px)!important;
+    height:clamp(48px,10vh,58px)!important;
+  }
+  #bd {
+    right:calc(env(safe-area-inset-right,0px) + 2vw + clamp(54px,12vh,68px) + clamp(48px,10vh,58px) + 20px)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh)!important;
+    width:clamp(48px,10vh,58px)!important;
+    height:clamp(48px,10vh,58px)!important;
+  }
+  #serveMeter {
+    right:calc(env(safe-area-inset-right,0px) + 2vw + clamp(54px,12vh,68px) + clamp(48px,10vh,58px) + clamp(48px,10vh,58px) + 30px)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh)!important;
+    height:clamp(72px,24vh,110px)!important;
+    width:18px!important;
+  }
+}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:380px) {
+  #bs {width:52px!important;height:52px!important;right:calc(env(safe-area-inset-right,0px) + 2vw)!important}
+  #bp {width:46px!important;height:46px!important;right:calc(env(safe-area-inset-right,0px) + 2vw + 62px)!important}
+  #bd {width:46px!important;height:46px!important;right:calc(env(safe-area-inset-right,0px) + 2vw + 118px)!important}
+  #serveMeter {right:calc(env(safe-area-inset-right,0px) + 2vw + 174px)!important;height:70px!important}
+}
+
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
  <div class="splashGlow" aria-hidden="true"></div>
