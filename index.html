@@ -980,15 +980,33 @@ function disconnectRoom(){
  activeRoomRef=null;roomDisconnectRef=null;roomBusy=false;netRole='offline';if($('chatFab'))$('chatFab').style.display='none';if($('chatPanel'))$('chatPanel').classList.remove('open');if($('chatTicker'))$('chatTicker').style.display='none';chatQueue=[];chatShowing=false;remoteInput={x:0,z:0,dash:false};lastHostNonce='';lastGuestNonce='';netGuestSnapshotSeen=false;
  if($('roomStatus'))$('roomStatus').textContent='';
 }
-// ページを閉じたとき、対戦部屋の後片付けをすぐ要求する。サーバー側の onDisconnect も保険として残す。
-window.addEventListener('pagehide',()=>{
- const ref=activeRoomRef,role=netRole,uid=fbAuth&&fbAuth.currentUser?fbAuth.currentUser.uid:null;
- if(!ref)return;
- try{
-  if(role==='host')ref.remove().catch(()=>{});
-  else if(role==='guest'&&uid)ref.child('guestId').transaction(v=>v===uid?null:v).catch(()=>{});
- }catch(e){}
-});
+// アプリ切替や一時的な切断では、対戦部屋をすぐ削除せず60秒間の復帰猶予を設ける。
+function trackRoomGrace(ref,role,uid){
+ const marker=role==='host'?'hostDisconnectedAt':'guestDisconnectedAt';
+ const armDisconnect=()=>ref.onDisconnect().update({[marker]:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+ armDisconnect();
+ listenRoom(fbDb.ref('.info/connected'),'value',snap=>{
+  if(snap.val()!==true||activeRoomRef!==ref||netRole!==role)return;
+  ref.child(marker).remove().catch(()=>{});
+  armDisconnect();
+ });
+ listenRoom(ref.child(marker),'value',snap=>{
+  const stamp=Number(snap.val());
+  if(!stamp)return;
+  setTimeout(async()=>{
+   if(activeRoomRef!==ref||netRole!==role)return;
+   try{
+    const latest=Number((await ref.child(marker).once('value')).val());
+    if(!latest||Date.now()-latest<60000)return;
+    if(role==='host')await ref.remove();
+    else{
+     await ref.child('guestId').transaction(v=>v===uid?null:v);
+     await ref.child(marker).remove();
+    }
+   }catch(e){}
+  },60000);
+ });
+}
 let roomTeams={host:'A',guest:'B'};
 function paintTeams(){const a=roomTeams.host==='A'?'チームA':'チームB',b=roomTeams.guest==='A'?'チームA':'チームB';$('teamSummary').textContent='部屋主：'+a+' ／ フレンド：'+b+' ／ 空き枠は開始時にCPUが補充';if($('hostNpcLabel'))$('hostNpcLabel').textContent='PLAYER 3 · '+a+'（空き枠）';if($('guestNpcLabel'))$('guestNpcLabel').textContent='PLAYER 4 · '+b+'（空き枠）';document.querySelectorAll('.teamPick').forEach(btn=>btn.disabled=(netRole==='host'?roomTeams.host:roomTeams.guest)===btn.dataset.team);$('randomTeams').disabled=netRole!=='host'}
 function saveTeams(){if(!activeRoomRef||netRole!=='host'&&netRole!=='guest')return;const key=netRole==='host'?'hostTeam':'guestTeam';activeRoomRef.child(key).set(roomTeams[netRole]).catch(()=>roomMessage('チーム設定を保存できませんでした。'));paintTeams()}
@@ -1033,7 +1051,7 @@ async function createRoom(){
   const result=await ref.transaction(current=>current===null?{hostId:user.uid,hostName:pname,createdAt:Date.now(),status:'waiting',sport:selectedSport,format:selectedFormat,npcDiff:OPT.diff,hostTeam:'A',guestTeam:'B'}:undefined);
   if(!result.committed){roomBusy=false;netRole='offline';roomMessage('部屋番号が重複しました。もう一度「部屋を作る」を押してください。');return}
   activeRoomRef=ref;listenRoom(ref.child('sport'),'value',snap=>{const v=snap.val();if(v==='tennis'||v==='badminton'){selectedSport=v;$('roomSportSelect').value=v}});friendNames={host:pname,guest:'フレンド'};roomTeams={host:'A',guest:'B'};paintTeams();listenRoom(ref.child('guestName'),'value',snap=>{const n=String(snap.val()||'フレンド').trim().slice(0,12)||'フレンド';friendNames.guest=n;if(state!=='menu')updScore()});netConn=makeFirebaseConnection();setupRoomChat(ref);listenRoom(ref.child('hostTeam'),'value',snap=>{const v=snap.val();if(v==='A'||v==='B'){roomTeams.host=v;paintTeams()}});listenRoom(ref.child('guestTeam'),'value',snap=>{const v=snap.val();if(v==='A'||v==='B'){roomTeams.guest=v;paintTeams()}});
-  try{await ref.onDisconnect().remove()}catch(e){}
+  trackRoomGrace(ref,'host',user.uid);
   roomBusy=false;setWaitingPlayerStatus('あなた（部屋主・接続済み）','参加待ち…');
   roomMessage('部屋を作成しました。6桁の番号を友達に共有してください。相手の参加を待っています。');
   const guestRef=ref.child('guestId');
@@ -1072,7 +1090,7 @@ async function joinRoom(){
   if(joined.committed){await ref.child('guestName').set(pname);}
   if(!joined.committed){roomBusy=false;netRole='offline';roomMessage('この部屋にはすでに参加者がいます。別の部屋を作成してください。');return}
   activeRoomRef=ref;listenRoom(ref.child('sport'),'value',snap=>{const v=snap.val();if(v==='tennis'||v==='badminton'){selectedSport=v;$('roomSportSelect').value=v;$('doublesNpcSettings').hidden=selectedFormat!=='doubles'}});roomTeams={host:roomSnap.child('hostTeam').val()==='B'?'B':'A',guest:roomSnap.child('guestTeam').val()==='A'?'A':'B'};paintTeams();netConn=makeFirebaseConnection();listenRoom(ref.child('hostTeam'),'value',snap=>{const v=snap.val();if(v==='A'||v==='B'){roomTeams.host=v;paintTeams()}});listenRoom(ref.child('guestTeam'),'value',snap=>{const v=snap.val();if(v==='A'||v==='B'){roomTeams.guest=v;paintTeams()}});
-  try{await ref.child('guestId').onDisconnect().remove()}catch(e){}
+  trackRoomGrace(ref,'guest',user.uid);
   roomBusy=false;setWaitingPlayerStatus('部屋主（接続済み）','あなた（参加済み）');
   roomMessage('部屋主に接続しました！部屋主が対戦を開始するまでお待ちください。');
   listenRoom(ref.child('npcDiff'),'value',snap=>{const v=snap.val();if(Number.isInteger(v)&&v>=0&&v<=2){OPT.diff=v;$('npcStrength').value=String(v);save();paint()}});listenRoom(ref.child('hostMessage'),'value',snap=>{const v=snap.val();if(v&&v.nonce&&v.nonce!==lastHostNonce){lastHostNonce=v.nonce;handleNetData(v.data)}});
