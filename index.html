@@ -818,7 +818,7 @@ function finishReplay(){
  
 }
 
-function triggerPowerImpact(){const el=$('powerImpact');if(!el)return;el.classList.remove('fire');void el.offsetWidth;el.classList.add('fire');clearTimeout(powerImpactTimer);powerImpactTimer=setTimeout(()=>el.classList.remove('fire'),700)}
+function triggerPowerImpact(){}
 let powerImpactTimer=null;
 function beginServe(){replayFrames=[];replayRecordT=0;replayAutoPending=false;suppressPointScore=false;serveCharging=false;shotCharging=false;chargeKind='';servePower=.65;shotPower=.65;pendingShotPower=.65;$('serveMeter').hidden=true;$('pointScore').classList.remove('fadeOut');$('pointScore').hidden=true;state='serveWait';serveT=0;const c=cfg;P.x=0;C.x=0;P.z=c.hl+1.5;C.z=-(c.hl+1.5);P2.x=-c.hw*.48;P2.z=c.hl*.48;C2.x=c.hw*.48;C2.z=-c.hl*.48;ball.vel.set(0,0,0);ball.spin.set(0,0,0);ball.net=false;ball.bounces=0;ball.lastHitter=server;
  $('msg').textContent=servePrompt();syncTouchActions()}
