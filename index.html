@@ -904,20 +904,20 @@ function playerShot(who=1){
  if(mode==='badminton'&&actionDash&&ball.pos.y>2.2)hitter.jumpT=.48;
  let tx=i.x*(c.hw-.5)+(R()-.5)*(i.x?.8:3),dz,deg=c.th;
  if(i.z<-.6&&!actionDash){dz=mode==='badminton'?2.2+R()*.8:1.8+R()*1.4;deg=mode==='badminton'?12:32}
- else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?-10:16):c.thP;tx+=(R()-.5)*.6}
+ else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?-10:16):7;tx+=(R()-.5)*.6}
  else dz=c.hl-1.2-R()*3;
  if(mode==='badminton'&&!actionDash&&!actionDrop){deg=ball.pos.y>2.2?18:ball.pos.y<.85?38:ball.pos.y<1.5?34:ball.pos.y<2.2?29:24}
- else if(mode==='tennis'){deg=ball.pos.y>2.15?10:ball.pos.y>1.55?13:17}
+ else if(mode==='tennis'){deg=ball.pos.y>2.15?4.5:ball.pos.y>1.55?6.5:9}
  // ドロップボタンは両競技で専用の短い軌道を使う。バドミントンはネット際、テニスは短い角度で落とす
  if(actionDrop){
   if(mode==='badminton'){dz=2.2+R()*.8;deg=8}
-  else{dz=1.7+R()*.45;deg=7}
+  else{dz=1.7+R()*.45;deg=4.5}
  }
  hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(actionDrop?0:(actionDash?60:(i.z<-.6?-120:180))):0);
  if(mode==='badminton'){const shuttleShotMultiplier=clamp(1.12+Math.max(.25,Math.min(1,chargedPower))*.22,1.18,1.4);ball.vel.multiplyScalar(shuttleShotMultiplier);if(ball.vel.length()>80)ball.vel.setLength(80);/* 強打時の画面フラッシュ演出を無効化 */if(who===1)pendingShotPower=.65;else remoteInput.power=.65}
  if(who===1){shotAim=null;shotAimExpires=0;pendingShotKind='normal'}
  else{remoteInput.aim=null;remoteInput.kind='normal';remoteInput.drop=false;remoteInput.dash=false}
-}function cpuShotFor(who,p){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=c.th+R()*3;
+}function cpuShotFor(who,p){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=mode==='tennis'?7+R()*2:c.th+R()*3;
  if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)p.jumpT=.48;if(R()<.35){deg=2;dz=c.hl-1}}hit(who,tx,who===1?-dz:dz,deg,mode==='tennis'?(R()<.25?-100:160):0)}
 function cpuShot(){cpuShotFor(-1,C)}
 function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>0)return;const b=ball.pos;
