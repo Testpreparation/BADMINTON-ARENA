@@ -908,9 +908,12 @@ function playerShot(who=1){
  else dz=c.hl-1.2-R()*3;
  if(mode==='badminton'&&!actionDash&&!actionDrop){deg=ball.pos.y>2.2?18:ball.pos.y<.85?38:ball.pos.y<1.5?34:ball.pos.y<2.2?29:24}
  else if(mode==='tennis'){deg=ball.pos.y>2.15?10:ball.pos.y>1.55?13:17}
- // バドミントンのドロップは移動入力に関係なく、常にネット際へ落とす
- if(mode==='badminton'&&actionDrop){dz=2.2+R()*.8;deg=8}
- hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(actionDash?60:(i.z<-.6?-120:180)):0);
+ // ドロップボタンは両競技で専用の短い軌道を使う。バドミントンはネット際、テニスは短い角度で落とす
+ if(actionDrop){
+  if(mode==='badminton'){dz=2.2+R()*.8;deg=8}
+  else{dz=1.7+R()*.45;deg=7}
+ }
+ hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(actionDrop?0:(actionDash?60:(i.z<-.6?-120:180))):0);
  if(mode==='badminton'){const shuttleShotMultiplier=clamp(1.12+Math.max(.25,Math.min(1,chargedPower))*.22,1.18,1.4);ball.vel.multiplyScalar(shuttleShotMultiplier);if(ball.vel.length()>80)ball.vel.setLength(80);/* 強打時の画面フラッシュ演出を無効化 */if(who===1)pendingShotPower=.65;else remoteInput.power=.65}
  if(who===1){shotAim=null;shotAimExpires=0;pendingShotKind='normal'}
  else{remoteInput.aim=null;remoteInput.kind='normal';remoteInput.drop=false;remoteInput.dash=false}
@@ -1344,7 +1347,7 @@ function handleNetData(d){
  if(!d||typeof d!=='object')return;
  if(d.type==='start'&&netRole==='guest'){if(d.format)selectedFormat=d.format;if(Number.isInteger(d.diff)&&d.diff>=0&&d.diff<=2){OPT.diff=d.diff;save()}OPT.mode=0;start(selectedSport);return}
  if(d.type==='restart'&&netRole==='host'){start(selectedSport);return}
- if(d.type==='input'&&netRole==='host'){remoteInput={x:clamp(+d.input.x||0,-1,1),z:clamp(+d.input.z||0,-1,1),dash:!!d.input.dash,power:Math.max(.25,Math.min(1,+d.input.power||.65)),serveAim:d.input.serveAim!==undefined?d.input.serveAim:remoteInput.serveAim,aim:d.input.aim!==undefined?d.input.aim:remoteInput.aim,kind:d.input.kind||remoteInput.kind||'normal',drop:d.input.drop!==undefined?!!d.input.drop:!!remoteInput.drop};if(d.input.swing){if(state==='serveWait'&&server===-1)doServe(-1);else if(state==='rally'&&C.swingT<=0){C.swingT=.3;C.swingReqT=1.2;tryHit(C)}}}
+ if(d.type==='input'&&netRole==='host'){remoteInput={x:clamp(+d.input.x||0,-1,1),z:clamp(+d.input.z||0,-1,1),dash:!!d.input.dash,power:Math.max(.25,Math.min(1,+d.input.power||.65)),serveAim:d.input.serveAim!==undefined?d.input.serveAim:remoteInput.serveAim,aim:d.input.aim!==undefined?d.input.aim:remoteInput.aim,kind:d.input.kind||remoteInput.kind||'normal',drop:d.input.drop!==undefined?!!d.input.drop:!!remoteInput.drop};if(d.input.swing){if(state==='serveWait'&&server===-1)doServe(-1);else if(state==='rally'){C.swingT=Math.max(C.swingT,.3);C.swingReqT=Math.max(C.swingReqT,1.2);tryHit(C)}}}
  if(d.type==='snapshot'&&netRole==='guest'){applyMatchSnapshot(d.data)}
 }
 function sendSnapshot(){try{const data={sentAt:Date.now(),state,server,mode,replayPlaying,P:{x:P.x,z:P.z,swingT:P.swingT,diveT:P.diveT,diveX:P.diveX,diveZ:P.diveZ},C:{x:C.x,z:C.z,swingT:C.swingT,diveT:C.diveT,diveX:C.diveX,diveZ:C.diveZ},P2:{x:P2.x,z:P2.z,swingT:P2.swingT},C2:{x:C2.x,z:C2.z,swingT:C2.swingT},ball:{p:ball.pos.toArray(),v:ball.vel.toArray(),s:ball.spin.toArray(),net:ball.net,lastHitter:ball.lastHitter,bounces:ball.bounces},scoreHtml:$('score').innerHTML,msg:$('msg').textContent,spd:$('spd').textContent,finished:!$('res').hidden,rt:$('rt').textContent,rtClass:$('rt').className,rs:$('rs').textContent};if(netConn&&netConn.open)netConn.send({type:'snapshot',data});if(activeTournamentMatchRef&&activeTournament&&activeTournamentMatchId&&netRole==='host'&&state!=='menu'&&Date.now()-lastTournamentStateAt>=125){lastTournamentStateAt=Date.now();activeTournamentRef.child('live/'+activeTournamentMatchId).set(data).catch(()=>{})}}catch(e){}}
