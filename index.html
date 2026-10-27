@@ -633,8 +633,8 @@ function buildCourt(m){mode=m;cfg=CFG[m];courtG.clear();const{hw,hl,netH}=cfg,T=
   box(.25,9,.25,0x888888,x,4.5,z);box(1.6,.5,.8,0xfff6c0,x,9.2,z,{emissive:0xfff6c0,emissiveIntensity:1});if(!COARSE){const sl=new THREE.SpotLight(0xfff2d0,.9,80,.9,.6);sl.position.set(x,9,z);sl.target.position.set(0,0,0);courtG.add(sl,sl.target)}});addExtras(T,hw,hl);
  tb.visible=T;sh.visible=!T;[P,C].forEach(p=>{const hd=p.g.userData.rk.userData.head;hd.scale.set(T?1:.75,T?1:.8,1);hd.position.y=T?.56:.62});shadow.scale.setScalar(T?1:.6)}
 
-function simLand(p,v,c,w){w=w||{x:0,y:0,z:0};const km=c.km||0;let x=p.x,y=p.y,z=p.z,vx=v.x,vy=v.y,vz=v.z,t=0;
- while(t<8){const s=Math.hypot(vx,vy,vz);const ax=-c.k*s*vx+km*(w.y*vz-w.z*vy),az=-c.k*s*vz+km*(w.x*vy-w.y*vx),ay=-c.g-c.k*s*vy+km*(w.z*vx-w.x*vz);vx+=ax*DT;vz+=az*DT;vy+=ay*DT;x+=vx*DT;y+=vy*DT;z+=vz*DT;t+=DT;if(y<=0)break}
+function simLand(p,v,c,w){w=w||{x:0,y:0,z:0};const km=c.km||0,drag=c.k*(mode==='badminton'?1.12:1);let x=p.x,y=p.y,z=p.z,vx=v.x,vy=v.y,vz=v.z,t=0;
+ while(t<8){const s=Math.hypot(vx,vy,vz);const ax=-drag*s*vx+km*(w.y*vz-w.z*vy),az=-drag*s*vz+km*(w.x*vy-w.y*vx),ay=-c.g-drag*s*vy+km*(w.z*vx-w.x*vz);vx+=ax*DT;vz+=az*DT;vy+=ay*DT;x+=vx*DT;y+=vy*DT;z+=vz*DT;t+=DT;if(y<=0)break}
  return{x,z,t}}
 function hideAimPreview(){aimLine.visible=false;aimLanding.visible=false}
 function updateAimPreview(aim,kind){
@@ -656,7 +656,7 @@ function updateAimPreview(aim,kind){
  let landingX=x,landingZ=z,landed=false;
  for(let j=0;j<150;j++){
   if(j%2===0&&n<150){const k=n*3;aimLinePositions[k]=x;aimLinePositions[k+1]=Math.max(0,y);aimLinePositions[k+2]=z;n++}
-  const vlen=Math.hypot(vx,vy,vz),km=c.km||0,ax=-c.k*vlen*vx+km*(wy*vz-wz*vy),az=-c.k*vlen*vz+km*(wx*vy-wy*vx),ay=-c.g-c.k*vlen*vy+km*(wz*vx-wx*vz);
+  const vlen=Math.hypot(vx,vy,vz),km=c.km||0,drag=c.k*(mode==='badminton'?1.12:1),ax=-drag*vlen*vx+km*(wy*vz-wz*vy),az=-drag*vlen*vz+km*(wx*vy-wy*vx),ay=-c.g-drag*vlen*vy+km*(wz*vx-wx*vz);
   vx+=ax*DT;vy+=ay*DT;vz+=az*DT;x+=vx*DT;y+=vy*DT;z+=vz*DT;wx*=1-.08*DT;wz*=1-.08*DT;
   if(y<=c.r){landingX=x;landingZ=z;landed=true;if(n<150){const k=n*3;aimLinePositions[k]=x;aimLinePositions[k+1]=c.r;aimLinePositions[k+2]=z;n++}break}
  }
@@ -966,7 +966,7 @@ function start(m){
 function togglePause(force){if(state==='menu'||!$('res').hidden)return;paused=typeof force==='boolean'?force:!paused;$('pauseMenu').hidden=!paused;if(paused){Object.keys(keys).forEach(k=>keys[k]=false);tc.x=tc.z=0;tc.dash=tc.drop=false;if($('chatPanel'))$('chatPanel').classList.remove('open')} }
 function toMenu(){if(replayPlaying)finishReplay();replayFrames=[];replayAutoPending=false;replayAutoAt=0;if(matchIntro){matchIntro.el.remove();matchIntro=null}paused=false;$('pauseMenu').hidden=true;state='menu';$('modeMenu').hidden=true;$('menu').hidden=false;$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=true;disconnectRoom();bgm(true);paint()}
 function stepBall(){const b=ball,c=cfg,v=b.vel,s=v.length();b.prev.copy(b.pos);
- const sw=b.spin,km=c.km||0,ax=-c.k*s*v.x+km*(sw.y*v.z-sw.z*v.y),az=-c.k*s*v.z+km*(sw.x*v.y-sw.y*v.x),ay=-c.g-c.k*s*v.y+km*(sw.z*v.x-sw.x*v.z);v.x+=ax*DT;v.y+=ay*DT;v.z+=az*DT;sw.multiplyScalar(1-.08*DT);const pz=b.pos.z;b.pos.addScaledVector(v,DT);
+ const sw=b.spin,km=c.km||0,drag=c.k*(mode==='badminton'?1.12:1),ax=-drag*s*v.x+km*(sw.y*v.z-sw.z*v.y),az=-drag*s*v.z+km*(sw.x*v.y-sw.y*v.x),ay=-c.g-drag*s*v.y+km*(sw.z*v.x-sw.x*v.z);v.x+=ax*DT;v.y+=ay*DT;v.z+=az*DT;sw.multiplyScalar(1-.08*DT);const pz=b.pos.z;b.pos.addScaledVector(v,DT);
  if(!b.net&&pz*b.pos.z<0&&b.pos.y<c.netH-(mode==='tennis'?.06:0)){b.net=true;v.z*=-.12;v.x*=.3;v.y=Math.max(v.y,0)*.2;netSound();b.pos.z=pz}
  if(b.pos.y<=c.r){if(b.net){point(-b.lastHitter,'ネット');return}const inb=Math.abs(b.pos.x)<=c.hw&&Math.abs(b.pos.z)<=c.hl,side=b.pos.z>0?1:-1,ok=inb&&side===-b.lastHitter;b.pos.y=c.r;
   if(!c.bounce){point(ok?b.lastHitter:-b.lastHitter,ok?'ラリー決着':inb?'自コート':'アウト');return}
