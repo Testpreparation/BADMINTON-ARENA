@@ -610,7 +610,7 @@ $('chatForm').addEventListener('submit',async e=>{
  try{await activeRoomRef.child('chat').push({sender:netRole,text:message.slice(0,120),ts:Date.now()});input.value='';input.focus();}
  catch(err){roomMessage('チャットを送信できませんでした。Firebaseのデータベースルールを確認してください。')}
 });
-function makeFirebaseConnection(){return {open:true,send(d){if(!activeRoomRef||!this.open)return;const side=netRole==='host'?'hostMessage':'guestMessage';const payload={nonce:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),data:d,ts:Date.now()};activeRoomRef.child(side).set(payload).catch(e=>roomMessage('Firebase送信エラー：'+e.message))},close(){this.open=false}}}
+function makeFirebaseConnection(){return {open:true,send(d){if(!activeRoomRef||!this.open)return;const side=netRole==='host'?'hostMessage':'guestMessage';const makePayload=data=>({nonce:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),data,ts:Date.now()});if(netRole==='guest'&&d&&d.type==='input'&&d.input&&d.input.swing){const normalInput={...d.input,swing:false};Promise.all([activeRoomRef.child('guestSwing').set(makePayload(d)),activeRoomRef.child(side).set(makePayload({...d,input:normalInput}))]).catch(e=>roomMessage('Firebase送信エラー：'+e.message));return}activeRoomRef.child(side).set(makePayload(d)).catch(e=>roomMessage('Firebase送信エラー：'+e.message))},close(){this.open=false}}}
 
 function buildCourt(m){mode=m;cfg=CFG[m];courtG.clear();const{hw,hl,netH}=cfg,T=m==='tennis';
  const pl=(w,d,c,y,tx)=>{const mt=M(c,{roughness:.7});if(tx)mt.map=grain(w,d);const p=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mt);p.rotation.x=-Math.PI/2;p.position.y=y;p.receiveShadow=true;courtG.add(p)};
@@ -1106,7 +1106,7 @@ async function createRoom(){
     setWaitingPlayerStatus('あなた（部屋主・接続済み）','参加待ち…');
    }
   });
-  listenRoom(ref.child('guestMessage'),'value',snap=>{const v=snap.val();if(v&&v.nonce&&v.nonce!==lastGuestNonce){lastGuestNonce=v.nonce;handleNetData(v.data)}});
+  listenRoom(ref.child('guestMessage'),'value',snap=>{const v=snap.val();if(v&&v.nonce&&v.nonce!==lastGuestNonce){lastGuestNonce=v.nonce;handleNetData(v.data)}});listenRoom(ref.child('guestSwing'),'value',snap=>{const v=snap.val();if(v&&v.nonce&&v.nonce!==lastGuestNonce+'-swing'){lastGuestNonce=v.nonce;handleNetData(v.data)}});
   roomTimeout=setTimeout(()=>{if(netRole==='host'&&activeRoomRef)roomMessage('参加待ちが続いています。相手に6桁の番号を確認してもらってください。')},120000);
  }catch(e){roomBusy=false;netRole='offline';roomMessage('Firebaseに接続できません：'+(e&&e.message?e.message:'設定を確認してください'))}
 }
