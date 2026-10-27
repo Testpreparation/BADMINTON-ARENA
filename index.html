@@ -512,6 +512,24 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
   .waitingPanel{max-height:calc(100dvh - 10px);padding:7px 12px;overflow-y:auto}
 }
 
+
+/* ドロップボタンをスマホ・タブレットで押しやすい位置に固定 */
+@media (any-pointer:coarse) and (max-width:1100px){
+  #bd{
+    right:calc(env(safe-area-inset-right,0px) + 2vw)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh + clamp(54px,12vh,68px) + 10px)!important;
+    width:clamp(48px,10vh,58px)!important;
+    height:clamp(48px,10vh,58px)!important;
+    z-index:5;
+  }
+}
+@media (any-pointer:coarse) and (max-width:1100px) and (max-height:380px){
+  #bd{
+    right:calc(env(safe-area-inset-right,0px) + 2vw)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 5vh + 60px)!important;
+    width:46px!important;height:46px!important;
+  }
+}
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
  <div class="splashGlow" aria-hidden="true"></div>
@@ -527,7 +545,7 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
  </div>
 </div>
 
-<div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ 前＋Space ドロップ ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
+<div id="hud" hidden><div id="score"></div><div id="pointScore" hidden></div><div id="msg"></div><div id="spd"></div><div id="help">移動 WASD/矢印 ・ ダッシュ Shift ・ スイング/サーブ Space ・ ドロップボタン ・ Shift＋Space 強打 ・ Esc メニュー</div></div>
 <div id="res" class="ov" hidden><div class="rc"><div class="resultBadge" id="resultBadge">MATCH RESULT</div><h2 id="rt"></h2><p id="rs"></p><div id="resultSummary"></div><button id="ra">もう一度</button><button id="rm">メニューへ</button></div></div>
 <div id="powerImpact" aria-hidden="true"><div class="pi-burst"></div><div class="pi-ring"></div></div>
 <div id="rot"><i>📱</i>横向きにしてください</div>
