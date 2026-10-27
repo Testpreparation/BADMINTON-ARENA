@@ -802,6 +802,8 @@ function playerShot(who=1){
   else if(aim.y>.18)dz=mode==='badminton'?2.5:2.0;
   else dz=c.hl-2.2;
  }
+ // バドミントンのドロップは移動入力に関係なく、常にネット際へ落とす
+ if(mode==='badminton'&&actionDrop){dz=2.2+R()*.8;deg=12}
  hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(actionDash?60:(i.z<-.6?-120:180)):0);
  if(mode==='badminton'){const shuttleShotMultiplier=clamp(.88+Math.max(.25,Math.min(1,chargedPower))*.2,.92,1.08);ball.vel.multiplyScalar(shuttleShotMultiplier);if(ball.vel.length()>70)ball.vel.setLength(70);/* 強打時の画面フラッシュ演出を無効化 */if(who===1)pendingShotPower=.65;else remoteInput.power=.65}
  if(who===1){shotAim=null;shotAimExpires=0;pendingShotKind='normal'}
