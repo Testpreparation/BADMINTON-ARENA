@@ -544,7 +544,7 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 (function(){
 const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),R=Math.random,DT=1/120,D2R=Math.PI/180;
 const CFG={
- tennis:{hw:4.1,hl:11.9,netH:.92,g:9.8,k:.02,bounce:true,e:.75,km:7e-4,pSpeed:7.8,cSpeed:6.48,reach:2.4,hMax:2.8,r:.13,th:11,thP:4},
+ tennis:{hw:4.1,hl:11.9,netH:.92,g:9.8,k:.02,bounce:true,e:.75,km:7e-4,pSpeed:7.8,cSpeed:6.48,reach:2.4,hMax:2.8,r:.13,th:23,thP:16},
  badminton:{hw:3.05,hl:6.7,netH:1.55,g:9.8,k:.21,bounce:false,e:0,pSpeed:7.2,cSpeed:6.24,reach:2.6,hMax:3.8,r:.06,th:42,thP:-10}};
 const renderer=new THREE.WebGLRenderer({antialias:true});document.body.prepend(renderer.domElement);
 renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -696,7 +696,7 @@ function updateAimPreview(aim,kind){
  const tz=who===1?-depth:depth,dx=tx-ball.pos.x,dz=tz-ball.pos.z,L=Math.hypot(dx,dz)||1;
  let deg=mode==='tennis'&&kind==='power'?c.thP:c.th;
  if(mode==='badminton'&&kind!=='power'&&kind!=='drop')deg=ball.pos.y>2.2?24:ball.pos.y<.85?72:ball.pos.y<1.5?64:ball.pos.y<2.2?54:50;
- else if(mode==='tennis'&&ball.pos.y>1.55)deg=ball.pos.y>2.15?0:ball.pos.y>1.85?8:18;
+ else if(mode==='tennis'&&ball.pos.y>1.55)deg=ball.pos.y>2.15?12:ball.pos.y>1.85?18:24;
  const th=deg*Math.PI/180,sp=mode==='tennis'?(kind==='power'?60:180):0,ux=dx/L,uz=dz/L,w={x:uz*sp,y:0,z:-ux*sp};
  let speed=Math.max(10,L*1.4),land={x:tx,z:tz,t:1};
  for(let j=0;j<10;j++){const v={x:ux*speed*Math.cos(th),y:speed*Math.sin(th),z:uz*speed*Math.cos(th)};land=simLand(ball.pos,v,c,w);const ld=Math.hypot(land.x-ball.pos.x,land.z-ball.pos.z)||.1;speed=clamp(speed*Math.pow(L/ld,.6),3,70)}
@@ -794,7 +794,7 @@ function playerShot(who=1){
  else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?-10:16):c.thP;tx+=(R()-.5)*.6}
  else dz=c.hl-1.2-R()*3;
  if(mode==='badminton'&&!actionDash&&!actionDrop){deg=ball.pos.y>2.2?24:ball.pos.y<.85?72:ball.pos.y<1.5?64:ball.pos.y<2.2?54:50}
- else if(mode==='tennis'&&ball.pos.y>1.55){deg=ball.pos.y>2.15?0:ball.pos.y>1.85?8:18}
+ else if(mode==='tennis'&&ball.pos.y>1.55){deg=ball.pos.y>2.15?12:ball.pos.y>1.85?18:24}
  const aim=who===1?(shotAim&&shotAimExpires>performance.now()?shotAim:null):(remoteInput.aim||null);
  if(aim){
   tx=clamp((who===1?1:-1)*aim.x*(c.hw-.3),-c.hw+.3,c.hw-.3);
