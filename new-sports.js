@@ -142,19 +142,20 @@ function createUI(){
 overlay=el('div','position:fixed;inset:0;z-index:99999;background:#101824;color:#fff;font-family:system-ui,sans-serif;overflow:hidden;');
 const style=el('style','');
 style.textContent=`
-#newSportCanvas{position:absolute;inset:0}
-#nsTop{position:absolute;left:0;right:0;top:env(safe-area-inset-top,8px);display:flex;justify-content:space-between;align-items:center;padding:10px 12px;gap:8px;pointer-events:none}
-#nsTitle{margin-left:104px;font-weight:800;text-shadow:0 2px 8px #000;font-size:clamp(13px,2.4vw,20px)}
-#nsScore{font-size:clamp(16px,3vw,22px);font-weight:900;background:#111b;padding:8px 12px;border-radius:12px;border:1px solid #ffffff55;white-space:nowrap}
-#nsMessage{position:absolute;top:calc(env(safe-area-inset-top,8px) + 58px);left:50%;transform:translateX(-50%);background:#111d;padding:7px 12px;border-radius:9px;font-size:clamp(11px,1.8vw,14px);white-space:normal;width:max-content;max-width:90vw;text-align:center;box-sizing:border-box}
-#nsControls button{touch-action:manipulation;border:2px solid #ffffffb0;box-shadow:0 3px 12px #0008;font-weight:800;cursor:pointer}
-#nsServe{position:absolute;right:calc(env(safe-area-inset-right,0px) + 22px);bottom:calc(env(safe-area-inset-bottom,0px) + 26px);width:clamp(76px,12vw,96px);height:clamp(76px,12vw,96px);border-radius:50%;background:rgba(255,210,63,.92);color:#111;font-size:clamp(14px,2.3vw,18px)}
-#nsActionStack{position:absolute;right:calc(env(safe-area-inset-right,0px) + 28px);bottom:calc(env(safe-area-inset-bottom,0px) + 132px);display:flex;flex-direction:column;gap:8px}
-#nsActionStack button{min-width:clamp(64px,10vw,82px);min-height:42px;border-radius:14px;background:rgba(255,255,255,.78);color:#111;font-size:clamp(11px,1.8vw,14px);padding:8px}
-#nsServeType{position:absolute;left:calc(env(safe-area-inset-left,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 24px);max-width:calc(100vw - 150px);background:#101c2cdd;color:white;border:1px solid #ffffff70;border-radius:12px;padding:10px;font-size:13px}
-#nsUtility{position:absolute;left:calc(env(safe-area-inset-left,0px) + 12px);top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;gap:6px}
-#nsUtility button{border-radius:10px;background:#111b;color:white;border:1px solid #ffffff55;padding:8px 10px;font-size:12px}
-@media (orientation:portrait){#nsTitle{margin-left:0;font-size:12px}#nsActionStack{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 120px)}#nsServe{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}#nsServeType{left:calc(env(safe-area-inset-left,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);max-width:calc(100vw - 120px)}}
+#newSportCanvas{position:absolute;inset:0;background:#101824}
+#nsTop{position:absolute;inset:0 0 auto 0;height:0;padding:0;pointer-events:none;display:block}
+#nsTitle{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translateX(-50%);margin:0;max-width:50vw;text-align:center;font-size:clamp(13px,2vw,18px);font-weight:900;letter-spacing:.06em;text-shadow:0 2px 8px #000;white-space:nowrap}
+#nsScore{position:absolute;left:0;top:0;min-width:146px;padding:9px 12px;border-radius:0 0 14px 0;border:1px solid rgba(255,255,255,.3);border-top:0;border-left:0;background:linear-gradient(135deg,rgba(235,247,255,.24),rgba(180,215,245,.09));backdrop-filter:blur(16px) saturate(155%);-webkit-backdrop-filter:blur(16px) saturate(155%);box-shadow:0 8px 24px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.22);color:#fff;font-size:clamp(14px,2vw,18px);font-weight:900;white-space:nowrap}
+#nsMessage{position:absolute;top:calc(env(safe-area-inset-top,0px) + 66px);left:50%;transform:translateX(-50%);background:linear-gradient(110deg,rgba(5,15,28,.88),rgba(16,34,53,.82));border:1px solid rgba(255,255,255,.24);border-radius:12px;padding:8px 14px;font-size:clamp(11px,1.6vw,14px);line-height:1.4;white-space:normal;width:max-content;max-width:82vw;text-align:center;box-sizing:border-box;box-shadow:0 6px 18px #0004;pointer-events:none}
+#nsControls{position:absolute;inset:0;pointer-events:none}
+#nsControls button{touch-action:manipulation;box-sizing:border-box;border:1px solid rgba(255,255,255,.42);box-shadow:0 5px 16px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.24);font-weight:850;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#nsUtility{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px);left:auto;display:flex;gap:7px;pointer-events:auto}
+#nsUtility button{border-radius:12px;background:rgba(8,18,32,.55);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 12px;font-size:13px}
+#nsServe{position:absolute;right:calc(env(safe-area-inset-right,0px) + 24px);bottom:calc(env(safe-area-inset-bottom,0px) + 28px);width:clamp(82px,11vw,100px);height:clamp(82px,11vw,100px);border-radius:50%;background:linear-gradient(145deg,#ffe66b,#ffbd28);color:#14202d;font-size:clamp(14px,2vw,18px);border:3px solid rgba(255,255,255,.9)!important;box-shadow:0 0 0 5px rgba(255,210,63,.16),0 8px 22px #0005!important}
+#nsActionStack{position:absolute;right:calc(env(safe-area-inset-right,0px) + 34px);bottom:calc(env(safe-area-inset-bottom,0px) + 140px);display:flex;flex-direction:column;gap:9px;pointer-events:auto}
+#nsActionStack button{min-width:clamp(70px,9vw,86px);min-height:48px;border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.88),rgba(218,236,250,.76));color:#17304a;font-size:clamp(11px,1.6vw,14px);padding:8px 10px}
+#nsServeType{position:absolute;left:calc(env(safe-area-inset-left,0px) + 16px);bottom:calc(env(safe-area-inset-bottom,0px) + 24px);max-width:calc(100vw - 170px);background:rgba(8,18,32,.78);color:white;border:1px solid rgba(255,255,255,.35);border-radius:13px;padding:11px 12px;font-size:13px;box-shadow:0 5px 16px #0004}
+@media (orientation:portrait){#nsTitle{top:calc(env(safe-area-inset-top,0px) + 12px);max-width:58vw;font-size:11px}#nsScore{min-width:116px;padding:7px 9px;font-size:13px}#nsMessage{top:calc(env(safe-area-inset-top,0px) + 52px);max-width:76vw;font-size:11px}#nsActionStack{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 118px)}#nsActionStack button{min-width:66px;min-height:42px}#nsServe{right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:76px;height:76px}#nsServeType{left:calc(env(safe-area-inset-left,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);max-width:calc(100vw - 110px);font-size:11px}#nsUtility{top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);gap:4px}#nsUtility button{font-size:11px;padding:7px 8px}}
 `;
 overlay.appendChild(style);
 const cvs=el('div','position:absolute;inset:0;');cvs.id='newSportCanvas';overlay.appendChild(cvs);
@@ -212,7 +213,7 @@ renderer.render(scene,camera)
 function resize(){if(!renderer||!camera)return;renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}
 function launch(s,f){
 sport=s;format=f||'singles';score=[0,0];sets=[0,0];phase='ready';serveType='normal';active=true;
-createUI();scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,100);camera.position.set(0,sport==='volleyball'?10:8,sport==='volleyball'?18:14);camera.lookAt(0,1.4,0);clock=new THREE.Clock();
+createUI();scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,100);camera.position.set(0,sport==='volleyball'?12:5.2,sport==='volleyball'?25:8.5);camera.lookAt(0,sport==='volleyball'?1.1:.72,0);clock=new THREE.Clock();
 renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;$('newSportCanvas').appendChild(renderer.domElement);
 gym();court();makeTeams();ball=ballMesh(sport==='volleyball'?0xf4f3eb:0xffa83c);ball.position.set(0,sport==='volleyball'?2.5:1.1,0);ballV=new THREE.Vector3();$('nsTitle').textContent=sport==='volleyball'?'🏐 バレーボール 3対3':'🏓 卓球 '+(format==='doubles'?'ダブルス':'シングルス');status(sport==='volleyball'?'サーブを選んで「サーブ」を押してください。':'サーブを打って試合開始。');updateScore();addEventListener('resize',resize);resize();tick()
 }
