@@ -980,6 +980,15 @@ function disconnectRoom(){
  activeRoomRef=null;roomDisconnectRef=null;roomBusy=false;netRole='offline';if($('chatFab'))$('chatFab').style.display='none';if($('chatPanel'))$('chatPanel').classList.remove('open');if($('chatTicker'))$('chatTicker').style.display='none';chatQueue=[];chatShowing=false;remoteInput={x:0,z:0,dash:false};lastHostNonce='';lastGuestNonce='';netGuestSnapshotSeen=false;
  if($('roomStatus'))$('roomStatus').textContent='';
 }
+// ページを閉じたとき、対戦部屋の後片付けをすぐ要求する。サーバー側の onDisconnect も保険として残す。
+window.addEventListener('pagehide',()=>{
+ const ref=activeRoomRef,role=netRole,uid=fbAuth&&fbAuth.currentUser?fbAuth.currentUser.uid:null;
+ if(!ref)return;
+ try{
+  if(role==='host')ref.remove().catch(()=>{});
+  else if(role==='guest'&&uid)ref.child('guestId').transaction(v=>v===uid?null:v).catch(()=>{});
+ }catch(e){}
+});
 let roomTeams={host:'A',guest:'B'};
 function paintTeams(){const a=roomTeams.host==='A'?'チームA':'チームB',b=roomTeams.guest==='A'?'チームA':'チームB';$('teamSummary').textContent='部屋主：'+a+' ／ フレンド：'+b+' ／ 空き枠は開始時にCPUが補充';if($('hostNpcLabel'))$('hostNpcLabel').textContent='PLAYER 3 · '+a+'（空き枠）';if($('guestNpcLabel'))$('guestNpcLabel').textContent='PLAYER 4 · '+b+'（空き枠）';document.querySelectorAll('.teamPick').forEach(btn=>btn.disabled=(netRole==='host'?roomTeams.host:roomTeams.guest)===btn.dataset.team);$('randomTeams').disabled=netRole!=='host'}
 function saveTeams(){if(!activeRoomRef||netRole!=='host'&&netRole!=='guest')return;const key=netRole==='host'?'hostTeam':'guestTeam';activeRoomRef.child(key).set(roomTeams[netRole]).catch(()=>roomMessage('チーム設定を保存できませんでした。'));paintTeams()}
