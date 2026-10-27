@@ -660,12 +660,12 @@ function mkPlayer(c){
  // 既存アニメーションとの互換性を保ったまま、頭と上半身に小さな自然な動きを付ける
  const ph=Math.random()*6,cl01=v=>Math.max(0,Math.min(1,v));
  tor.onBeforeRender=function(){
-  const t=performance.now()/1000+ph,w=cl01(Math.abs(L1.rotation.x)/.9),s=cl01((-.6-a.rotation.x)/2.1);
+  const t=performance.now()/1000+ph,w=cl01(Math.abs(L1.rotation.x)/.9),s=cl01((-.6-a.rotation.x)/2.1),idle=cl01(1-w);
   const stride1=L1.rotation.x,stride2=L2.rotation.x;
   const run=cl01((Math.abs(stride1)+Math.abs(stride2))*.7),swing=cl01(Math.abs(a.rotation.x+.35)/1.8);
   // 股関節の動きに連動して膝を曲げ、着地時の脚の硬さを軽減
-  if(L1.userData.knee)L1.userData.knee.rotation.x=Math.max(0,Math.sin(stride1))*-.72-run*.12;
-  if(L2.userData.knee)L2.userData.knee.rotation.x=Math.max(0,Math.sin(stride2))*.72+run*.12;
+  if(L1.userData.knee)L1.userData.knee.rotation.x=Math.max(0,Math.sin(stride1))*-.72-run*.12-Math.max(0,Math.sin(t*2.8))*idle*.035;
+  if(L2.userData.knee)L2.userData.knee.rotation.x=Math.max(0,Math.sin(stride2))*.72+run*.12-Math.max(0,Math.sin(t*2.8+1))*idle*.035;
   if(L1.userData.foot)L1.userData.foot.rotation.x=-Math.max(0,-stride1)*.28;
   if(L2.userData.foot)L2.userData.foot.rotation.x=-Math.max(0,-stride2)*.28;
   // 動作中の体幹ひねり・前傾はゲーム側の打撃フェーズから受け取り、歩行の揺れを重ねる
@@ -904,26 +904,26 @@ function playerShot(who=1){
  if(mode==='badminton'&&actionDash&&ball.pos.y>2.2)hitter.jumpT=.48;
  let tx=i.x*(c.hw-.5)+(R()-.5)*(i.x?.8:3),dz,deg=c.th;
  if(i.z<-.6&&!actionDash){dz=mode==='badminton'?2.2+R()*.8:1.8+R()*1.4;deg=mode==='badminton'?12:32}
- else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?-10:16):7;tx+=(R()-.5)*.6}
+ else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?-10:16):c.thP;tx+=(R()-.5)*.6}
  else dz=c.hl-1.2-R()*3;
  if(mode==='badminton'&&!actionDash&&!actionDrop){deg=ball.pos.y>2.2?18:ball.pos.y<.85?38:ball.pos.y<1.5?34:ball.pos.y<2.2?29:24}
- else if(mode==='tennis'){deg=ball.pos.y>2.15?4.5:ball.pos.y>1.55?6.5:9}
+ else if(mode==='tennis'){deg=ball.pos.y>2.15?10:ball.pos.y>1.55?13:17}
  // ドロップボタンは両競技で専用の短い軌道を使う。バドミントンはネット際、テニスは短い角度で落とす
  if(actionDrop){
   if(mode==='badminton'){dz=2.2+R()*.8;deg=8}
-  else{dz=1.7+R()*.45;deg=4.5}
+  else{dz=1.7+R()*.45;deg=7}
  }
  hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(actionDrop?0:(actionDash?60:(i.z<-.6?-120:180))):0);
  if(mode==='badminton'){const shuttleShotMultiplier=clamp(1.12+Math.max(.25,Math.min(1,chargedPower))*.22,1.18,1.4);ball.vel.multiplyScalar(shuttleShotMultiplier);if(ball.vel.length()>80)ball.vel.setLength(80);/* 強打時の画面フラッシュ演出を無効化 */if(who===1)pendingShotPower=.65;else remoteInput.power=.65}
  if(who===1){shotAim=null;shotAimExpires=0;pendingShotKind='normal'}
  else{remoteInput.aim=null;remoteInput.kind='normal';remoteInput.drop=false;remoteInput.dash=false}
-}function cpuShotFor(who,p){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=mode==='tennis'?7+R()*2:c.th+R()*3;
+}function cpuShotFor(who,p){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=c.th+R()*3;
  if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)p.jumpT=.48;if(R()<.35){deg=2;dz=c.hl-1}}hit(who,tx,who===1?-dz:dz,deg,mode==='tennis'?(R()<.25?-100:160):0)}
 function cpuShot(){cpuShotFor(-1,C)}
 function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>0)return;const b=ball.pos;
   const powerShot=p===P&&!!inp().dash;
  const controlled=p===P||(p===C&&netRole==='host'&&netConn&&netConn.open);if(controlled&&p.swingReqT<=0)return;
- const hd=Math.hypot(b.x-p.x,b.z-p.z),reach=cfg.reach*(mode==='badminton'?.98:.9),lowBadminton=mode==='badminton'&&b.y<1.1,isDoublesNpc=selectedFormat==='doubles'&&(p===P2||p===C2),hitReach=isDoublesNpc?Math.max(2.15,mode==='badminton'?1.7:reach):(mode==='badminton'?2.35+(lowBadminton?.15:0):(mode==='tennis'?3.05:reach)),diveShot=mode==='tennis'&&p.swingT>0&&b.z*p.who>=.3&&((Math.abs(b.x)>=cfg.hw*.68&&Math.abs(b.x-p.x)>reach*.45)||((b.z-p.z)*p.who>.45&&Math.abs(b.z-p.z)<1.8));
+ const hd=Math.hypot(b.x-p.x,b.z-p.z),reach=cfg.reach*(mode==='badminton'?.98:.9),lowBadminton=mode==='badminton'&&b.y<1.1,isDoublesNpc=selectedFormat==='doubles'&&(p===P2||p===C2),hitReach=isDoublesNpc?Math.max(2.15,mode==='badminton'?1.7:reach):(mode==='badminton'?2.35+(lowBadminton?.15:0):(mode==='tennis'?2.8:reach)),diveShot=mode==='tennis'&&p.swingT>0&&b.z*p.who>=.3&&((Math.abs(b.x)>=cfg.hw*.68&&Math.abs(b.x-p.x)>reach*.45)||((b.z-p.z)*p.who>.45&&Math.abs(b.z-p.z)<1.8));
   // バドミントンは低いシャトルも拾えるようにし、床に触れる直前まで打てるようにする
   if(b.z*p.who<-.3||b.y>cfg.hMax||b.y<.07||hd>hitReach)return;
   /* 成功打撃時の画面フラッシュ演出を無効化 */
@@ -1152,11 +1152,11 @@ function update(dt){if(matchIntro||replayPlaying)return;const c=cfg;hitCd-=dt;co
  if(state==='serveWait'){if(server===1){if(serveT>0){serveT+=dt;ball.pos.set(P.x+.5,1.1+2.1*Math.sin(Math.PI/2*clamp(serveT/.42,0,1))-Math.max(0,serveT-.55)*1.4,P.z);if(serveT>=.72)doServe(1)}else ball.pos.set(P.x+.5,1.1,P.z)}else{serveT+=dt;ball.pos.set(C.x+.5,1.1+2.1*Math.sin(Math.PI/2*clamp(serveT/.42,0,1))-Math.max(0,serveT-.55)*1.4,C.z);if(!(netRole==='host'&&netConn&&netConn.open)&&serveT>=.72)doServe(-1)}}
  if(state==='rally'){acc+=dt;while(acc>=DT&&state==='rally'){stepBall();acc-=DT}tryHit(P);tryHit(C);if(selectedFormat==='doubles'){tryHit(P2);tryHit(C2)}}
  if(state==='point'){msgT-=dt;if(!practice&&!replayAutoPending&&!replayPlaying&&!suppressPointScore&&msgT<=1.7&&!pointScoreShown){pointScoreShown=true;$('msg').textContent='';showPointScore(pointWinner)}if(msgT<=.4&&$('pointScore')&&!$('pointScore').hidden)$('pointScore').classList.add('fadeOut');if(msgT<=0){if(over){finish()}else beginServe()}}
- [P,C,...(selectedFormat==='doubles'?[P2,C2]:[])].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.diveT=Math.max(0,p.diveT-dt);p.jumpT=Math.max(0,(p.jumpT||0)-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const readyPhase=tm*5.2+(p.who===1?0:1.15),tennisReady=mode==='tennis'&&state==='rally'&&p.swingT<=0&&p.diveT<=0&&sp<2.4,readyBounce=tennisReady?Math.max(0,Math.sin(readyPhase))*.07:0;if(tennisReady){lg[0].rotation.x+=Math.sin(readyPhase)*.055;lg[1].rotation.x-=Math.sin(readyPhase)*.055;for(const leg of lg){if(leg.userData.knee)leg.userData.knee.rotation.x+=(-.16-readyBounce-leg.userData.knee.rotation.x)*(1-Math.exp(-10*dt))}}const a=p.g.userData.arm,elbow=p.g.userData.elbow,torso=p.g.userData.torso,leftArm=p.g.userData.leftArm,racket=p.g.userData.rk,head=p.g.userData.head;const u=clamp(1-p.swingT/.3,0,1),ez=p.swingT>0?Math.sin(u*Math.PI):0;
+ [P,C,...(selectedFormat==='doubles'?[P2,C2]:[])].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.diveT=Math.max(0,p.diveT-dt);p.jumpT=Math.max(0,(p.jumpT||0)-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm,elbow=p.g.userData.elbow,torso=p.g.userData.torso,leftArm=p.g.userData.leftArm,racket=p.g.userData.rk,head=p.g.userData.head;const u=clamp(1-p.swingT/.3,0,1),ez=p.swingT>0?Math.sin(u*Math.PI):0;
   const smooth=(x)=>{x=clamp(x,0,1);return x*x*(3-2*x)};
   const backswing=1-smooth(u/.34),drive=smooth((u-.22)/.38),follow=smooth((u-.58)/.42);
   // 両競技とも待機時から肘を曲げた構えを維持し、打撃時だけ自然に伸ばす
-  let armX=mode==='tennis'?-.52-.035*Math.sin(readyPhase):-.38,armZ=mode==='tennis'?-.10-.025*Math.cos(readyPhase):-.05,racketX=mode==='tennis'?-.34-.045*Math.sin(readyPhase):-.20,racketZ=mode==='tennis'?.10+.025*Math.cos(readyPhase):0,twist=tennisReady?.025*Math.sin(readyPhase):0,lean=tennisReady?.012*Math.cos(readyPhase):0,elbowBend=mode==='tennis'?-.72:-.58;
+  const idlePhase=tm*2.8+(p.who===1?0:1.1),idlePose=state==='rally'&&p.swingT<=0&&p.diveT<=0&&sp<1.2;let armX=-.38+(idlePose?Math.sin(idlePhase)*.07:0),armZ=-.05+(idlePose?Math.cos(idlePhase)*.035:0),racketX=-.20+(idlePose?Math.sin(idlePhase)*.09:0),racketZ=idlePose?Math.cos(idlePhase)*.045:0,twist=idlePose?Math.sin(idlePhase)*.035:0,lean=idlePose?Math.cos(idlePhase)*.018:0,elbowBend=-.58-(idlePose?Math.max(0,Math.sin(idlePhase))*.10:0);
   if(mode==='badminton'){
    // バドミントン：肘をたたんだ構えから、打点へ加速して振り抜く
    const low=clamp((1.5-ball.pos.y)/1.25,0,1),overhead=1-low;
@@ -1183,7 +1183,7 @@ function update(dt){if(matchIntro||replayPlaying)return;const c=cfg;hitCd-=dt;co
     else{const q=clamp((st-.58)/.14,0,1);armX=-1.3-1.0*q;armZ=-.08-.35*q;racketX=-.65-1.0*q}
    }
   }
-  const blend=1-Math.exp(-(mode==='tennis'?(tennisReady?9:17):16)*dt);
+  const blend=1-Math.exp(-16*dt);
   a.rotation.x+=(armX-a.rotation.x)*blend;a.rotation.z+=(armZ-a.rotation.z)*blend;
   if(elbow)elbow.rotation.x+=(elbowBend-elbow.rotation.x)*(1-Math.exp(-19*dt));
   if(elbow)elbow.rotation.z+=((-a.rotation.z*.38)-elbow.rotation.z)*(1-Math.exp(-16*dt));
@@ -1347,7 +1347,7 @@ function handleNetData(d){
  if(!d||typeof d!=='object')return;
  if(d.type==='start'&&netRole==='guest'){if(d.format)selectedFormat=d.format;if(Number.isInteger(d.diff)&&d.diff>=0&&d.diff<=2){OPT.diff=d.diff;save()}OPT.mode=0;start(selectedSport);return}
  if(d.type==='restart'&&netRole==='host'){start(selectedSport);return}
- if(d.type==='input'&&netRole==='host'){remoteInput={x:clamp(+d.input.x||0,-1,1),z:clamp(+d.input.z||0,-1,1),dash:!!d.input.dash,power:Math.max(.25,Math.min(1,+d.input.power||.65)),serveAim:d.input.serveAim!==undefined?d.input.serveAim:remoteInput.serveAim,aim:d.input.aim!==undefined?d.input.aim:remoteInput.aim,kind:d.input.kind||remoteInput.kind||'normal',drop:d.input.drop!==undefined?!!d.input.drop:!!remoteInput.drop};if(d.input.swing){if(state==='serveWait'&&server===-1)doServe(-1);else if(state==='rally'){C.swingT=Math.max(C.swingT,.3);C.swingReqT=Math.max(C.swingReqT,mode==='tennis'?1.8:1.2);tryHit(C)}}}
+ if(d.type==='input'&&netRole==='host'){remoteInput={x:clamp(+d.input.x||0,-1,1),z:clamp(+d.input.z||0,-1,1),dash:!!d.input.dash,power:Math.max(.25,Math.min(1,+d.input.power||.65)),serveAim:d.input.serveAim!==undefined?d.input.serveAim:remoteInput.serveAim,aim:d.input.aim!==undefined?d.input.aim:remoteInput.aim,kind:d.input.kind||remoteInput.kind||'normal',drop:d.input.drop!==undefined?!!d.input.drop:!!remoteInput.drop};if(d.input.swing){if(state==='serveWait'&&server===-1)doServe(-1);else if(state==='rally'){C.swingT=Math.max(C.swingT,.3);C.swingReqT=Math.max(C.swingReqT,1.2);tryHit(C)}}}
  if(d.type==='snapshot'&&netRole==='guest'){applyMatchSnapshot(d.data)}
 }
 function sendSnapshot(){try{const data={sentAt:Date.now(),state,server,mode,replayPlaying,P:{x:P.x,z:P.z,swingT:P.swingT,diveT:P.diveT,diveX:P.diveX,diveZ:P.diveZ},C:{x:C.x,z:C.z,swingT:C.swingT,diveT:C.diveT,diveX:C.diveX,diveZ:C.diveZ},P2:{x:P2.x,z:P2.z,swingT:P2.swingT},C2:{x:C2.x,z:C2.z,swingT:C2.swingT},ball:{p:ball.pos.toArray(),v:ball.vel.toArray(),s:ball.spin.toArray(),net:ball.net,lastHitter:ball.lastHitter,bounces:ball.bounces},scoreHtml:$('score').innerHTML,msg:$('msg').textContent,spd:$('spd').textContent,finished:!$('res').hidden,rt:$('rt').textContent,rtClass:$('rt').className,rs:$('rs').textContent};if(netConn&&netConn.open)netConn.send({type:'snapshot',data});if(activeTournamentMatchRef&&activeTournament&&activeTournamentMatchId&&netRole==='host'&&state!=='menu'&&Date.now()-lastTournamentStateAt>=125){lastTournamentStateAt=Date.now();activeTournamentRef.child('live/'+activeTournamentMatchId).set(data).catch(()=>{})}}catch(e){}}
@@ -1357,7 +1357,7 @@ function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/
 addEventListener('resize',rs);
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Escape'&&state!=='menu'){e.preventDefault();togglePause();return}if(paused)return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;if(state==='serveWait'&&isLocalServer()){if(mode==='tennis')startServeCharge();else{const i=inp();serveAim={x:i.x,y:i.z};swing()}return}swing()}});
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&serveCharging)releaseServeCharge();else if(e.code==='Space'&&shotCharging)releaseShotCharge()});
-function swing(){if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'input',input:{...inp(),swing:true,power:pendingShotPower,serveAim,aim:shotAim&&shotAimExpires>performance.now()?shotAim:null,kind:pendingShotKind,drop:pendingShotKind==='drop'}});return}if(state==='serveWait'&&server===1&&serveT<=0){serveT=.001}else if(state==='rally'){/* 連打しても打撃要求を受け付け、シャトルが届いた瞬間に打てるようにする */P.swingT=Math.max(P.swingT,.3);P.swingReqT=Math.max(P.swingReqT,mode==='tennis'?1.8:1.2);tryHit(P)}}
+function swing(){if(netRole==='guest'){if(netConn&&netConn.open)netConn.send({type:'input',input:{...inp(),swing:true,power:pendingShotPower,serveAim,aim:shotAim&&shotAimExpires>performance.now()?shotAim:null,kind:pendingShotKind,drop:pendingShotKind==='drop'}});return}if(state==='serveWait'&&server===1&&serveT<=0){serveT=.001}else if(state==='rally'){/* 連打しても打撃要求を受け付け、シャトルが届いた瞬間に打てるようにする */P.swingT=Math.max(P.swingT,.3);P.swingReqT=Math.max(P.swingReqT,1.2);tryHit(P)}}
  function isLocalServer(){return netRole==='guest'?server===-1:server===1}
  function syncTouchActions(){const serving=state==='serveWait'&&isLocalServer(),inMatch=state==='serveWait'||state==='rally';$('bs').hidden=!inMatch;$('bp').hidden=!inMatch||serving;$('bd').hidden=!inMatch||serving;$('bs').textContent=serving?'サーブ':'スイング';if(!serving){serveCharging=false;if(!shotCharging)$('serveMeter').hidden=true}}
  function currentServePower(){const cycle=.8,elapsed=Math.max(0,(performance.now()-serveChargeStart)/1000),phase=(elapsed%cycle)/cycle,level=phase<.4?phase/.4:phase<.55?1:(1-phase)/.45;return .25+.75*Math.max(0,Math.min(1,level))}
