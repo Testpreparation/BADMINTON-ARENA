@@ -501,7 +501,7 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 <div id="homeActions" class="modes"><button id="playNav" class="mode"><span>🎮</span><b>プレイ</b><em>PLAY ▶</em></button><button id="friendNav" class="mode"><span>👥</span><b>フレンド対戦</b><em>PLAY ▶</em></button><button id="tournamentNav" class="mode"><span>🏆</span><b>トーナメント</b><em>PLAY ▶</em></button><button id="achievementNav" class="mode"><span>🎖️</span><b>実績・称号</b><em>COLLECTION</em></button></div>
 <div id="playPanel" hidden><h2 class="navHeading">競技を選択</h2><div class="modes"><button class="mode" data-m="tennis"><span>🎾</span><b>テニス</b><em>PLAY ▶</em></button><button class="mode" data-m="badminton"><span>🏸</span><b>バドミントン</b><em>PLAY ▶</em></button></div>
 <button id="playBack" class="navBack secondary">← メインメニューへ戻る</button></div>
-<details class="set"><summary>⚙ 設定</summary><label>音量<input id="vol" type="range" min="0" max="1" step=".05" value=".5"></label><label>画質<select id="q"><option value="3" selected>超高</option><option value="2.5">最高</option><option value="2">高</option><option value="1.5">中</option><option value="1">低</option></select></label><label>視野角 <span style="display:flex;align-items:center;gap:8px"><input id="fov" type="range" min="50" max="100" step="1" value="72" style="width:130px"><b id="fovValue">72°</b></span></label><button id="changeNickname" type="button" class="secondary">✏️ ニックネームを変更</button></details><small class="hint">PC：キーボード ／ スマホ：横向きで操作</small><button id="fs">⛶ 全画面</button></div></div>
+<details class="set"><summary>⚙ 設定</summary><label>音量<input id="vol" type="range" min="0" max="1" step=".05" value=".5"></label><label>画質<select id="q"><option value="3" selected>超高</option><option value="2.5">最高</option><option value="2">高</option><option value="1.5">中</option><option value="1">低</option></select></label><label>視野角 <span style="display:flex;align-items:center;gap:8px"><input id="fov" type="range" min="40" max="100" step="1" value="48" style="width:130px"><b id="fovValue">72°</b></span></label><button id="changeNickname" type="button" class="secondary">✏️ ニックネームを変更</button></details><small class="hint">PC：キーボード ／ スマホ：横向きで操作</small><button id="fs">⛶ 全画面</button></div></div>
 <div id="tournamentMenu" class="ov" hidden><div class="modecard tournamentCard"><button id="tournamentClose" class="secondary">← メインメニュー</button><h2>🏆 フレンドトーナメント</h2>
 <div id="tournamentHome"><p>フレンドを集めて大会を開催、または招待コードで参加します。</p><button id="tournamentCreateNav">＋ 大会を作る</button><button id="tournamentJoinNav">🔑 大会に参加</button><button id="tournamentResumeNav" class="secondary">開催中の大会を開く</button><p id="tournamentStatus" role="status"></p></div>
 <div id="tournamentCreatePanel" hidden><h3>大会設定</h3><label class="tournamentField">大会名<input id="tournamentName" maxlength="30" placeholder="フレンド大会"></label><label class="tournamentField">競技<select id="tournamentSport"><option value="tennis">🎾 テニス</option><option value="badminton">🏸 バドミントン</option></select></label><label class="tournamentField">試合形式<select id="tournamentFormat"><option value="singles">シングルス</option><option value="doubles">ダブルス</option></select></label><label class="tournamentField">参加人数<select id="tournamentSize"><option value="4">4人</option><option value="8">8人</option></select></label><button id="createTournament">大会を作成</button><button id="tournamentCreateBack" class="navBack secondary">戻る</button></div>
@@ -692,7 +692,7 @@ function updateAimPreview(aim,kind){
  if(!aim||state!=='rally'){hideAimPreview();return}
  const c=cfg,who=netRole==='guest'?-1:1;
  const tx=clamp((who===1?1:-1)*aim.x*(c.hw-.3),-c.hw+.3,c.hw-.3);
- const depth=aim.y<-.18?c.hl-.45:aim.y>.18?(mode==='badminton'?2.5:2.0):c.hl-2.2;
+ const depth=mode==='tennis'?c.hl-2.2:(aim.y<-.18?c.hl-.45:aim.y>.18?2.5:c.hl-2.2);
  const tz=who===1?-depth:depth,dx=tx-ball.pos.x,dz=tz-ball.pos.z,L=Math.hypot(dx,dz)||1;
  let deg=mode==='tennis'&&kind==='power'?c.thP:c.th;
  if(mode==='badminton'&&kind!=='power'&&kind!=='drop')deg=ball.pos.y>2.2?24:ball.pos.y<.85?72:ball.pos.y<1.5?64:ball.pos.y<2.2?54:50;
@@ -779,7 +779,7 @@ function missReaction(){
 function hit(who,tx,tz,deg,sp){sp=sp||0;const p=ball.pos,c=cfg,th=deg*D2R;ball.lastHitter=who;ball.bounces=0;ball.net=false;aiL=null;hitCd=.25;const q=(who===1?P:C).q||0;tx+=(R()-.5)*q*3;tz+=(R()-.5)*q*2;
  let dx=tx-p.x,dz=tz-p.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let s=Math.max(10,L*1.4);const v={x:0,y:0,z:0},w={x:dz*sp,y:0,z:-dx*sp};
  for(let i=0;i<16;i++){v.x=dx*s*Math.cos(th);v.z=dz*s*Math.cos(th);v.y=s*Math.sin(th);const l=simLand(p,v,c,w),Ld=Math.hypot(l.x-p.x,l.z-p.z)||.1;s=clamp(s*Math.pow(L/Ld,.6),3,70)}
- ball.vel.set(v.x,v.y,v.z);if(mode==='tennis')ball.vel.multiplyScalar(.97);ball.spin.set(w.x,mode==='tennis'?(sp===0?0:Math.sign(sp)*Math.min(22,Math.abs(sp)*.09)):0,w.z);(who===1?P:C).swingT=.3;spawn(ball.pos,6,3);if(practice&&who===1){rally++;updScore()}$('spd').textContent=Math.round(ball.vel.length()*3.6)+' km/h';racketSound(mode,who,ball.vel.length()*3.6)}
+ ball.vel.set(v.x,v.y,v.z);if(mode==='tennis')ball.vel.multiplyScalar(1.18);ball.spin.set(w.x,mode==='tennis'?(sp===0?0:Math.sign(sp)*Math.min(22,Math.abs(sp)*.09)):0,w.z);(who===1?P:C).swingT=.3;spawn(ball.pos,6,3);if(practice&&who===1){rally++;updScore()}$('spd').textContent=Math.round(ball.vel.length()*3.6)+' km/h';racketSound(mode,who,ball.vel.length()*3.6)}
 const tc={x:0,z:0,dash:false,drop:false};
 function inp(){let x=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+tc.x,z=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+tc.z;x=clamp(x,-1,1);z=clamp(z,-1,1);return{x,z,dash:!!(keys.ShiftLeft||keys.ShiftRight||tc.dash)}}
 function playerShot(who=1){
@@ -798,9 +798,7 @@ function playerShot(who=1){
  const aim=who===1?(shotAim&&shotAimExpires>performance.now()?shotAim:null):(remoteInput.aim||null);
  if(aim){
   tx=clamp((who===1?1:-1)*aim.x*(c.hw-.3),-c.hw+.3,c.hw-.3);
-  if(aim.y<-.18)dz=c.hl-.45;
-  else if(aim.y>.18)dz=mode==='badminton'?2.5:2.0;
-  else dz=c.hl-2.2;
+  if(mode==='badminton'){if(aim.y<-.18)dz=c.hl-.45;else if(aim.y>.18)dz=2.5;else dz=c.hl-2.2;}
  }
  // バドミントンのドロップは移動入力に関係なく、常にネット際へ落とす
  if(mode==='badminton'&&actionDrop){dz=2.2+R()*.8;deg=12}
@@ -1209,7 +1207,7 @@ function handleNetData(d){
 }
 function sendSnapshot(){try{const data={state,server,mode,replayPlaying,P:{x:P.x,z:P.z,swingT:P.swingT,diveT:P.diveT,diveX:P.diveX,diveZ:P.diveZ},C:{x:C.x,z:C.z,swingT:C.swingT,diveT:C.diveT,diveX:C.diveX,diveZ:C.diveZ},P2:{x:P2.x,z:P2.z,swingT:P2.swingT},C2:{x:C2.x,z:C2.z,swingT:C2.swingT},ball:{p:ball.pos.toArray(),v:ball.vel.toArray(),s:ball.spin.toArray(),net:ball.net,lastHitter:ball.lastHitter,bounces:ball.bounces},scoreHtml:$('score').innerHTML,msg:$('msg').textContent,spd:$('spd').textContent,finished:!$('res').hidden,rt:$('rt').textContent,rtClass:$('rt').className,rs:$('rs').textContent};if(netConn&&netConn.open)netConn.send({type:'snapshot',data});if(activeTournamentMatchRef&&activeTournament&&activeTournamentMatchId&&netRole==='host'&&state!=='menu'&&Date.now()-lastTournamentStateAt>=125){lastTournamentStateAt=Date.now();activeTournamentRef.child('live/'+activeTournamentMatchId).set(data).catch(()=>{})}}catch(e){}}
 function guestFrame(dt){if(!netConn||!netConn.open)return;const input={...inp(),swing:false},c=cfg;input.x=-input.x;if(state!=='point'&&C.diveT<=0){moveControlledCharacter(C,input,dt,-1)}const signature=[input.x.toFixed(2),input.z.toFixed(2),input.dash?1:0].join(','),now=performance.now();if((signature!==netLastInputSignature&&now-netLastInputSentAt>=30)||now-netLastInputSentAt>=150){netInputTimer=0;netConn.send({type:'input',input});netLastInputSignature=signature;netLastInputSentAt=now}}
-function currentFov(){const saved=localStorage.getItem('rsFov_'+(mode||'tennis'));return clamp(saved===null?(mode==='badminton'?72:60):Number(saved),50,100)}
+function currentFov(){const saved=localStorage.getItem('rsFov_'+(mode||'tennis'));return clamp(saved===null?(mode==='badminton'?72:48):Number(saved),40,100)}
 function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=currentFov();camera.updateProjectionMatrix()}
 addEventListener('resize',rs);
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Escape'&&state!=='menu'){e.preventDefault();togglePause();return}if(paused)return;keys[e.code]=true;if(e.code==='Space'){e.preventDefault();if(e.repeat)return;if(state==='serveWait'&&isLocalServer()){if(mode==='tennis')startServeCharge();else{const i=inp();serveAim={x:i.x,y:i.z};swing()}return}swing()}});
