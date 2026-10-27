@@ -580,7 +580,7 @@ function plain(w,h,d,c,x,y,z,o){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h
 function stand(ax,sg,off,len,rows,ps){for(let r=0;r<rows;r++){const h=.45+r*.55,p=off+r*1.05+.5,c=r%2?0x3a4558:0x2f3a4c;if(ax==='z')plain(len,h,1.05,c,0,h/2,sg*p);else plain(1.05,h,len,c,sg*p,h/2,0);for(let u=-len/2+.6;u<len/2-.3;u+=.85)if(R()>.12)ps.push(ax==='z'?[u,h,sg*p]:[sg*p,h,u])}}
 function crowd(ps){const n=ps.length,mx=new THREE.Matrix4(),col=new THREE.Color(),sk=[0xf6c9a0,0xe3a97d,0xc68a5e,0x8d5a3b],bd=new THREE.InstancedMesh(new THREE.CylinderGeometry(.2,.25,.62,8),M(0xffffff,{roughness:.8}),n),hd=new THREE.InstancedMesh(new THREE.SphereGeometry(.15,10,8),M(0xffffff,{roughness:.7}),n);ps.forEach((p,i)=>{mx.setPosition(p[0],p[1]+.36,p[2]);bd.setMatrixAt(i,mx);bd.setColorAt(i,col.setHSL(R(),.5+R()*.3,.4+R()*.2));mx.setPosition(p[0],p[1]+.84,p[2]);hd.setMatrixAt(i,mx);hd.setColorAt(i,col.set(sk[(R()*4)|0]))});courtG.add(bd,hd)}
 function addExtras(T,hw,hl){const bw=2*hw+8,bl=2*hl+9;[-1,1].forEach(s=>{const lm=new THREE.Mesh(new THREE.PlaneGeometry(8,2),new THREE.MeshBasicMaterial({map:logoTex(),transparent:true,depthWrite:false}));lm.rotation.x=-Math.PI/2;lm.position.set(0,.011,s*(hl+3.3));courtG.add(lm)});[-1,1].forEach(s=>{const t1=bannerTex(bw),t2=bannerTex(bl),o1={map:t1,emissiveMap:t1,emissive:0xffffff,emissiveIntensity:.45},o2={map:t2,emissiveMap:t2,emissive:0xffffff,emissiveIntensity:.45};box(bw,.9,.15,0xffffff,0,.45,s*(hl+4.4),o1);box(bw+.1,.06,.2,0x111827,0,.93,s*(hl+4.4));box(.15,.9,bl,0xffffff,s*(hw+3.9),.45,0,o2);box(.2,.06,bl+.1,0x111827,s*(hw+3.9),.93,0)});const ux=hw+1.5,ch=T?2.2:1.7;[[-.35,-.35],[.35,-.35],[-.35,.35],[.35,.35]].forEach(q=>cyl(.04,.04,ch,0x9aa3ad,ux+q[0],ch/2,q[1]));box(.9,.08,.9,0x1e293b,ux,ch,0);box(.08,.6,.9,0x1e293b,ux+.42,ch+.34,0);cyl(.16,.19,.5,0x1d4ed8,ux,ch+.35,0);const hh=new THREE.Mesh(new THREE.SphereGeometry(.14,12,10),M(0xf1c9a5));hh.position.set(ux,ch+.75,0);courtG.add(hh)}
-function grain(w,d){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,256,256);for(let i=0;i<30;i++){const gx=R()*256,gy=R()*256,rd=20+R()*50,gr=g.createRadialGradient(gx,gy,0,gx,gy,rd);gr.addColorStop(0,'rgba(0,0,0,.05)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(gx-rd,gy-rd,rd*2,rd*2)}for(let i=0;i<6000;i++){g.fillStyle='rgba(0,0,0,'+(.04+R()*.09)+')';g.fillRect(R()*256,R()*256,2,2)}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(w/2,d/2);t.anisotropy=4;return t}
+function grain(w,d,kind='hardcourt'){const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,512,512);if(kind==='wood'){for(let y=0;y<512;y+=64){g.fillStyle='rgba(120,75,35,'+(.025+R()*.025)+')';g.fillRect(0,y,512,64);g.fillStyle='rgba(65,40,20,.12)';g.fillRect(0,y,512,2);g.fillStyle='rgba(255,255,255,.18)';g.fillRect(0,y+4,512,1);for(let j=0;j<34;j++){const yy=y+R()*62;g.strokeStyle='rgba(105,70,38,'+(.025+R()*.035)+')';g.lineWidth=.5+R()*1.2;g.beginPath();g.moveTo(R()*80,yy);g.bezierCurveTo(150,yy-3,300,yy+3,512,yy+(R()-.5)*5);g.stroke()}for(let x=R()*256;x<512;x+=256){g.fillStyle='rgba(55,35,20,.08)';g.fillRect(x,y,1,64)}}}else{const grad=g.createLinearGradient(0,0,512,512);grad.addColorStop(0,'rgba(255,255,255,.10)');grad.addColorStop(.5,'rgba(0,0,0,.035)');grad.addColorStop(1,'rgba(255,255,255,.06)');g.fillStyle=grad;g.fillRect(0,0,512,512);for(let i=0;i<75;i++){const x=R()*512,y=R()*512,rad=8+R()*65,gr=g.createRadialGradient(x,y,0,x,y,rad);gr.addColorStop(0,'rgba(0,0,0,.035)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(x-rad,y-rad,rad*2,rad*2)}for(let i=0;i<18000;i++){const v=.025+R()*.075;g.fillStyle='rgba(0,0,0,'+v+')';g.fillRect(R()*512,R()*512,1,1)}}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(w/2,d/2);t.anisotropy=8;return t}
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x1b2548);scene.fog=new THREE.Fog(0x1b2548,45,110);
 const skyM=new THREE.Mesh(new THREE.SphereGeometry(150,24,16),new THREE.MeshBasicMaterial({map:skyTex(),side:THREE.BackSide,fog:false,depthWrite:false}));skyM.renderOrder=-1;scene.add(skyM);
 const camera=new THREE.PerspectiveCamera(60,1,.1,200);
@@ -765,16 +765,19 @@ function buildCourt(m){
   scene.background.set(bgc);scene.fog.color.set(bgc);scene.fog.near=T?48:60;scene.fog.far=T?125:145;
   skyM.visible=false;sun.intensity=T?1.0:.62;
   const pl=(w,d,mt,y)=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mt);p.rotation.x=-Math.PI/2;p.position.y=y;p.receiveShadow=true;courtG.add(p);return p};
-  const gm=(c,w,d)=>{const mt=M(c,{roughness:.55});mt.map=grain(w,d);return mt};
+  const gm=(c,w,d,kind='hardcourt')=>{const mt=M(c,{roughness:kind==='wood'?.72:.82,metalness:0});mt.map=grain(w,d,kind);mt.bumpMap=mt.map;mt.bumpScale=kind==='wood'?.035:.012;return mt};
   const HX=hw+15,HZ=hl+19,ps=[];
   const ln=(a,b,c,d,y=.018,thick=.035)=>box(Math.abs(c-a)+thick,.022,Math.abs(d-b)+thick,0xffffff,(a+c)/2,y,(b+d)/2,{roughness:.7});
   pl(2*HX,2*HZ,M(T?0x101b2a:0x101827,{roughness:.86}),0);
-  pl(2*hw+7,2*hl+8,gm(T?0x173c35:0x12365b,2*hw+7,2*hl+8),.004);
-  pl(2*hw,2*hl,gm(T?0x287b55:0x1478c9,2*hw,2*hl),.009);
-  ln(-hw,-hl,hw,-hl);ln(-hw,hl,hw,hl);ln(-hw,-hl,-hw,hl);ln(hw,-hl,hw,hl);
+  pl(2*hw+7,2*hl+8,gm(T?0x173c35:0x12365b,2*hw+7,2*hl+8,T?'hardcourt':'wood'),.004);
+  const courtVisualHW=T?5.485:hw;
+  pl(2*courtVisualHW,2*hl,gm(T?0x287b55:0x1478c9,2*courtVisualHW,2*hl,T?'hardcourt':'wood'),.009);
+  ln(-courtVisualHW,-hl,courtVisualHW,-hl);ln(-courtVisualHW,hl,courtVisualHW,hl);ln(-courtVisualHW,-hl,-courtVisualHW,hl);ln(courtVisualHW,-hl,courtVisualHW,hl);
   if(T){
+   // Show doubles court width and retain singles lines; physics dimensions remain unchanged.
+   ln(-hw,-hl,-hw,hl);ln(hw,-hl,hw,hl);
    ln(-hw,6.4,hw,6.4);ln(-hw,-6.4,hw,-6.4);ln(0,-6.4,0,6.4);
-   ln(-hw,-5.5,hw,-5.5);ln(-hw,5.5,hw,5.5);
+   ln(-courtVisualHW,-5.5,courtVisualHW,-5.5);ln(-courtVisualHW,5.5,courtVisualHW,5.5);
   }else{
    const sw=Math.min(2.59,hw-.25);
    ln(-sw,-hl,-sw,hl);ln(sw,-hl,sw,hl);
