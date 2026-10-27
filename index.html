@@ -420,6 +420,66 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
   #serveMeter {right:calc(env(safe-area-inset-right,0px) + 2vw + 174px)!important;height:70px!important}
 }
 
+
+/* 待機ルーム：競技変更欄を必要な幅だけにし、画面の高さに合わせて自動縮小 */
+#roomSportControl{
+  display:block;
+  width:fit-content!important;
+  max-width:100%;
+  box-sizing:border-box;
+  margin:6px auto 8px!important;
+  padding:6px 9px!important;
+}
+#roomSportControl label{
+  justify-content:flex-start!important;
+  gap:10px!important;
+  white-space:nowrap;
+}
+#roomSportSelect{
+  width:auto;
+  max-width:min(48vw,190px);
+  padding:6px 8px!important;
+  font-size:12px;
+}
+#roomSportNote{line-height:1.25}
+@media (pointer:coarse) and (max-width:900px){
+  .waitingPanel{
+    width:min(560px,calc(100vw - 12px));
+    max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 8px);
+    padding:clamp(7px,1.8vh,12px);
+  }
+  #roomSportControl{margin:4px auto 5px!important;padding:5px 7px!important}
+  #roomSportSelect{max-width:42vw;font-size:11px;padding:5px 6px!important}
+}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:520px){
+  .waitingPanel{
+    padding:5px 9px;
+    border-radius:16px;
+    max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 6px);
+  }
+  .waitingTop{padding-bottom:4px;font-size:9px}
+  .waitingPanel h2{margin:3px 0 2px;font-size:clamp(16px,4.2vh,22px)}
+  .waitingPanel .waitingIntro{margin:0 0 3px;font-size:9px;line-height:1.2}
+  #roomSportControl{margin:3px auto 4px!important;padding:3px 6px!important}
+  #roomSportSelect{padding:3px 5px!important;font-size:10px}
+  #roomSportNote{font-size:9px!important;margin-top:2px!important}
+  .waitingCodeBox{padding:4px}
+  .waitingPanel #waitingCode{font-size:clamp(22px,6.5vh,32px);margin:0 0 2px;letter-spacing:.12em}
+  .waitingPanel .copyRoomCode{padding:4px 9px;font-size:10px}
+  .playerSlots{gap:4px;margin:4px 0}
+  .playerSlot{padding:4px 3px}
+  .playerIcon{font-size:15px}
+  .playerLabel{font-size:7px;margin-bottom:1px}
+  .playerSlot b{font-size:9px}
+  #teamControls,#doublesNpcSettings{padding:4px!important;margin:3px 0!important}
+  .waitingPanel .waitingStatus{min-height:1em;padding:2px;font-size:9px}
+  .waitingPanel #startMatch{margin:3px 0 0;padding:8px;font-size:13px}
+  .waitingPanel button{padding-top:6px;padding-bottom:6px}
+}
+@media (pointer:coarse) and (orientation:portrait){
+  .waitingPanel{max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 8px)}
+}
+
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
  <div class="splashGlow" aria-hidden="true"></div>
