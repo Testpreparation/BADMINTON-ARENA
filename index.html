@@ -552,7 +552,7 @@ const aimLine=new THREE.Line(aimLineGeometry,new THREE.LineBasicMaterial({color:
 const aimLanding=new THREE.Mesh(new THREE.RingGeometry(.18,.29,24),new THREE.MeshBasicMaterial({color:0x8be9ff,transparent:true,opacity:.9,side:THREE.DoubleSide,depthTest:false}));aimLanding.rotation.x=-Math.PI/2;aimLanding.position.y=.035;aimLanding.renderOrder=21;aimLanding.visible=false;scene.add(aimLanding);
 let cfg=CFG.tennis,mode='tennis',state='menu',server=1,score,msgT=0,acc=0,hitCd=0,serveT=0,aiT=0,aiL=null,over=null,tm=0,paused=false,pointScoreShown=false,pointWinner=1,suppressPointScore=false;const keys={};let serveCharging=false,serveChargeStart=0,servePower=.65,shotCharging=false,shotPower=.65,pendingShotPower=.65,chargeKind='';
 let selectedSport='tennis',selectedFormat='singles',netRole='offline',netPeer=null,netConn=null,roomBusy=false,roomTimeout=null,screenMode='sport',remoteInput={x:0,z:0,dash:false,power:.65},netLastSnapshot=0,netInputTimer=0,netLastInputSignature='',netLastInputSentAt=0,netGuestSnapshotSeen=false,friendNames={host:'部屋主',guest:'フレンド'};
-let fbAuth=null,fbDb=null,activeRoomRef=null,roomListeners=[],roomDisconnectRef=null,lastHostNonce='',lastGuestNonce='';netLastInputSignature='';netLastInputSentAt=0;
+let fbAuth=null,fbDb=null,activeRoomRef=null,roomListeners=[],roomDisconnectRef=null,lastHostNonce='',lastGuestNonce='',lastGuestSwingNonce='';netLastInputSignature='';netLastInputSentAt=0;
 let navigationIntent='play',activeTournament=null,activeTournamentRef=null,activeTournamentMatchRef=null,activeTournamentMatchId=null,activeTournamentMatch=null,isSpectatingTournament=false,spectatorView='player',spectatorListener=null,tournamentListener=null,lastTournamentStateAt=0;
 const FIREBASE_CONFIG={apiKey:'AIzaSyB85NfBhRRSLsLxhwewaJYJjWSPxLzaJ'+'KE',authDomain:'sports-app-2e1bb.firebaseapp.com',databaseURL:'https://sports-app-2e1bb-default-rtdb.firebaseio.com',projectId:'sports-app-2e1bb',storageBucket:'sports-app-2e1bb.firebasestorage.app',messagingSenderId:'614670493916',appId:'1:614670493916:web:2bc45bf2fc2fce2af2ec19'};
 function withTimeout(promise,ms,label){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+'（タイムアウト）')),ms))])}
@@ -1106,7 +1106,7 @@ async function createRoom(){
     setWaitingPlayerStatus('あなた（部屋主・接続済み）','参加待ち…');
    }
   });
-  listenRoom(ref.child('guestMessage'),'value',snap=>{const v=snap.val();if(v&&v.nonce&&v.nonce!==lastGuestNonce){lastGuestNonce=v.nonce;handleNetData(v.data)}});listenRoom(ref.child('guestSwing'),'value',snap=>{const v=snap.val();if(v&&v.nonce&&v.nonce!==lastGuestNonce+'-swing'){lastGuestNonce=v.nonce;handleNetData(v.data)}});
+  listenRoom(ref.child('guestMessage'),'value',snap=>{const v=snap.val();if(v&&v.nonce&&v.nonce!==lastGuestNonce){lastGuestNonce=v.nonce;handleNetData(v.data)}});listenRoom(ref.child('guestSwing'),'value',snap=>{const v=snap.val();if(v&&v.nonce&&v.nonce!==lastGuestSwingNonce){lastGuestSwingNonce=v.nonce;handleNetData(v.data)}});
   roomTimeout=setTimeout(()=>{if(netRole==='host'&&activeRoomRef)roomMessage('参加待ちが続いています。相手に6桁の番号を確認してもらってください。')},120000);
  }catch(e){roomBusy=false;netRole='offline';roomMessage('Firebaseに接続できません：'+(e&&e.message?e.message:'設定を確認してください'))}
 }
