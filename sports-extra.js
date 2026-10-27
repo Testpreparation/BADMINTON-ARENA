@@ -155,7 +155,7 @@ function onKeyDown(e){
  if(sport==='volleyball'&&e.code>='Digit1'&&e.code<='Digit4'){serveType=Number(e.code.slice(-1))-1;buildActionButtons()}
 }
 function onKeyUp(e){keys[e.code]=false}
-function togglePause(){if(!active||!root.querySelector('#seSetup').classList.contains('seHidden')===false)return;paused=!paused;root.querySelector('#sePause').classList.toggle('seHidden',!paused);if(!paused)lastTime=performance.now()}
+function togglePause(){if(!active||!root.querySelector('#seSetup').classList.contains('seHidden'))return;paused=!paused;root.querySelector('#sePause').classList.toggle('seHidden',!paused);if(!paused)lastTime=performance.now()}
 function hitAction(){
  if(!active||paused||!userPlayer||!ball||!root.querySelector('#seSetup').classList.contains('seHidden')===false)return;
  if(gameState==='serve'){
@@ -228,8 +228,6 @@ function updateTableTennis(dt){
    point(side===0?1:0,'2バウンド');return;
   }else{
    lastBounceSide=side;sameSideBounces=1;ball.vel.y=Math.abs(ball.vel.y)*.78;
-   if(side===1&&ball.vel.z>0){ball.vel.z=-Math.max(3.7,Math.abs(ball.vel.z));}
-   else if(side===0&&ball.vel.z<0){ball.vel.z=Math.max(3.7,Math.abs(ball.vel.z));}
   }
  }
  if(ball.pos.z>.25&&ball.vel.z>0&&ball.pos.y<1.65&&ball.pos.y>.76&&gameState==='rally'&&lastHitter===0){
@@ -272,7 +270,7 @@ function tick(now){
  if(!paused)updateGame(dt);
  if(renderer&&scene&&camera)renderer.render(scene,camera);
 }
-function togglePause(){if(!active||gameState==='finished'||!root.querySelector('#seSetup').classList.contains('seHidden')===false)return;paused=!paused;root.querySelector('#sePause').classList.toggle('seHidden',!paused);if(!paused)lastTime=performance.now()}
+function togglePause(){if(!active||gameState==='finished'||!root.querySelector('#seSetup').classList.contains('seHidden'))return;paused=!paused;root.querySelector('#sePause').classList.toggle('seHidden',!paused);if(!paused)lastTime=performance.now()}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function closeGame(){
  active=false;paused=false;if(frame)cancelAnimationFrame(frame);window.removeEventListener('resize',resize);window.removeEventListener('keydown',onKeyDown);window.removeEventListener('keyup',onKeyUp);
