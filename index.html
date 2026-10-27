@@ -448,6 +448,33 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 <script>
+
+// 起動画面は操作不要で自動的に既存のメインメニューへ移行する。
+(()=>{
+ const splash=document.getElementById('appSplash');
+ if(!splash)return;
+ let started=false,finished=false;
+ function finish(){
+  if(finished)return;
+  finished=true;
+  splash.hidden=true;
+  splash.setAttribute('aria-hidden','true');
+  splash.classList.remove('leaving');
+ }
+ function enterApp(){
+  if(started||finished)return;
+  started=true;
+  splash.classList.add('leaving');
+  splash.addEventListener('transitionend',finish,{once:true});
+  window.setTimeout(finish,550);
+ }
+ // transitionイベントが発生しない環境でも必ずメニューへ進む
+ window.setTimeout(enterApp,250);
+ window.setTimeout(finish,1500);
+})();
+
+</script>
+<script>
 (function(){
 const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),R=Math.random,DT=1/120,D2R=Math.PI/180;
 const CFG={
@@ -1113,31 +1140,5 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,+$('q').value,3));rs();buildCou
  if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
 </script>
-<script>
 
-// 起動画面は操作不要で自動的に既存のメインメニューへ移行する。
-(()=>{
- const splash=document.getElementById('appSplash');
- if(!splash)return;
- let started=false,finished=false;
- function finish(){
-  if(finished)return;
-  finished=true;
-  splash.hidden=true;
-  splash.setAttribute('aria-hidden','true');
-  splash.classList.remove('leaving');
- }
- function enterApp(){
-  if(started||finished)return;
-  started=true;
-  splash.classList.add('leaving');
-  splash.addEventListener('transitionend',finish,{once:true});
-  window.setTimeout(finish,550);
- }
- // transitionイベントが発生しない環境でも必ずメニューへ進む
- window.setTimeout(enterApp,500);
- window.setTimeout(finish,1200);
-})();
-
-</script>
 </body></html>
