@@ -513,7 +513,22 @@ function initFirebase(){
  if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
  fbAuth=firebase.auth();fbDb=firebase.database();
  const authPromise=fbAuth.currentUser?Promise.resolve(fbAuth.currentUser):fbAuth.signInAnonymously().then(r=>r.user).catch(e=>{const code=e&&e.code?e.code:'';if(code==='auth/operation-not-allowed')throw new Error('Firebase Authenticationで「匿名」ログインを有効にしてください。');if(code==='auth/unauthorized-domain')throw new Error('Firebase Authenticationの承認済みドメインに testpreparation.github.io を追加してください。');throw new Error('Firebase匿名認証エラー '+code+': '+(e&&e.message?e.message:'設定を確認してください'));});
- return withTimeout(authPromise,12000,'Firebase認証').then(user=>withTimeout(fbDb.ref('.info/connected').once('value'),10000,'Firebaseデータベース接続').then(()=>user));
+ return withTimeout(authPromise,12000,'Firebase認証').then(user=>{
+  // once('value')は未接続でも false を返すため、実際に接続済みになるまで待つ
+  return withTimeout(new Promise((resolve,reject)=>{
+   const connectedRef=fbDb.ref('.info/connected');
+   const onConnection=snap=>{
+    if(snap.val()===true){
+     connectedRef.off('value',onConnection);
+     resolve(user);
+    }
+   };
+   connectedRef.on('value',onConnection,error=>{
+    connectedRef.off('value',onConnection);
+    reject(error);
+   });
+  }),15000,'Firebaseデータベース接続');
+ });
 }
 function listenRoom(ref,event,fn){ref.on(event,fn);roomListeners.push({ref,event,fn})}
 let chatQueue=[],chatShowing=false;
@@ -994,10 +1009,12 @@ async function joinRoom(){
  try{
   const user=await initFirebase();if(netRole!=='guest')return;
   const ref=fbDb.ref('badminton_rooms/'+code);
-  const roomSnap=await ref.once('value');
+  const roomSnap=await withTimeout(ref.once('value'),12000,'部屋の検索');
+  if(netRole!=='guest')return;
   if(!roomSnap.exists()||!roomSnap.child('hostId').exists()){roomBusy=false;netRole='offline';roomMessage('部屋が見つかりません。番号を確認し、部屋主が待機中か確認してください。');setWaitingPlayerStatus('部屋が見つかりません','参加できません');return}
   selectedSport=roomSnap.child('sport').val()||selectedSport;selectedFormat=roomSnap.child('format').val()||'singles';const roomDiff=roomSnap.child('npcDiff').val();if(Number.isInteger(roomDiff)&&roomDiff>=0&&roomDiff<=2){OPT.diff=roomDiff;save();paint()}$('doublesNpcSettings').hidden=selectedFormat!=='doubles';$('npcStrength').value=String(OPT.diff);$('npcStrength').disabled=true;
-  const joined=await ref.child('guestId').transaction(v=>v===null?user.uid:undefined);
+  const joined=await withTimeout(ref.child('guestId').transaction(v=>v===null?user.uid:undefined),12000,'部屋への参加登録');
+  if(netRole!=='guest')return;
   if(!joined.committed){roomBusy=false;netRole='offline';roomMessage('この部屋にはすでに参加者がいます。別の部屋を作成してください。');return}
   activeRoomRef=ref;roomTeams={host:roomSnap.child('hostTeam').val()==='B'?'B':'A',guest:roomSnap.child('guestTeam').val()==='A'?'A':'B'};paintTeams();netConn=makeFirebaseConnection();listenRoom(ref.child('hostTeam'),'value',snap=>{const v=snap.val();if(v==='A'||v==='B'){roomTeams.host=v;paintTeams()}});listenRoom(ref.child('guestTeam'),'value',snap=>{const v=snap.val();if(v==='A'||v==='B'){roomTeams.guest=v;paintTeams()}});
   try{await ref.child('guestId').onDisconnect().remove()}catch(e){}
@@ -1005,7 +1022,13 @@ async function joinRoom(){
   roomMessage('部屋主に接続しました！部屋主が対戦を開始するまでお待ちください。');
   listenRoom(ref.child('npcDiff'),'value',snap=>{const v=snap.val();if(Number.isInteger(v)&&v>=0&&v<=2){OPT.diff=v;$('npcStrength').value=String(v);save();paint()}});listenRoom(ref.child('hostMessage'),'value',snap=>{const v=snap.val();if(v&&v.nonce&&v.nonce!==lastHostNonce){lastHostNonce=v.nonce;handleNetData(v.data)}});
   failTimer=setTimeout(()=>{if(netRole==='guest'&&activeRoomRef)roomMessage('接続待ちが長くなっています。部屋主が待機中か確認してください。')},120000);
- }catch(e){roomBusy=false;netRole='offline';roomMessage('Firebase接続エラー：'+(e&&e.message?e.message:'設定を確認してください'))}
+ }catch(e){
+  roomBusy=false;
+  if(netRole==='guest')netRole='offline';
+  const detail=e&&e.message?e.message:'設定を確認してください';
+  roomMessage('部屋に参加できませんでした：'+detail+'。通信状況とFirebaseのデータベースルールを確認してください。');
+  setWaitingPlayerStatus('接続できませんでした','もう一度お試しください');
+ }
 }
 function applyMatchSnapshot(a){if(!a||!a.P||!a.C||!a.ball)return;state=a.state;server=a.server;mode=a.mode;cfg=CFG[mode]||CFG.tennis;P.x=a.P.x;P.z=a.P.z;C.x=a.C.x;C.z=a.C.z;if(a.P2){P2.x=a.P2.x;P2.z=a.P2.z;P2.swingT=a.P2.swingT||0}if(a.C2){C2.x=a.C2.x;C2.z=a.C2.z;C2.swingT=a.C2.swingT||0}P.swingT=a.P.swingT;C.swingT=a.C.swingT;P.diveT=a.P.diveT||0;P.diveX=a.P.diveX||0;P.diveZ=a.P.diveZ||0;C.diveT=a.C.diveT||0;C.diveX=a.C.diveX||0;C.diveZ=a.C.diveZ||0;ball.pos.set(a.ball.p[0],a.ball.p[1],a.ball.p[2]);ball.prev.copy(ball.pos);ball.vel.set(a.ball.v[0],a.ball.v[1],a.ball.v[2]);ball.spin.set(a.ball.s[0],a.ball.s[1],a.ball.s[2]);ball.net=a.ball.net;ball.lastHitter=a.ball.lastHitter;ball.bounces=a.ball.bounces;P.g.visible=C.g.visible=ballG.visible=true;if(a.scoreHtml)$('score').innerHTML=a.scoreHtml;$('msg').textContent=a.msg||'';$('spd').textContent=a.spd||'';if(isSpectatingTournament){$('spectatorScore').textContent=$('msg').textContent;return}if(a.finished){$('hud').hidden=true;$('touch').hidden=true;$('mb').hidden=true;$('res').hidden=false;$('rt').textContent=a.rt||'試合終了';$('rt').className=a.rtClass||'';$('rs').textContent=a.rs||''}else{$('res').hidden=true;$('hud').hidden=false;$('touch').hidden=!COARSE;$('mb').hidden=false}}
 function handleNetData(d){
