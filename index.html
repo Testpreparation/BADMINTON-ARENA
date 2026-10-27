@@ -380,6 +380,10 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
   #fs{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);z-index:21}
   .hint{display:none}
 }
+
+/* スマートフォンのメインメニューでは全画面ボタンを表示しない。PC・タブレットや試合中の表示は変更しない */
+@media (pointer:coarse) and (max-width:640px){#menu #fs{display:none!important}}
+@media (pointer:coarse) and (max-height:500px){#menu #fs{display:none!important}}
 </style></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite">
  <div class="splashGlow" aria-hidden="true"></div>
