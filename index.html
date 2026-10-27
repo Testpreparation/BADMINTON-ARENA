@@ -590,19 +590,82 @@ const sc=sun.shadow.camera;sc.left=-24;sc.right=24;sc.top=24;sc.bottom=-24;sc.ne
 const courtG=new THREE.Group();scene.add(courtG);
 const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c},o||{}));
 function box(w,h,d,c,x,y,z,o){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(c,o));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;courtG.add(m);return m}
-function mkPlayer(c){const g=new THREE.Group(),hi=(c%251)%4,sh=M(c,{roughness:.45}),sk=M([0xf6c9a0,0xf1c9a5,0xe0aa7e,0xc98d62][hi],{roughness:.6}),hr=M([0x2b1d14,0x6b3f1d,0x15151a,0xd9a441][hi],{roughness:.5}),wh=M(0xffffff,{roughness:.5}),dk=M(0x1a1a22,{roughness:.3}),sn=M(0x22304a,{roughness:.6});
- const mm=(geo,mat,x,y,z,par)=>{const o=new THREE.Mesh(geo,mat);o.position.set(x,y,z);o.castShadow=true;(par||g).add(o);return o};
- const tg=new THREE.CylinderGeometry(.26,.21,.56,18);tg.translate(0,.28,0);const tor=mm(tg,sh,0,.78,0);
- mm(new THREE.CylinderGeometry(.225,.245,.2,16),sn,0,.69,0);mm(new THREE.CylinderGeometry(.08,.09,.1,10),sk,0,.6,0,tor);const cl=mm(new THREE.TorusGeometry(.095,.025,8,14),wh,0,.57,0,tor);cl.rotation.x=Math.PI/2;
- const hdG=new THREE.Group();hdG.position.y=.84;tor.add(hdG);const head=mm(new THREE.SphereGeometry(.29,26,18),sk,0,0,0,hdG);head.scale.set(1,.95,.97);const hair=mm(new THREE.SphereGeometry(.3,24,14,0,Math.PI*2,0,Math.PI*.55),hr,0,.02,0,hdG);hair.rotation.x=.35;const hb=mm(new THREE.TorusGeometry(.283,.024,8,28),wh,0,.07,0,hdG);hb.rotation.x=Math.PI/2;
- const ey=[-1,1].map(s=>{const e=mm(new THREE.SphereGeometry(.045,10,8),dk,s*.098,.03,-.262,hdG);e.scale.set(.8,1.2,.5);mm(new THREE.SphereGeometry(.013,6,5),wh,s*.098+.01,.05,-.282,hdG);const brow=mm(new THREE.BoxGeometry(.07,.014,.012),hr,s*.1,.105,-.268,hdG);brow.rotation.z=s*.15;mm(new THREE.SphereGeometry(.05,8,6),sk,s*.285,0,0,hdG).scale.set(.5,1,.8);return e});
- mm(new THREE.SphereGeometry(.028,8,6),sk,0,-.025,-.28,hdG);const mo=mm(new THREE.TorusGeometry(.05,.009,6,14,Math.PI),dk,0,-.085,-.266,hdG);mo.rotation.z=Math.PI;
- const a=new THREE.Group();a.position.set(.36,.5,0);tor.add(a);mm(new THREE.CylinderGeometry(.085,.075,.26,12),sh,0,.12,0,a);mm(new THREE.SphereGeometry(.085,12,10),sh,0,0,0,a);const fa=new THREE.Group();fa.position.y=.25;a.add(fa);mm(new THREE.CylinderGeometry(.058,.05,.26,10),sk,0,.12,0,fa);mm(new THREE.SphereGeometry(.068,12,10),sk,0,.27,0,fa);const rk=mkRacket();rk.position.y=.27;fa.add(rk);
- const la=new THREE.Group();la.position.set(-.36,.5,0);tor.add(la);mm(new THREE.SphereGeometry(.085,12,10),sh,0,0,0,la);mm(new THREE.CylinderGeometry(.075,.085,.24,12),sh,0,-.11,0,la);mm(new THREE.CylinderGeometry(.05,.055,.24,10),sk,0,-.34,0,la);mm(new THREE.SphereGeometry(.065,12,10),sk,0,-.47,0,la);
- const mk=x=>{const lg=new THREE.Group();lg.position.set(x,.77,0);g.add(lg);mm(new THREE.CylinderGeometry(.085,.065,.4,12),sk,0,-.25,0,lg);mm(new THREE.CylinderGeometry(.07,.07,.2,12),wh,0,-.52,0,lg);const so=mm(new THREE.SphereGeometry(.12,14,10),wh,0,-.69,-.05,lg);so.scale.set(.85,.6,1.45);mm(new THREE.BoxGeometry(.17,.035,.32),sh,0,-.745,-.06,lg);return lg};
- const L1=mk(-.14),L2=mk(.14);g.userData.rk=rk;g.userData.arm=a;g.userData.legs=[L1,L2];const ph=R()*6,cl01=v=>Math.max(0,Math.min(1,v));
- tor.onBeforeRender=function(){const t=performance.now()/1000+ph,w=cl01(Math.abs(L1.rotation.x)/.9),s=cl01((-.6-a.rotation.x)/2.1);tor.position.y=.78+Math.abs(L1.rotation.x)*.04+Math.sin(t*2.4)*.004;tor.rotation.y=s*.4;tor.rotation.x=-s*.1-w*.07;fa.rotation.x=-.4+.4*s;la.rotation.x=L2.rotation.x*.8;la.rotation.z=-(.1+s*.7);hdG.rotation.x=Math.sin(t*1.7)*.025;const blink=(t*.4+ph)%1<.035?.12:1;ey.forEach(e=>e.scale.y=1.2*blink)};
- g.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(g);return g}
+function mkPlayer(c){
+ const g=new THREE.Group(),hi=(Math.abs(c)%251)%4,
+  sh=M(c,{roughness:.68}),sk=M([0xf2c29c,0xe8b18a,0xc98c62,0x8b573b][hi],{roughness:.72}),
+  hr=M([0x24180f,0x4a2b1a,0x17191f,0x9b743d][hi],{roughness:.82}),
+  wh=M(0xf5f7fb,{roughness:.48}),dk=M(0x202631,{roughness:.72}),
+  trim=M(0x182a48,{roughness:.55}),sole=M(0xdde3eb,{roughness:.55});
+ const mm=(geo,mat,x,y,z,par)=>{const o=new THREE.Mesh(geo,mat);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;(par||g).add(o);return o};
+ const limb=(a,b,r1,r2,mat,par)=>{const d=new THREE.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]),o=mm(new THREE.CylinderGeometry(r2,r1,d.length(),14),mat,(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,par);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o};
+ // 体幹は必ず g.children[0]：既存のユニフォーム色変更との互換性を維持
+ const torsoGeo=new THREE.CylinderGeometry(.235,.19,.55,24,1,false);torsoGeo.translate(0,.28,0);
+ const tor=mm(torsoGeo,sh,0,.77,0);
+ // 肩・腰・ショーツ。身体の輪郭を丸みのあるアスリート体型に
+ mm(new THREE.SphereGeometry(.235,20,14),sh,0,.99,0,tor).scale.set(1.18,.56,.88);
+ mm(new THREE.CylinderGeometry(.19,.205,.19,20),trim,0,.06,0,tor);
+ mm(new THREE.CylinderGeometry(.205,.17,.27,20),dk,0,-.13,0,tor);
+ // 首と頭
+ mm(new THREE.CylinderGeometry(.075,.09,.13,14),sk,0,.57,0,tor);
+ const hdG=new THREE.Group();hdG.position.set(0,.79,-.005);tor.add(hdG);
+ const head=mm(new THREE.SphereGeometry(.235,28,22),sk,0,0,0,hdG);head.scale.set(.94,1.08,.91);
+ // 耳・髪のキャップと後ろ髪
+ [-1,1].forEach(s=>mm(new THREE.SphereGeometry(.045,12,10),sk,s*.225,-.015,0,hdG).scale.set(.7,1,.65));
+ const cap=mm(new THREE.SphereGeometry(.241,26,18,0,Math.PI*2,0,Math.PI*.56),hr,0,.055,.012,hdG);cap.scale.set(1.02,1.02,1);
+ mm(new THREE.SphereGeometry(.19,18,14),hr,0,-.085,.105,hdG).scale.set(1,.8,.65);
+ // 前髪の束を作り、髪型に立体感を追加
+ for(let j=0;j<5;j++){const x=(j-2)*.073;const bang=mm(new THREE.SphereGeometry(.065,10,8),hr,x,.12,-.177,hdG);bang.scale.set(.8,.8,.55);bang.rotation.z=(j-2)*-.12}
+ // 目・眉・鼻・口。顔はコート正面（-Z）向き
+ [-1,1].forEach(s=>{
+  const brow=mm(new THREE.BoxGeometry(.066,.014,.018),hr,s*.083,.045,-.207,hdG);brow.rotation.z=s*.12;
+  mm(new THREE.SphereGeometry(.027,12,10),wh,s*.082,.006,-.211,hdG).scale.set(1,.85,.42);
+  mm(new THREE.SphereGeometry(.013,10,8),dk,s*.082,.006,-.222,hdG).scale.set(1,1,.5);
+ });
+ mm(new THREE.SphereGeometry(.023,10,8),sk,0,-.035,-.222,hdG).scale.set(.8,.8,.7);
+ const mouth=mm(new THREE.TorusGeometry(.031,.006,6,12,Math.PI),dk,0,-.092,-.204,hdG);mouth.rotation.z=Math.PI;
+ // ユニフォームの襟と細い胸ライン
+ const collar=mm(new THREE.TorusGeometry(.085,.012,8,20),wh,0,.515,-.004,tor);collar.rotation.x=Math.PI/2;
+ mm(new THREE.BoxGeometry(.018,.23,.012),wh,.105,.31,-.192,tor);
+ // 右腕（ラケット側）：a / rk の階層と参照を維持
+ const a=new THREE.Group();a.position.set(.235,.47,0);tor.add(a);
+ mm(new THREE.SphereGeometry(.105,16,12),sh,0,0,0,a).scale.set(1,.92,.95);
+ limb([0,.015,0],[.045,.19,-.005],.075,.065,sh,a);
+ const fa=new THREE.Group();fa.position.set(.045,.19,-.005);a.add(fa);
+ limb([0,0,0],[.025,.205,-.018],.058,.047,sk,fa);
+ mm(new THREE.SphereGeometry(.057,12,10),sk,.025,.215,-.018,fa);
+ const rk=mkRacket();rk.position.set(.025,.235,-.018);rk.rotation.x=-.08;fa.add(rk);
+ // 左腕は独立した関節を持ち、従来の回転アニメーションを維持
+ const la=new THREE.Group();la.position.set(-.235,.47,0);tor.add(la);
+ mm(new THREE.SphereGeometry(.105,16,12),sh,0,0,0,la).scale.set(1,.92,.95);
+ limb([0,.015,0],[-.035,-.13,-.005],.075,.06,sh,la);
+ limb([-.035,-.13,-.005],[-.075,-.31,-.02],.052,.043,sk,la);
+ mm(new THREE.SphereGeometry(.056,12,10),sk,-.075,-.33,-.02,la);
+ // 脚グループの位置と rotation.x 操作を維持。ショーツから自然につながる脚とシューズ
+ const mk=x=>{
+  const lg=new THREE.Group();lg.position.set(x,.70,0);g.add(lg);
+  limb([0,-.01,0],[x*.12,-.31,.005],.085,.066,sk,lg);
+  limb([x*.12,-.31,.005],[x*.14,-.51,-.015],.066,.052,sk,lg);
+  mm(new THREE.SphereGeometry(.065,12,10),sk,x*.14,-.5,-.015,lg);
+  mm(new THREE.CylinderGeometry(.067,.075,.055,14),wh,x*.14,-.555,-.005,lg);
+  const shoe=mm(new THREE.SphereGeometry(.105,16,12),wh,x*.14,-.605,-.055,lg);shoe.scale.set(.82,.58,1.35);
+  const outsole=mm(new THREE.BoxGeometry(.15,.025,.245),sole,x*.14,-.652,-.055,lg);
+  mm(new THREE.BoxGeometry(.055,.018,.12),trim,x*.14,-.57,-.125,lg);
+  return lg
+ };
+ const L1=mk(-.105),L2=mk(.105);
+ g.userData.rk=rk;g.userData.arm=a;g.userData.legs=[L1,L2];
+ // 既存アニメーションとの互換性を保ったまま、頭と上半身に小さな自然な動きを付ける
+ const ph=Math.random()*6,cl01=v=>Math.max(0,Math.min(1,v));
+ tor.onBeforeRender=function(){
+  const t=performance.now()/1000+ph,w=cl01(Math.abs(L1.rotation.x)/.9),s=cl01((-.6-a.rotation.x)/2.1);
+  tor.position.y=.77+Math.abs(L1.rotation.x)*.035+Math.sin(t*2.2)*.003;
+  tor.rotation.y=s*.28;tor.rotation.x=-s*.08-w*.055;
+  fa.rotation.x=-.25+.32*s;la.rotation.x=L2.rotation.x*.72;la.rotation.z=-(.08+s*.45);
+  hdG.rotation.x=Math.sin(t*1.5)*.018;hdG.rotation.y=Math.sin(t*1.1+ph)*.025;
+ };
+ g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+ scene.add(g);return g
+}
 const P={who:1,x:0,z:0,swingT:0,swingReqT:0,diveT:0,diveX:0,diveZ:0,jumpT:0,g:mkPlayer(0x3b82f6)},C={who:-1,x:0,z:0,swingT:0,swingReqT:0,diveT:0,diveX:0,diveZ:0,jumpT:0,g:mkPlayer(0xef4444)},P2={who:1,x:0,z:0,swingT:0,swingReqT:0,diveT:0,diveX:0,diveZ:0,jumpT:0,g:mkPlayer(0x60a5fa)},C2={who:-1,x:0,z:0,swingT:0,swingReqT:0,diveT:0,diveX:0,diveZ:0,jumpT:0,g:mkPlayer(0xf87171)};C.g.rotation.y=C2.g.rotation.y=Math.PI;
 const ballG=new THREE.Group(),tb=new THREE.Mesh(new THREE.SphereGeometry(.13,16,12),M(0xffffff,{emissive:0x223300,map:ballTex()})),sh=new THREE.Group();
 const cone=new THREE.Mesh(new THREE.ConeGeometry(.1,.2,12),M(0xffffff,{emissive:0x555555}));cone.position.y=-.05;
