@@ -557,7 +557,7 @@ const CFG={
  tennis:{hw:4.1,hl:11.9,netH:.92,g:9.8,k:.02,bounce:true,e:.75,km:7e-4,pSpeed:7.8,cSpeed:6.48,reach:2.4,hMax:2.8,r:.13,th:23,thP:16},
  badminton:{hw:3.05,hl:6.7,netH:1.55,g:9.8,k:.21,bounce:false,e:0,pSpeed:7.2,cSpeed:6.24,reach:2.6,hMax:3.8,r:.06,th:42,thP:-10}};
 const renderer=new THREE.WebGLRenderer({antialias:true});document.body.prepend(renderer.domElement);
-renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.physicallyCorrectLights=true;
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const COARSE=matchMedia('(pointer:coarse)').matches;
 function ballTex(){const c=document.createElement('canvas');c.width=128;c.height=64;const g=c.getContext('2d');g.fillStyle='#d4ef3a';g.fillRect(0,0,128,64);g.strokeStyle='#f4f4e8';g.lineWidth=4;g.beginPath();for(let x=0;x<=128;x+=2){const y=32+Math.sin(x/128*Math.PI*2)*16;x?g.lineTo(x,y):g.moveTo(x,y)}g.stroke();return new THREE.CanvasTexture(c)}
 function netTex(w,h){const c=document.createElement('canvas');c.width=c.height=16;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,16,2);g.fillRect(0,0,2,16);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(w*5,h*5);return t}
@@ -818,7 +818,7 @@ function buildCourt(m){
    if(!COARSE){const light=new THREE.PointLight(0xfff4d6,T?.85:1.15,20);light.position.set(x,12.9,z);courtG.add(light)}
   }));
   const scoreTex=signTex();plain(7,2.2,.18,0x0b1220,0,10.2,0,{map:scoreTex,emissiveMap:scoreTex,emissive:0xffffff,emissiveIntensity:.8});
-  if(T)[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(side=>{
+  [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(side=>{
    const x=side[0]*(hw+13),z=side[1]*(hl+13);
    cyl(.2,.3,10,0x777f8a,x,5,z);
    plain(2.8,1.2,.3,0xfffbe6,x,10.2,z);
