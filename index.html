@@ -1152,26 +1152,27 @@ function update(dt){if(matchIntro||replayPlaying)return;const c=cfg;hitCd-=dt;co
  [P,C,...(selectedFormat==='doubles'?[P2,C2]:[])].forEach(p=>{p.swingT=Math.max(0,p.swingT-dt);p.swingReqT=Math.max(0,p.swingReqT-dt);p.diveT=Math.max(0,p.diveT-dt);p.jumpT=Math.max(0,(p.jumpT||0)-dt);p.g.position.set(p.x,0,p.z);{const b0=p===P?0:Math.PI,wr=a=>Math.atan2(Math.sin(a),Math.cos(a)),tt=state==='rally'?Math.atan2(-(ball.pos.x-p.x),-(ball.pos.z-p.z)):b0,tg2=b0+clamp(wr(tt-b0),-1.1,1.1);p.g.rotation.y+=wr(tg2-p.g.rotation.y)*(1-Math.exp(-10*dt))}const sp=Math.hypot(p.x-(p.px===undefined?p.x:p.px),p.z-(p.pz===undefined?p.z:p.pz))/Math.max(dt,.001),lg=p.g.userData.legs,w=Math.min(1,sp/4);p.px=p.x;p.pz=p.z;p.ph=(p.ph||0)+sp*dt*1.6;lg[0].rotation.x=Math.sin(p.ph)*.9*w;lg[1].rotation.x=-Math.sin(p.ph)*.9*w;const a=p.g.userData.arm,elbow=p.g.userData.elbow,torso=p.g.userData.torso,leftArm=p.g.userData.leftArm,racket=p.g.userData.rk,head=p.g.userData.head;const u=clamp(1-p.swingT/.3,0,1),ez=p.swingT>0?Math.sin(u*Math.PI):0;
   const smooth=(x)=>{x=clamp(x,0,1);return x*x*(3-2*x)};
   const backswing=1-smooth(u/.34),drive=smooth((u-.22)/.38),follow=smooth((u-.58)/.42);
-  let armX=-.6,armZ=0,racketX=0,racketZ=0,twist=0,lean=0,elbowBend=-.12;
+  // 両競技とも待機時から肘を曲げた構えを維持し、打撃時だけ自然に伸ばす
+  let armX=-.38,armZ=-.05,racketX=-.20,racketZ=0,twist=0,lean=0,elbowBend=-.58;
   if(mode==='badminton'){
-   // バドミントン：準備で肩を引き、打点に向けて加速、打った後は前方へ振り抜く
+   // バドミントン：肘をたたんだ構えから、打点へ加速して振り抜く
    const low=clamp((1.5-ball.pos.y)/1.25,0,1),overhead=1-low;
-   armX=-.42-1.02*backswing-(.95+.55*overhead)*drive+.48*follow;
-   armZ=-.04-.22*backswing-.20*drive+.10*follow;
-   racketX=-.12-.42*backswing-(.72+.22*overhead)*drive+.62*follow;
-   racketZ=-.04-.12*backswing-.16*drive+.12*follow;
+   armX=-.38-.92*backswing-(.72+.48*overhead)*drive+.35*follow;
+   armZ=-.05-.18*backswing-.16*drive+.08*follow;
+   racketX=-.20-.38*backswing-(.58+.20*overhead)*drive+.52*follow;
+   racketZ=-.02-.10*backswing-.13*drive+.10*follow;
    twist=-.12*backswing+.30*drive-.12*follow;
    lean=.025*backswing+.10*drive-.055*follow;
-   elbowBend=-.38*backswing-.12*drive-.42*follow;
+   elbowBend=-.68*backswing-.28*drive-.62*follow;
   }else{
-   // テニス：テイクバック→前方への加速→フォロースルー。サーブは既存の段階制御を維持
-   armX=-.58-1.05*backswing-1.18*drive+.88*follow;
-   armZ=.10*backswing-.20*drive-.22*follow;
-   racketX=-.18-.55*backswing-.62*drive+.92*follow;
-   racketZ=.05*backswing-.18*drive-.20*follow;
+   // テニス：肘を曲げたレディポジションからテイクバック、打撃、フォロースルーへ
+   armX=-.38-.92*backswing-.82*drive+.62*follow;
+   armZ=-.05+.12*backswing-.18*drive-.16*follow;
+   racketX=-.20-.48*backswing-.50*drive+.72*follow;
+   racketZ=0+.05*backswing-.16*drive-.16*follow;
    twist=-.22*backswing+.38*drive-.18*follow;
    lean=.015*backswing+.085*drive-.04*follow;
-   elbowBend=-.34*backswing-.06*drive-.48*follow;
+   elbowBend=-.62*backswing-.24*drive-.68*follow;
    if(state==='serveWait'&&serveT>0&&((p===P&&server===1)||(p===C&&server===-1))){
     const st=clamp(serveT/.72,0,1);
     if(st<.38){const q=st/.38;armX=-.6-1.15*q;armZ=.12*q;racketX=-.25-.65*q}
