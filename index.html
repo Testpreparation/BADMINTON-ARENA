@@ -690,14 +690,19 @@ function installMiiCharacter(player,source){
  try{
   const model=THREE.SkeletonUtils.clone(source);
   model.name='MiiSportsCharacter';
+  model.position.set(0,0,0);
+  model.scale.set(1,1,1);
+  model.rotation.set(0,0,0);
   model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material=o.material.clone();o.material.side=THREE.DoubleSide}}});
+  model.updateMatrixWorld(true);
   const box=new THREE.Box3().setFromObject(model),size=new THREE.Vector3(),center=new THREE.Vector3();
   box.getSize(size);box.getCenter(center);
   if(!Number.isFinite(size.y)||size.y<.01)throw new Error('GLB model has invalid bounds');
+  // 各モデルの元スケールに依存せず、足元から頭まで約1.78mに正規化する
   const fit=1.78/size.y;
   model.scale.setScalar(fit);
   model.position.set(-center.x*fit,-box.min.y*fit,-center.z*fit);
-  // 手元の既存ラケットとゲーム側アニメーション参照を残し、旧キャラクターの身体メッシュだけ隠す
+  model.updateMatrixWorld(true);
   const racket=player.g.userData.rk;
   player.g.traverse(o=>{if(!o.isMesh)return;let n=o;while(n&&n!==player.g&&n!==racket)n=n.parent;if(n!==racket)o.visible=false});
   player.g.add(model);
@@ -715,19 +720,19 @@ function installMiiCharacter(player,source){
   ].filter(pair=>pair[0]&&pair[1]).map(([bone,driver])=>({bone,driver,base:bone.rotation.clone()}));
   player.g.userData.miiModel=model;
   player.g.userData.miiBindings=bindings;
-  // GLBの姿勢を基準に、従来のゲーム側の関節角度だけを加算
   player.g.userData.syncMii=()=>{
    for(const b of bindings){
     const d=b.driver.rotation;
     b.bone.rotation.set(b.base.x+d.x,b.base.y+d.y,b.base.z+d.z);
    }
-   const torso=player.g.userData.torso,head=player.g.userData.head;
-   const spine=pick('Spine_2_62','Spine_2','Spine_3_61','Spine_3');
-   if(spine&&torso)spine.rotation.y+=torso.userData.actionTwist||0;
   };
-  // GLBのユニフォームはプレイヤーごとの色設定を尊重
-  const shirt=player.g.children[0];
-  if(shirt&&shirt.material&&shirt.material.color)shirt.material.color.set(player===P?COLS[OPT.col]:(player===P2?0x60a5fa:player===C2?0xf87171:0xef4444));
+  // GLBモデルのメッシュ色を既存のチームカラーに合わせる
+  const teamColor=player===P?COLS[OPT.col]:(player===P2?0x60a5fa:player===C2?0xf87171:0xef4444);
+  model.traverse(o=>{if(o.isMesh&&o.material&&o.material.color){
+   const mat=o.material;
+   // 元の質感とテクスチャを保ち、青/赤系のチーム色だけを薄く重ねる
+   mat.color.lerp(new THREE.Color(teamColor),.16);
+  }});
  }catch(e){console.warn('Mii model integration failed; keeping original character.',e)}
 }
 if(THREE.GLTFLoader){
