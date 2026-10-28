@@ -698,10 +698,15 @@ function installMiiCharacter(player,source){
   const box=new THREE.Box3().setFromObject(model),size=new THREE.Vector3(),center=new THREE.Vector3();
   box.getSize(size);box.getCenter(center);
   if(!Number.isFinite(size.y)||size.y<.01)throw new Error('GLB model has invalid bounds');
-  // 各モデルの元スケールに依存せず、足元から頭まで約1.78mに正規化する
+  // モデルの原点が足元の中央に来るよう、拡大後の実際の境界ボックスで位置を補正する
   const fit=3.0/size.y;
   model.scale.setScalar(fit);
-  model.position.set(-center.x*fit,-box.min.y*fit,-center.z*fit);
+  model.position.set(0,0,0);
+  model.updateMatrixWorld(true);
+  const fittedBox=new THREE.Box3().setFromObject(model);
+  const fittedCenter=new THREE.Vector3();
+  fittedBox.getCenter(fittedCenter);
+  model.position.set(-fittedCenter.x,-fittedBox.min.y,-fittedCenter.z);
   model.updateMatrixWorld(true);
   const racket=player.g.userData.rk;
   player.g.traverse(o=>{if(!o.isMesh)return;let n=o;while(n&&n!==player.g&&n!==racket)n=n.parent;if(n!==racket)o.visible=false});
