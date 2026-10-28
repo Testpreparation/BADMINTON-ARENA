@@ -1197,6 +1197,13 @@ function update(dt){if(matchIntro||replayPlaying)return;const c=cfg;hitCd-=dt;co
     else{const q=clamp((st-.58)/.14,0,1);armX=-1.3-1.0*q;armZ=-.08-.35*q;racketX=-.65-1.0*q}
    }
   }
+  // Natural gait: blend a subtle arm swing and torso counter-rotation with existing movement.
+  const movePhase=p.ph||0,moveBlend=clamp(sp/3.8,0,1);
+  const gait=Math.sin(movePhase),counterGait=Math.cos(movePhase);
+  armX+=gait*.16*moveBlend;
+  armZ+=counterGait*.045*moveBlend;
+  twist+=gait*.075*moveBlend;
+  lean+=clamp((p.vz||0)*-.025,-.07,.07)*moveBlend;
   const blend=1-Math.exp(-16*dt);
   a.rotation.x+=(armX-a.rotation.x)*blend;a.rotation.z+=(armZ-a.rotation.z)*blend;
   if(elbow)elbow.rotation.x+=(elbowBend-elbow.rotation.x)*(1-Math.exp(-19*dt));
