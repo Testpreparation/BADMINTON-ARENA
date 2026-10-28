@@ -683,69 +683,7 @@ function mkPlayer(c){
  scene.add(g);return g
 }
 const P={who:1,x:0,z:0,swingT:0,swingReqT:0,diveT:0,diveX:0,diveZ:0,jumpT:0,g:mkPlayer(0x3b82f6)},C={who:-1,x:0,z:0,swingT:0,swingReqT:0,diveT:0,diveX:0,diveZ:0,jumpT:0,g:mkPlayer(0xef4444)},P2={who:1,x:0,z:0,swingT:0,swingReqT:0,diveT:0,diveX:0,diveZ:0,jumpT:0,g:mkPlayer(0x60a5fa)},C2={who:-1,x:0,z:0,swingT:0,swingReqT:0,diveT:0,diveX:0,diveZ:0,jumpT:0,g:mkPlayer(0xf87171)};C.g.rotation.y=C2.g.rotation.y=Math.PI;
-/* GLBキャラクターを追加し、既存の移動・打撃制御を維持したまま骨格へ連動させる */
-const miiPlayers=[P,C,P2,C2];
-let miiTemplate=null;
-function installMiiCharacter(player,source){
- try{
-  const model=THREE.SkeletonUtils.clone(source);
-  model.name='MiiSportsCharacter';
-  model.position.set(0,0,0);
-  model.scale.set(1,1,1);
-  model.rotation.set(0,0,0);
-  model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material=o.material.clone();o.material.side=THREE.DoubleSide}}});
-  model.updateMatrixWorld(true);
-  const box=new THREE.Box3().setFromObject(model),size=new THREE.Vector3(),center=new THREE.Vector3();
-  box.getSize(size);box.getCenter(center);
-  if(!Number.isFinite(size.y)||size.y<.01)throw new Error('GLB model has invalid bounds');
-  // モデルの原点が足元の中央に来るよう、拡大後の実際の境界ボックスで位置を補正する
-  const fit=3.0/size.y;
-  model.scale.setScalar(fit);
-  model.position.set(0,0,0);
-  model.updateMatrixWorld(true);
-  const fittedBox=new THREE.Box3().setFromObject(model);
-  const fittedCenter=new THREE.Vector3();
-  fittedBox.getCenter(fittedCenter);
-  model.position.set(-fittedCenter.x,-fittedBox.min.y,-fittedCenter.z);
-  model.updateMatrixWorld(true);
-  const racket=player.g.userData.rk;
-  player.g.traverse(o=>{if(!o.isMesh)return;let n=o;while(n&&n!==player.g&&n!==racket)n=n.parent;if(n!==racket)o.visible=false});
-  player.g.add(model);
-  const bones={};model.traverse(o=>{if(o.isBone)bones[o.name]=o});
-  const pick=(...names)=>{for(const name of names)if(bones[name])return bones[name];return null};
-  const bindings=[
-   [pick('Arm_1_R_56','Arm_1_R'),player.g.userData.arm],
-   [pick('Arm_2_R_55','Arm_2_R'),player.g.userData.elbow],
-   [pick('Arm_1_L_27','Arm_1_L'),player.g.userData.leftArm],
-   [pick('Arm_2_L_26','Arm_2_L'),player.g.userData.leftElbow],
-   [pick('Spine_1_63','Spine_1'),player.g.userData.torso],
-   [pick('Head_59','Head'),player.g.userData.head],
-   [pick('Leg_1_L_100','Leg_1_L'),player.g.userData.legs[0]],
-   [pick('Leg_1_R_111','Leg_1_R'),player.g.userData.legs[1]]
-  ].filter(pair=>pair[0]&&pair[1]).map(([bone,driver])=>({bone,driver,base:bone.rotation.clone()}));
-  player.g.userData.miiModel=model;
-  player.g.userData.miiBindings=bindings;
-  player.g.userData.syncMii=()=>{
-   for(const b of bindings){
-    const d=b.driver.rotation;
-    b.bone.rotation.set(b.base.x+d.x,b.base.y+d.y,b.base.z+d.z);
-   }
-  };
-  // GLBモデルのメッシュ色を既存のチームカラーに合わせる
-  const teamColor=player===P?COLS[OPT.col]:(player===P2?0x60a5fa:player===C2?0xf87171:0xef4444);
-  model.traverse(o=>{if(o.isMesh&&o.material&&o.material.color){
-   const mat=o.material;
-   // 元の質感とテクスチャを保ち、青/赤系のチーム色だけを薄く重ねる
-   mat.color.lerp(new THREE.Color(teamColor),.16);
-  }});
- }catch(e){console.warn('Mii model integration failed; keeping original character.',e)}
-}
-if(THREE.GLTFLoader){
- new THREE.GLTFLoader().load('./assets/mii_nintendo_switch_sports_ver.glb',gltf=>{
-  miiTemplate=gltf.scene;
-  miiPlayers.forEach(p=>installMiiCharacter(p,miiTemplate));
- },undefined,e=>console.warn('Mii GLB could not be loaded; original characters remain active.',e));
-}
+/* 3Dモデル差し替えを解除し、従来のキャラクターモデルを使用する */
 const ballG=new THREE.Group(),tb=new THREE.Mesh(new THREE.SphereGeometry(.13,16,12),M(0xffffff,{emissive:0x223300,map:ballTex()})),sh=new THREE.Group();
 const cone=new THREE.Mesh(new THREE.ConeGeometry(.1,.2,16),M(0xe9e5d8,{roughness:.78}));cone.position.y=-.05;cone.material.side=THREE.DoubleSide;
 const featherMat=new THREE.MeshStandardMaterial({color:0xf4f1e7,roughness:.72,side:THREE.DoubleSide});
