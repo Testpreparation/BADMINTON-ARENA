@@ -913,32 +913,18 @@ function playerShot(who=1){
  else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?-10:16):c.thP;tx+=(R()-.5)*.6}
  else dz=c.hl-1.2-R()*3;
  if(mode==='badminton'&&!actionDash&&!actionDrop){deg=ball.pos.y>2.2?18:ball.pos.y<.85?38:ball.pos.y<1.5?34:ball.pos.y<2.2?29:24}
- // テニスは高い打点からの打撃を、サーブのように上から下へ叩き込む軌道にする
- if(mode==='tennis'){
-  if(actionDrop){
-   // ドロップはネット手前に落ちないよう、相手コート内の手前側を狙う
-   dz=3.8+R()*.5;
-   deg=ball.pos.y>2.2?19:15;
-  }else if(ball.pos.y>=2.05){
-   // 高い打点でもネットを越える初速を確保し、重力で打ち下ろす軌道にする
-   // 強打は低め、通常打撃は少し高めの角度で安定して返球する
-   deg=actionDash?7:13;
-   dz=c.hl-1.8-R()*1.4;
-  }else{
-   // 通常打撃は常に前方へ返球できる標準角度を使う
-   deg=actionDash?c.thP:(ball.pos.y>1.45?12:16);
-  }
- }else if(actionDrop){
-  dz=2.2+R()*.8;deg=8;
+ // テニスの通常打撃・強打は、初期の打球角度と着地点計算に戻す。
+ // 高い打点では従来の高さ別角度を使い、強打は thP を使用する。
+ if(mode==='tennis'&&!actionDrop&&ball.pos.y>1.55){
+  deg=ball.pos.y>2.15?12:ball.pos.y>1.85?18:24;
+ }
+ // ドロップ機能は維持し、相手コートのネットを越えた手前側を狙う。
+ if(actionDrop){
+  if(mode==='badminton'){dz=2.2+R()*.8;deg=8;}
+  else{dz=3.8+R()*.5;deg=15;}
  }
  hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(actionDrop?0:(actionDash?60:(i.z<-.6?-120:180))):0);
- if(mode==='tennis'){
-  // テニスの打球速度を抑えて、通常打撃・強打ともに速すぎる挙動を防ぐ
-  ball.vel.multiplyScalar(actionDrop?.88:(actionDash?.84:.80));
-  // ドロップはネットを越える高さを確保しつつ、失速して相手コート手前に落とす
-  if(actionDrop&&ball.vel.y<2.4)ball.vel.y=2.4;
-  if(ball.vel.length()>38)ball.vel.setLength(38);
- }
+
  if(mode==='badminton'){const shuttleShotMultiplier=clamp(1.12+Math.max(.25,Math.min(1,chargedPower))*.22,1.18,1.4);ball.vel.multiplyScalar(shuttleShotMultiplier);if(ball.vel.length()>80)ball.vel.setLength(80);/* 強打時の画面フラッシュ演出を無効化 */if(who===1)pendingShotPower=.65;else remoteInput.power=.65}
  if(who===1){shotAim=null;shotAimExpires=0;pendingShotKind='normal'}
  else{remoteInput.aim=null;remoteInput.kind='normal';remoteInput.drop=false;remoteInput.dash=false}
