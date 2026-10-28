@@ -699,7 +699,7 @@ function installMiiCharacter(player,source){
   box.getSize(size);box.getCenter(center);
   if(!Number.isFinite(size.y)||size.y<.01)throw new Error('GLB model has invalid bounds');
   // 各モデルの元スケールに依存せず、足元から頭まで約1.78mに正規化する
-  const fit=1.78/size.y;
+  const fit=3.0/size.y;
   model.scale.setScalar(fit);
   model.position.set(-center.x*fit,-box.min.y*fit,-center.z*fit);
   model.updateMatrixWorld(true);
