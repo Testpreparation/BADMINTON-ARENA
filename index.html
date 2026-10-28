@@ -920,11 +920,12 @@ function playerShot(who=1){
    dz=3.8+R()*.5;
    deg=ball.pos.y>2.2?19:15;
   }else if(ball.pos.y>=2.05){
-   // 高い打点は上向きに飛ばさず、サーブのように上から打ち下ろす
-   deg=actionDash?-13:-8;
-   // 打ち下ろしでも相手コートに届くよう、狙いを奥寄りにする
+   // 高い打点でもネットを越える初速を確保し、重力で打ち下ろす軌道にする
+   // 強打は低め、通常打撃は少し高めの角度で安定して返球する
+   deg=actionDash?7:13;
    dz=c.hl-1.8-R()*1.4;
   }else{
+   // 通常打撃は常に前方へ返球できる標準角度を使う
    deg=actionDash?c.thP:(ball.pos.y>1.45?12:16);
   }
  }else if(actionDrop){
