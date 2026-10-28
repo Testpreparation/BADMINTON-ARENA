@@ -556,7 +556,7 @@ button.mode:active{transform:scale(.985);box-shadow:0 3px 0 rgba(20,60,120,.22)}
 (function(){
 const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),R=Math.random,DT=1/120,D2R=Math.PI/180;
 const CFG={
- tennis:{hw:4.1,hl:11.9,netH:.92,g:9.8,k:.02,bounce:true,e:.75,km:7e-4,pSpeed:7.8,cSpeed:6.48,reach:2.4,hMax:2.8,r:.13,th:23,thP:16},
+ tennis:{hw:4.1,hl:11.9,netH:.92,g:9.8,k:.02,bounce:true,e:.75,km:7e-4,pSpeed:7.8,cSpeed:6.48,reach:2.4,hMax:2.8,r:.13,th:11,thP:4},
  badminton:{hw:3.05,hl:6.7,netH:1.55,g:9.8,k:.21,bounce:false,e:0,pSpeed:7.2,cSpeed:6.24,reach:2.6,hMax:3.8,r:.06,th:42,thP:-10}};
 const renderer=new THREE.WebGLRenderer({antialias:true});document.body.prepend(renderer.domElement);
 renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -899,9 +899,9 @@ function missReaction(){
 // 効果音を事前に準備して、打球・得点時の読み込み待ちを減らす
 [REAL_SFX.badmintonHit,REAL_SFX.tennisBall,'https://sfxmint.com/dl/crowd-cheer-44.mp3'].forEach(prepareRealAudio);
 function hit(who,tx,tz,deg,sp){sp=sp||0;const p=ball.pos,c=cfg,th=deg*D2R;ball.lastHitter=who;ball.bounces=0;ball.net=false;aiL=null;hitCd=.25;const q=(who===1?P:C).q||0;tx+=(R()-.5)*q*3;tz+=(R()-.5)*q*2;
- let dx=tx-p.x,dz=tz-p.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let s=Math.max(10,L*1.4);const v={x:0,y:0,z:0},spinPower=mode==='tennis'?Math.sign(sp)*Math.min(65,Math.abs(sp)*.45):sp,w={x:dz*spinPower,y:0,z:-dx*spinPower};
+ let dx=tx-p.x,dz=tz-p.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let s=Math.max(10,L*1.4);const v={x:0,y:0,z:0},w={x:dz*sp,y:0,z:-dx*sp};
  for(let i=0;i<16;i++){v.x=dx*s*Math.cos(th);v.z=dz*s*Math.cos(th);v.y=s*Math.sin(th);const l=simLand(p,v,c,w),Ld=Math.hypot(l.x-p.x,l.z-p.z)||.1;s=clamp(s*Math.pow(L/Ld,.6),3,70)}
- ball.vel.set(v.x,v.y,v.z);ball.spin.set(w.x,mode==='tennis'?(sp===0?0:Math.sign(sp)*Math.min(22,Math.abs(sp)*.09)):0,w.z);(who===1?P:C).swingT=.3;spawn(ball.pos,6,3);if(practice&&who===1){rally++;updScore()}$('spd').textContent=Math.round(ball.vel.length()*3.6)+' km/h';racketSound(mode,who,ball.vel.length()*3.6)}
+ ball.vel.set(v.x,v.y,v.z);if(mode==='tennis')ball.vel.multiplyScalar(.97);ball.spin.set(w.x,0,w.z);(who===1?P:C).swingT=.3;spawn(ball.pos,6,3);if(practice&&who===1){rally++;updScore()}$('spd').textContent=Math.round(ball.vel.length()*3.6)+' km/h';racketSound(mode,who,ball.vel.length()*3.6)}
 const tc={x:0,z:0,dash:false,drop:false};
 function inp(){let x=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+tc.x,z=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+tc.z;x=clamp(x,-1,1);z=clamp(z,-1,1);return{x,z,dash:!!(keys.ShiftLeft||keys.ShiftRight||tc.dash)}}
 function playerShot(who=1){
@@ -916,23 +916,18 @@ function playerShot(who=1){
  else if(actionDash){dz=c.hl-.9;deg=mode==='badminton'?(ball.pos.y>2.2?-10:16):c.thP;tx+=(R()-.5)*.6}
  else dz=c.hl-1.2-R()*3;
  if(mode==='badminton'&&!actionDash&&!actionDrop){deg=ball.pos.y>2.2?18:ball.pos.y<.85?38:ball.pos.y<1.5?34:ball.pos.y<2.2?29:24}
- // テニスの通常打撃・強打は、初期の打球角度と着地点計算に戻す。
- // 高い打点では従来の高さ別角度を使い、強打は thP を使用する。
- if(mode==='tennis'&&!actionDrop&&ball.pos.y>1.55){
-  deg=ball.pos.y>2.15?12:ball.pos.y>1.85?18:24;
- }
- // ドロップ機能は維持し、相手コートのネットを越えた手前側を狙う。
- if(actionDrop){
-  if(mode==='badminton'){dz=2.2+R()*.8;deg=8;}
-  else{dz=3.8+R()*.5;deg=15;}
- }
- hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(actionDrop?0:(actionDash?60:(i.z<-.6?-120:180))):0);
+ if(mode==='tennis'){
+  if(i.z<-.6&&!i.dash){dz=1.8+R()*1.4;deg=32}
+  else if(i.dash){dz=c.hl-.9;deg=c.thP;tx+=(R()-.5)*.6}
+  else{dz=c.hl-1.2-R()*3;deg=c.th}
+ }else if(actionDrop){dz=2.2+R()*.8;deg=8}
+ hit(who,clamp(tx,-c.hw+.3,c.hw-.3),who===1?-dz:dz,deg,mode==='tennis'?(i.dash?60:(i.z<-.6?-120:180)):0);
 
  if(mode==='badminton'){const shuttleShotMultiplier=clamp(1.12+Math.max(.25,Math.min(1,chargedPower))*.22,1.18,1.4);ball.vel.multiplyScalar(shuttleShotMultiplier);if(ball.vel.length()>80)ball.vel.setLength(80);/* 強打時の画面フラッシュ演出を無効化 */if(who===1)pendingShotPower=.65;else remoteInput.power=.65}
  if(who===1){shotAim=null;shotAimExpires=0;pendingShotKind='normal'}
  else{remoteInput.aim=null;remoteInput.kind='normal';remoteInput.drop=false;remoteInput.dash=false}
 }function cpuShotFor(who,p){const c=cfg;let tx=(R()*2-1)*(c.hw-.6),dz=c.hl-1.5-R()*4,deg=c.th+R()*3;const style=R();
- if(mode==='tennis'){if(style<.22){deg=9+R()*5;dz=c.hl-1.0-R()*2.5}else if(style<.43){deg=29+R()*7;dz=c.hl-2.2-R()*2.8}else if(style<.60){deg=5+R()*3;dz=c.hl-1.1-R()*1.6}}else{if(style<.24){deg=8+R()*8;dz=c.hl-1.0-R()*2.5}else if(style<.46){deg=34+R()*10;dz=c.hl-2.0-R()*2.7}else if(style<.62){deg=-6+R()*7;dz=c.hl-1.1-R()*2}}if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)p.jumpT=.48;if(R()<.35){deg=2;dz=c.hl-1}}hit(who,tx,who===1?-dz:dz,deg,mode==='tennis'?(R()<.25?-100:160):0);p.homeX=clamp(tx*.32+(R()-.5)*1.4,-c.hw*.48,c.hw*.48);p.homeZ=-c.hl*(.40+R()*.18)}
+ if(mode==='tennis'){deg=c.th+R()*3}else{if(style<.24){deg=8+R()*8;dz=c.hl-1.0-R()*2.5}else if(style<.46){deg=34+R()*10;dz=c.hl-2.0-R()*2.7}else if(style<.62){deg=-6+R()*7;dz=c.hl-1.1-R()*2}}if(R()<ERR[practice?3:OPT.diff])tx+=(R()<.5?-1:1)*2;if(mode==='badminton'&&ball.pos.y>2.3){if(R()<.7)p.jumpT=.48;if(R()<.35){deg=2;dz=c.hl-1}}hit(who,tx,who===1?-dz:dz,deg,mode==='tennis'?(R()<.25?-100:160):0);p.homeX=clamp(tx*.32+(R()-.5)*1.4,-c.hw*.48,c.hw*.48);p.homeZ=-c.hl*(.40+R()*.18)}
 function cpuShot(){cpuShotFor(-1,C)}
 function tryHit(p){if(state!=='rally'||ball.net||ball.lastHitter===p.who||hitCd>0)return;const b=ball.pos;
   const powerShot=p===P&&!!inp().dash;
@@ -1150,7 +1145,7 @@ function stepBall(){const b=ball,c=cfg,v=b.vel,s=v.length();b.prev.copy(b.pos);
   if(!c.bounce){point(ok?b.lastHitter:-b.lastHitter,ok?'ラリー決着':inb?'自コート':'アウト');return}
   if(b.bounces>=1){point(b.lastHitter,'ツーバウンド');return}
   if(!ok){point(-b.lastHitter,inb?'自コート':'アウト');return}
-  const sp0=Math.hypot(v.x,v.z)||1,tp=(b.spin.x*v.z-b.spin.z*v.x)/sp0,m=clamp(.78+tp*.0007,.55,1);v.y=-v.y*c.e*(1-clamp(sp0*.003,0,.2));v.x*=m;v.z*=m;if(mode==='tennis'&&Math.abs(b.spin.y)>.1){v.y-=Math.sign(b.spin.y)*Math.min(1.8,Math.abs(b.spin.y)*.07);v.x*=1+Math.min(.025,Math.abs(b.spin.y)*.001)}b.spin.multiplyScalar(mode==='tennis'?.72:.55);b.bounces++;spawn(b.pos,12,2.5);courtBounceSound(mode,Math.abs(v.y)/12)}}
+  const sp0=Math.hypot(v.x,v.z)||1,tp=(b.spin.x*v.z-b.spin.z*v.x)/sp0,m=clamp(.78+tp*.0007,.55,1);v.y=-v.y*c.e*(1-clamp(sp0*.003,0,.2));v.x*=m;v.z*=m;b.spin.multiplyScalar(.55);b.bounces++;spawn(b.pos,12,2.5);courtBounceSound(mode,Math.abs(v.y)/12)}}
 function moveControlledCharacter(p,input,dt,side){const c=cfg,mx=clamp(input.x||0,-1,1),mz=clamp(input.z||0,-1,1)*(side===1?1:-1),d=Math.max(1,Math.hypot(mx,mz)),speed=c.pSpeed*(input.dash?1.5:1),k=1-Math.exp(-8*dt);p.vx=(p.vx||0)+(mx/d*speed-(p.vx||0))*k;p.vz=(p.vz||0)+(mz/d*speed-(p.vz||0))*k;p.x=clamp(p.x+p.vx*dt,-c.hw-2.5,c.hw+2.5);const minZ=side===1?(state==='serveWait'&&mode==='tennis'&&server===1?c.hl+.15:.8):-c.hl-3.5,maxZ=side===1?c.hl+3.5:(state==='serveWait'&&mode==='tennis'&&server===-1?-c.hl-.15:-.8);p.z=clamp(p.z+p.vz*dt,minZ,maxZ)}
 function moveCpuToward(p,tx,tz,dt,c,speedFactor,deadZone,smoothing){const dx=tx-p.x,dz=tz-p.z,d=Math.hypot(dx,dz),k=1-Math.exp(-smoothing*dt),speed=d>deadZone?c.cSpeed*speedFactor:0;p.vx=(p.vx||0)+((d>deadZone?dx/d*speed:0)-(p.vx||0))*k;p.vz=(p.vz||0)+((d>deadZone?dz/d*speed:0)-(p.vz||0))*k;p.x+=p.vx*dt;p.z+=p.vz*dt}
 function update(dt){if(matchIntro||replayPlaying)return;const c=cfg;hitCd-=dt;const i=inp();
