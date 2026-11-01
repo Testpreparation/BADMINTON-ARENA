@@ -971,7 +971,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  };
  async function createRoom(){
   if(roomRole!=='offline')return;
-  try{await connect();roomRole='host';window.__arenaNetRole='host';roomCode=genCode();room=db.ref('arena_rooms/'+roomCode);
+  try{await connect();roomRole='host';window.__arenaNetRole='host';roomCode=genCode();room=db.ref('badminton_rooms/'+roomCode);
    const made=await room.transaction(v=>v===null?{hostId:uid,hostName:'ホスト',createdAt:Date.now(),status:'waiting',sport:'tennis',dbl:false,guestId:null}:undefined);
    if(!made.committed)throw Error('部屋番号が重複しました。もう一度作成してください。');
    try{await room.onDisconnect().remove()}catch(e){}
