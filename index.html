@@ -237,7 +237,7 @@ body.fxi #hud{visibility:hidden}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 <script>
 const TAU=Math.PI*2,R=Math.random;
@@ -972,10 +972,10 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  async function createRoom(){
   if(roomRole!=='offline')return;
   try{await connect();roomRole='host';window.__arenaNetRole='host';roomCode=genCode();room=db.ref('arena_rooms/'+roomCode);
-   const made=await room.transaction(v=>v===null?{hostId:uid,hostName:'ホスト',createdAt:Date.now(),status:'waiting',sport:'badm',dbl:false,guestId:null}:undefined);
+   const made=await room.transaction(v=>v===null?{hostId:uid,hostName:'ホスト',createdAt:Date.now(),status:'waiting',sport:'tennis',dbl:false,guestId:null}:undefined);
    if(!made.committed)throw Error('部屋番号が重複しました。もう一度作成してください。');
    try{await room.onDisconnect().remove()}catch(e){}
-   F.sport='badm';F.dbl=false;showRoom('host',roomCode);
+   F.sport='tennis';F.dbl=false;showRoom('host',roomCode);
    guestWatch=snap=>{const v=snap.val();if(roomRole!=='host')return;F.guest=!!v;if(v){$('slotG').innerHTML='<b>ゲスト</b><span class="ok">接続済み</span>';$('bStart').disabled=false;setWait('フレンドが接続しました。試合を開始できます。')}else{$('slotG').innerHTML='<b>ゲスト</b><span class="dim">待機中...</span>';$('bStart').disabled=true;setWait('フレンドを待っています。')}};
    room.child('guestId').on('value',guestWatch);
    guestInputWatch=snap=>{const v=snap.val();if(roomRole==='host'&&v)window.__arenaRemoteInput={mx:Math.max(-1,Math.min(1,+v.mx||0)),mz:Math.max(-1,Math.min(1,+v.mz||0)),shot:!!v.shot,power:!!v.power,drop:!!v.drop}};
@@ -992,7 +992,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
    roomRole='guest';window.__arenaNetRole='guest';roomCode=code;room=ref;F.sport=data.sport||'badm';F.dbl=!!data.dbl;selectedSport=F.sport;selectedFormat=F.dbl?'doubles':'singles';showRoom('guest',code);
    sportWatch=s=>{if(roomRole==='guest'&&s.val()){F.sport=s.val();selectedSport=F.sport;lobby()}};room.child('sport').on('value',sportWatch);
    formatWatch=s=>{if(roomRole==='guest'){F.dbl=!!s.val();selectedFormat=F.dbl?'doubles':'singles';lobby()}};room.child('dbl').on('value',formatWatch);
-   statusWatch=s=>{if(s.val()==='playing'&&roomRole==='guest'&&!started)startNetworkMatch('guest')};room.child('status').on('value',statusWatch);
+   statusWatch=s=>{if(s.val()==='waiting'&&roomRole==='guest'&&started){started=false;if(snapshotWatch){room.child('snapshot').off('value',snapshotWatch);snapshotWatch=null}showRoom('guest',roomCode)}if(s.val()==='playing'&&roomRole==='guest'&&!started)startNetworkMatch('guest')};room.child('status').on('value',statusWatch);
   }catch(e){teardown();alert('フレンド対戦に参加できませんでした：'+(e.message||e))}
  }
  $('bCreate').onclick=createRoom;$('bJoin').onclick=joinRoom;
@@ -1000,6 +1000,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  $('bLeave').onclick=()=>{teardown(roomRole==='host');show('friend')};
  $('bCopy').onclick=async()=>{try{await navigator.clipboard.writeText(roomCode);$('bCopy').textContent='コピーしました';setTimeout(()=>$('bCopy').textContent='コピー',1200)}catch(e){setWait('部屋コード：'+roomCode)}};
  const originalStartFriend=startFriend;startFriend=function(){if(roomRole==='host'||roomRole==='guest'){startNetworkMatch(roomRole);return}originalStartFriend()};
+ const originalQuit=$('bQuit').onclick;$('bQuit').onclick=()=>{if(roomRole==='host'&&room)room.update({status:'waiting'}).catch(()=>{});started=false;if(snapshotTimer){clearInterval(snapshotTimer);snapshotTimer=null}if(originalQuit)originalQuit()};
  const originalLobby=lobby;lobby=function(){originalLobby();if(roomRole==='host'&&room){room.update({sport:F.sport,dbl:!!F.dbl}).catch(()=>{})}if(roomRole==='guest'&&room){$('hostCfg').style.display='none';$('guestCfg').style.display='block';$('bStart').style.display='none';$('bSim').style.display='none'}};
  window.addEventListener('beforeunload',()=>{if(room&&roomRole==='guest'&&uid)room.child('guestId').transaction(v=>v===uid?null:v);if(room&&roomRole==='host')room.remove()});
 })();
