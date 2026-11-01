@@ -986,7 +986,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
   const code=String($('codeIn').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
   if(code.length!==6){alert('6文字の部屋コードを入力してください。');return}
   if(roomRole!=='offline')return;
-  try{await connect();const ref=db.ref('arena_rooms/'+code),snap=await timeout(ref.once('value'),12000,'部屋の検索'),data=snap.val();
+  try{await connect();const ref=db.ref('badminton_rooms/'+code),snap=await timeout(ref.once('value'),12000,'部屋の検索'),data=snap.val();
    if(!data||!data.hostId||data.status!=='waiting')throw Error('部屋が見つかりません。部屋コードとホストの待機状態を確認してください。');
    const joined=await ref.child('guestId').transaction(v=>v===null?uid:undefined);if(!joined.committed)throw Error('この部屋にはすでに参加者がいます。');
    roomRole='guest';window.__arenaNetRole='guest';roomCode=code;room=ref;F.sport=data.sport||'badm';F.dbl=!!data.dbl;selectedSport=F.sport;selectedFormat=F.dbl?'doubles':'singles';showRoom('guest',code);
