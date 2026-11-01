@@ -961,7 +961,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  }
  function startNetworkMatch(role){
   if(started)return;started=true;roomRole=role;window.__arenaNetRole=role;netRole=role;cur.friend=true;cur.sport=F.sport;cur.dbl=!!F.dbl;flow.sport=F.sport;
-  setMenuVis(false);setupMatch(F.sport,!!F.dbl);cur.friend=true;hudBuild();show('hud');
+  setMenuVis(false);setupMatch(F.sport,!!F.dbl);cur.friend=true;hudBuild();const scoreNames=document.querySelectorAll('#gtop .n');if(scoreNames[0])scoreNames[0].textContent='YOU';if(scoreNames[1])scoreNames[1].textContent='FRIEND';show('hud');
   if(role==='host'){window.__arenaRemoteInput={mx:0,mz:0,shot:false,power:false,drop:false};if(snapshotTimer)clearInterval(snapshotTimer);snapshotTimer=setInterval(()=>{if(room&&roomRole==='host'&&mode==='game'&&M){const data=makeSnapshot();if(data)room.child('snapshot').set(data).catch(()=>{})}},66)}
   else{snapshotWatch=snap=>applySnapshot(snap.val());room.child('snapshot').on('value',snapshotWatch)}
  }
@@ -992,7 +992,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
    roomRole='guest';window.__arenaNetRole='guest';roomCode=code;room=ref;F.sport=data.sport||'badm';F.dbl=!!data.dbl;selectedSport=F.sport;selectedFormat=F.dbl?'doubles':'singles';showRoom('guest',code);
    sportWatch=s=>{if(roomRole==='guest'&&s.val()){F.sport=s.val();selectedSport=F.sport;lobby()}};room.child('sport').on('value',sportWatch);
    formatWatch=s=>{if(roomRole==='guest'){F.dbl=!!s.val();selectedFormat=F.dbl?'doubles':'singles';lobby()}};room.child('dbl').on('value',formatWatch);
-   statusWatch=s=>{if(s.val()==='waiting'&&roomRole==='guest'&&started){started=false;if(snapshotWatch){room.child('snapshot').off('value',snapshotWatch);snapshotWatch=null}showRoom('guest',roomCode)}if(s.val()==='playing'&&roomRole==='guest'&&!started)startNetworkMatch('guest')};room.child('status').on('value',statusWatch);
+   statusWatch=s=>{if(s.val()==='waiting'&&roomRole==='guest'&&started){started=false;if(snapshotWatch){room.child('snapshot').off('value',snapshotWatch);snapshotWatch=null}showRoom('guest',roomCode)}if(s.val()==='playing'&&roomRole==='guest'&&!started){room.once('value').then(snap=>{if(roomRole!=='guest'||started)return;const d=snap.val()||{};F.sport=d.sport||F.sport;F.dbl=!!d.dbl;selectedSport=F.sport;selectedFormat=F.dbl?'doubles':'singles';startNetworkMatch('guest')}).catch(e=>setWait('試合設定を読み込めません：'+e.message))}};room.child('status').on('value',statusWatch);
   }catch(e){teardown();alert('フレンド対戦に参加できませんでした：'+(e.message||e))}
  }
  $('bCreate').onclick=createRoom;$('bJoin').onclick=joinRoom;
@@ -1001,7 +1001,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  $('bCopy').onclick=async()=>{try{await navigator.clipboard.writeText(roomCode);$('bCopy').textContent='コピーしました';setTimeout(()=>$('bCopy').textContent='コピー',1200)}catch(e){setWait('部屋コード：'+roomCode)}};
  const originalStartFriend=startFriend;startFriend=function(){if(roomRole==='host'||roomRole==='guest'){startNetworkMatch(roomRole);return}originalStartFriend()};
  const originalQuit=$('bQuit').onclick;$('bQuit').onclick=()=>{if(roomRole==='host'&&room)room.update({status:'waiting'}).catch(()=>{});started=false;if(snapshotTimer){clearInterval(snapshotTimer);snapshotTimer=null}if(originalQuit)originalQuit()};
- const originalLobby=lobby;lobby=function(){originalLobby();if(roomRole==='host'&&room){room.update({sport:F.sport,dbl:!!F.dbl}).catch(()=>{})}if(roomRole==='guest'&&room){$('hostCfg').style.display='none';$('guestCfg').style.display='block';$('bStart').style.display='none';$('bSim').style.display='none'}};
+ const originalLobby=lobby;lobby=function(){originalLobby();if(roomRole==='host'||roomRole==='guest')$('bSim').style.display='none';if(roomRole==='host'&&room){room.update({sport:F.sport,dbl:!!F.dbl}).catch(()=>{})}if(roomRole==='guest'&&room){$('hostCfg').style.display='none';$('guestCfg').style.display='block';$('bStart').style.display='none';$('bSim').style.display='none'}};
  window.addEventListener('beforeunload',()=>{if(room&&roomRole==='guest'&&uid)room.child('guestId').transaction(v=>v===uid?null:v);if(room&&roomRole==='host')room.remove()});
 })();
 </script></body></html>
