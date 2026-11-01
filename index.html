@@ -966,7 +966,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
   else{snapshotWatch=snap=>applySnapshot(snap.val());room.child('snapshot').on('value',snapshotWatch)}
  }
  window.__arenaSendInput=input=>{
-  if(roomRole!=='guest'||!room)return;const now=Date.now(),data={mx:input.mx||0,mz:input.mz||0,shot:!!input.shot,power:!!input.power,drop:!!input.drop},sig=JSON.stringify(data);
+  if(roomRole!=='guest'||!room)return;const now=Date.now(),data={mx:-(input.mx||0),mz:-(input.mz||0),shot:!!input.shot,power:!!input.power,drop:!!input.drop},sig=JSON.stringify(data);
   if(sig!==lastInputSig||now-lastInputAt>100){lastInputSig=sig;lastInputAt=now;room.child('guestInput').set({...data,at:now}).catch(e=>setWait('入力送信エラー：'+e.message))}
  };
  async function createRoom(){
