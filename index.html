@@ -722,7 +722,7 @@ function setupMatch(sport,dbl){cur.sport=sport;cur.dbl=dbl;clearPlayers();enterM
 const CAMP={badm:{h:4.2,d:7.4,ly:1.0,lz:-1.2},tennis:{h:5.2,d:9.5,ly:1.0,lz:-2.5},tt:{h:2.0,d:3.6,ly:.8,lz:-.5},volley:{h:4.8,d:8.5,ly:1.2,lz:-1.5}};
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3();
 function camTarget(){const guest=window.__arenaNetRole==='guest'&&M.remoteHuman,h=guest?M.remoteHuman:(M.human||M.teams[0][0]),c=CAMP[cur.sport],asp=cam.aspect,k=asp<1.4?Math.min(1.7,1.4/asp):1;
- gw.updateMatrixWorld(true);if(cur.sport==='tt'){const dir=guest?1:-1;return{p:gw.localToWorld(new THREE.Vector3(h.x,1.55,h.z+dir*.32)),l:gw.localToWorld(new THREE.Vector3(h.x,1.5,h.z+dir*8))}}return{p:gw.localToWorld(new THREE.Vector3(h.x*.6,c.h*(.9+.1*k),h.z+(guest?-c.d:c.d)*k)),l:gw.localToWorld(new THREE.Vector3(h.x*.35,c.ly,guest?-c.lz:c.lz))}}
+ gw.updateMatrixWorld(true);if(cur.sport==='tt'){const dir=guest?1:-1;return{p:gw.localToWorld(new THREE.Vector3(h.x,1.55,h.z-dir*.9)),l:gw.localToWorld(new THREE.Vector3(h.x*.35,1.25,0))}}return{p:gw.localToWorld(new THREE.Vector3(h.x*.6,c.h*(.9+.1*k),h.z+(guest?-c.d:c.d)*k)),l:gw.localToWorld(new THREE.Vector3(h.x*.35,c.ly,guest?-c.lz:c.lz))}}
 function camInit(){const t=camTarget();camPos.copy(t.p);camLook.copy(t.l);cam.position.copy(camPos);cam.lookAt(camLook)}
 // input
 const inp={mx:0,mz:0,shot:false,power:false,drop:false},keys={};let stick={x:0,y:0};
