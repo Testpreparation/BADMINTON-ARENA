@@ -810,12 +810,12 @@ const FX={intro:null,outro:null,outroDone:false};
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)};
 function startIntro(){const S=M.S;FX.intro={t:0,stage:-1};FX.outro=null;FX.outroDone=false;$('outro').classList.remove('on');$('otConf').innerHTML='';
  for(const id of['itTitle','itVS','itCount'])$(id).innerHTML='';$('intro').classList.add('on');document.body.classList.add('fxi')}
-function endIntro(){FX.intro=null;$('intro').classList.remove('on');document.body.classList.remove('fxi');hs=''}
+function endIntro(){FX.intro=null;$('intro').classList.remove('on');document.body.classList.remove('fxi');if(cur.sport==='tt')camInit();hs=''}
 function introStage(st){const S=M.S,I=FX.intro;I.stage=st;const fr=cur.friend;
  if(st===0){$('itTitle').innerHTML=`<div class="tIc">${S.icon}</div><div class="tEn">${ENG[S.id]}</div><div class="tJp">${S.name}</div><div class="tLn"></div>`;SFX.title()}
  else if(st===1){$('itTitle').innerHTML='';$('itVS').innerHTML=`<div class="vsL"><small>${cur.dbl?'TEAM 1':'PLAYER'}</small><b>${fr?'HOST':'YOU'}</b></div><div class="vsM">VS</div><div class="vsR"><small>${cur.dbl?'TEAM 2':(fr?'PLAYER':'CPU')}</small><b>${fr?'GUEST':'CPU'}</b></div>`;SFX.vs()}
  else{$('itVS').innerHTML='';const txt=['READY','3','2','1','GO!'][st-2];$('itCount').innerHTML=`<div class="cn ${st===6?'go':''}">${txt}</div>`;if(st===6){$('itFlash').className='';void $('itFlash').offsetWidth;$('itFlash').className='fl';SFX.count(true)}else if(st>=3)SFX.count(false);else SFX.ready()}}
-function introCamPos(u){const S=M.S,c=CAMP[cur.sport],W=M.Wc,fin=camTarget();gw.updateMatrixWorld(true);
+function introCamPos(u){const S=M.S,c=CAMP[cur.sport],W=M.Wc;gw.updateMatrixWorld(true);const fin=cur.sport==='tt'?(()=>{const guest=window.__arenaNetRole==='guest'&&M.remoteHuman,h=guest?M.remoteHuman:(M.human||M.teams[0][0]),dir=guest?1:-1;return{p:gw.localToWorld(new THREE.Vector3(h.x,2.8,h.z-dir*4.2)),l:gw.localToWorld(new THREE.Vector3(0,1.1,0))}})():camTarget();
  const k0p=gw.localToWorld(new THREE.Vector3(-W*2.6-4,c.h*1.6+2,-S.L*.55)),k0l=gw.localToWorld(new THREE.Vector3(0,1,0)),k1p=gw.localToWorld(new THREE.Vector3(W*2.4+4,c.h*1.1+1,S.L*.35)),k1l=gw.localToWorld(new THREE.Vector3(0,1,-S.L*.1));
  const s=Math.min(1,u/4.6);let p,l;if(s<.55){const k=ease(s/.55);p=k0p.lerp(k1p,k);l=k0l.lerp(k1l,k)}else{const k=ease((s-.55)/.45);p=k1p.lerp(fin.p,k);l=k1l.lerp(fin.l,k)}return{p,l}}
 function startOutro(){const w=M.winner,pt=M.teams[w][0],fr=cur.friend;FX.outro={t:0,w,pt};FX.outroDone=false;$('outro').classList.add('on');
