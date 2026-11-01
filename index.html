@@ -211,7 +211,7 @@ body.fxi #hud{visibility:hidden}
 @media(max-width:560px){.splashSub{font-size:9px;letter-spacing:.1em}}
 @media(prefers-reduced-motion:reduce){#appSplash{transition:none!important}}
 .bar{display:none}
-</style><script>{const D=Date;window.Date=class extends D{getHours(){return 12}getMinutes(){return 0}getSeconds(){return 0}}}</script></head><body>
+#matchLoading{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column;gap:18px;background:#101d30;color:white;font-size:clamp(20px,4vw,36px);font-weight:800}#matchLoading.on{display:flex}#matchLoading .spinner{width:38px;height:38px;border:4px solid #ffffff55;border-top-color:#bfe6ff;border-radius:50%;animation:loadspin .8s linear infinite}@keyframes loadspin{to{transform:rotate(360deg)}}</style><script>{const D=Date;window.Date=class extends D{getHours(){return 12}getMinutes(){return 0}getSeconds(){return 0}}}</script></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite"><div class="splashGlow" aria-hidden="true"></div><div class="splashOrb one" aria-hidden="true"></div><div class="splashOrb two" aria-hidden="true"></div><div class="splashOrb three" aria-hidden="true"></div><div class="splashCourt" aria-hidden="true"></div><div class="splashContent"><div class="splashMark" aria-hidden="true">AS</div><p class="splashEyebrow">WELCOME TO</p><h1 id="splashHeading">ARENA<br>SPORTS</h1><p class="splashSub">BADMINTON <span aria-hidden="true">·</span> TENNIS <span aria-hidden="true">·</span> TABLE TENNIS <span aria-hidden="true">·</span> VOLLEYBALL</p></div></div>
 <div class="bar" id="top"></div><div class="bar" id="bot"></div><canvas id="c"></canvas>
 <div id="menu" class="scr on"><div class="home"><div class="title"><small>RACKET &amp; NET SPORTS</small><h1>ARENA <span>SPORTS</span></h1><p>BADMINTON · TENNIS · TABLE TENNIS · VOLLEYBALL</p></div>
@@ -883,10 +883,11 @@ let cpuLv=1;try{const sv=localStorage.getItem('arenaCpuLv');if(sv!==null&&+sv>=0
 function renderLv(){for(const id of['lvChips','lvChips2']){const c=$(id);c.innerHTML='';LV.forEach((l,i)=>{const b=document.createElement('button');b.className='chip'+(i===cpuLv?' sel':'');b.textContent=l.n;b.onclick=()=>{cpuLv=i;try{localStorage.setItem('arenaCpuLv',String(i))}catch(e){}renderLv()};c.appendChild(b)})}}
 renderLv();
 let flow={sport:null};
+async function showMatchLoading(){const el=document.getElementById('matchLoading');if(el)el.classList.add('on');await new Promise(resolve=>setTimeout(resolve,3000));if(el)el.classList.remove('on')}
 $('bPlay').onclick=()=>{cur.friend=false;show('sport')};$('bFriend').onclick=()=>show('friend');
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show(b.dataset.back));
 const cards=$('sportCards');for(const id of SPORTS){const s=SP[id],b=document.createElement('button');b.className='card';b.innerHTML=`<span class="ic">${s.icon}</span><b>${s.name}</b>`;b.onclick=()=>{flow.sport=id;$('fmtT').textContent=s.name;$('fS').textContent=id==='volley'?'1対1':'シングルス';$('fD').textContent=id==='volley'?'2対2':'ダブルス';show('fmt')};cards.appendChild(b)}
-function go(dbl){setMenuVis(false);setupMatch(flow.sport,dbl);show('hud')}
+async function go(dbl){await showMatchLoading();setMenuVis(false);setupMatch(flow.sport,dbl);show('hud')}
 $('fS').onclick=()=>go(false);$('fD').onclick=()=>go(true);
 $('bAgain').onclick=()=>{setupMatch(cur.sport,cur.dbl);show('hud')};$('bQuit').onclick=()=>{if(cur.friend){mode='menu';clearPlayers();M=null;setMenuVis(true);show('lobby')}else toMenu()};
 $('bSnd').onclick=()=>{SFX.mute(!SFX.isMute());$('bSnd').textContent=SFX.isMute()?'🔇 サウンド: OFF':'🔊 サウンド: ON'};$('bPause').onclick=()=>pauseGame(true);$('bResume').onclick=()=>pauseGame(false);$('bPQuit').onclick=()=>{pauseGame(false);$('bQuit').onclick()};
@@ -959,9 +960,9 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
   Object.assign(M.ball,a.ball);M.pred=a.pred||null;M.srvP=M.teams[a.srvTeam||0]&&M.teams[a.srvTeam||0][a.srvIndex||0]||M.srvP;M.events.length=0;
   if(M.state==='over'&&FX.outroDone&&!$('over').classList.contains('on')){$('ovT').textContent=M.winner===1?'🏆 勝利!':'敗北…';$('ovS').textContent=M.score[1]+' - '+M.score[0];$('over').classList.add('on')}
  }
- function startNetworkMatch(role){
+ async function startNetworkMatch(role){
   if(started)return;started=true;roomRole=role;window.__arenaNetRole=role;netRole=role;cur.friend=true;cur.sport=F.sport;cur.dbl=!!F.dbl;flow.sport=F.sport;
-  setMenuVis(false);setupMatch(F.sport,!!F.dbl);cur.friend=true;hudBuild();const scoreNames=document.querySelectorAll('#gtop .n');if(scoreNames[0])scoreNames[0].textContent='YOU';if(scoreNames[1])scoreNames[1].textContent='FRIEND';show('hud');
+  await showMatchLoading();setMenuVis(false);setupMatch(F.sport,!!F.dbl);cur.friend=true;hudBuild();const scoreNames=document.querySelectorAll('#gtop .n');if(scoreNames[0])scoreNames[0].textContent='YOU';if(scoreNames[1])scoreNames[1].textContent='FRIEND';show('hud');
   if(role==='host'){window.__arenaRemoteInput={mx:0,mz:0,shot:false,power:false,drop:false};if(snapshotTimer)clearInterval(snapshotTimer);snapshotTimer=setInterval(()=>{if(room&&roomRole==='host'&&mode==='game'&&M){const data=makeSnapshot();if(data)room.child('snapshot').set(data).catch(()=>{})}},66)}
   else{snapshotWatch=snap=>applySnapshot(snap.val());room.child('snapshot').on('value',snapshotWatch)}
  }
@@ -1004,4 +1005,4 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  const originalLobby=lobby;lobby=function(){originalLobby();if(roomRole==='host'||roomRole==='guest')$('bSim').style.display='none';if(roomRole==='host'&&room){room.update({sport:F.sport,dbl:!!F.dbl}).catch(()=>{})}if(roomRole==='guest'&&room){$('hostCfg').style.display='none';$('guestCfg').style.display='block';$('bStart').style.display='none';$('bSim').style.display='none'}};
  window.addEventListener('beforeunload',()=>{if(room&&roomRole==='guest'&&uid)room.child('guestId').transaction(v=>v===uid?null:v);if(room&&roomRole==='host')room.remove()});
 })();
-</script></body></html>
+</script><div id="matchLoading" aria-live="polite"><div>BADMINTON ARENA</div><div class="spinner"></div><div style="font-size:13px;letter-spacing:.15em">試合を準備しています</div></div></body></html>
