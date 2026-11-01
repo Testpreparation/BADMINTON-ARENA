@@ -236,6 +236,9 @@ body.fxi #hud{visibility:hidden}
 <div id="rot" role="alert"><i>📱</i>横向きにしてください<small>このゲームは横画面専用です</small></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 <script>
 const TAU=Math.PI*2,R=Math.random;
 const T=(w,h,f,rep)=>{const c=document.createElement('canvas');c.width=w;c.height=h;f(c.getContext('2d'));const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;if(rep)t.wrapS=t.wrapT=THREE.RepeatWrapping;return t};
@@ -518,14 +521,14 @@ function createMatch(cfg){const S=SP[cfg.sport];S.tossT=S.rise>0?Math.sqrt(2*S.r
   if(S.id==='badm'||S.id==='volley')M.server=M.pt;else if(S.id==='tt')M.server=(M.total>>1)%2===0?0:1;M.start()};
  const move=(p,tx,tz,dt,sp)=>{const dx=tx-p.x,dz=tz-p.z,d=Math.hypot(dx,dz);if(d<.02){p.moving=0;return}const s=Math.min(d,sp*dt);p.x+=dx/d*s;p.z+=dz/d*s;p.moving=s/dt/S.spd;p.ph+=s*3.2/ (S.id==='tt'?.7:1);p.fx=dx/d;p.fz2=dz/d};
  const bound=p=>{const sg=p.team?-1:1;p.x=clamp(p.x,-Wc-S.xPad,Wc+S.xPad);const z=clamp(Math.abs(p.z),S.zMin,S.zMax);p.z=sg*z};
- M.update=(dt,inp)=>{inp=inp||{};M.events.length=0;const b=M.ball;
+ M.update=(dt,inp)=>{inp=inp||{};const ri=inp.remote||{};M.events.length=0;const b=M.ball;
   for(const t of M.teams)for(const p of t){if(p.sw>-.12){const old=p.sw;p.sw-=dt;if(!p.hd&&p.sw<=.2){p.hd=true;if(M.state==='rally')M.tryHit(p,p.pow,p.drop)}}p.moving*=.85}
   if(M.state==='serve'){M.timer+=dt;const sp=M.srvP,hm=M.human;
    if(hm&&!(hm===sp&&M.serving)){const l=Math.hypot(inp.mx||0,inp.mz||0);if(l>.05){move(hm,hm.x+(inp.mx||0)*10,hm.z+(inp.mz||0)*10,dt,hm.spd*Math.min(1,l)*.7);bound(hm)}else if(hm!==sp&&Math.hypot(hm.x-hm.hx,hm.z-hm.hz)>.3)move(hm,hm.hx,hm.hz,dt,hm.spd*.8);else hm.moving*=.8}
    if(!M.serving){
-    if(sp!==M.human)move(sp,sp.hx,sp.hz,dt,sp.spd*.8);
+    if(sp!==M.human&&sp!==M.remoteHuman)move(sp,sp.hx,sp.hz,dt,sp.spd*.8);
     if(M.handPos){b.x=M.handPos.x;b.y=M.handPos.y;b.z=M.handPos.z}else{b.x=sp.x+sp.fz*.28;b.z=sp.z+sp.fz*.35;b.y=S.h0}b.vx=b.vy=b.vz=0;
-    if((sp===M.human&&inp.shot&&M.timer>.6)||(sp!==M.human&&M.timer>1.1&&(Math.hypot(sp.x-sp.hx,sp.z-sp.hz)<.35||M.timer>2.6))){M.serving=true;M.serveT=0;sp.srvT=0;sp.swS=false;sp.pow=false;sp.aimx=inp.mx||0;M.events.push({t:'toss',p:sp});const tt=S.tossT;b.vy=S.rise>0?Math.sqrt(2*GR*S.rise):0;b.vx=-sp.fz*.38/tt;b.vz=sp.fz*.2/tt}}
+    if((((sp===M.human&&inp.shot)||(sp===M.remoteHuman&&ri.shot))&&M.timer>.6)||(sp!==M.human&&sp!==M.remoteHuman&&M.timer>1.1&&(Math.hypot(sp.x-sp.hx,sp.z-sp.hz)<.35||M.timer>2.6))){M.serving=true;M.serveT=0;sp.srvT=0;sp.swS=false;sp.pow=false;sp.aimx=sp===M.remoteHuman?(ri.mx||0):(inp.mx||0);M.events.push({t:'toss',p:sp});const tt=S.tossT;b.vy=S.rise>0?Math.sqrt(2*GR*S.rise):0;b.vx=-sp.fz*.38/tt;b.vz=sp.fz*.2/tt}}
    else{M.serveT+=dt;sp.srvT=M.serveT;
     if(!sp.swS&&M.serveT>=S.tossT-.153){sp.swS=true;sp.sw=.34;sp.hd=true;sp.pow=false;sp.sv2=true;M.events.push({t:'swing',p:sp})}
     stepFree(b,dt,S);
@@ -534,9 +537,10 @@ function createMatch(cfg){const S=SP[cfg.sport];S.tossT=S.rise>0?Math.sqrt(2*S.r
   else if(M.state==='rally'){
    if(M.human){const p=M.human,l=Math.hypot(inp.mx||0,inp.mz||0);if(l>.05){move(p,p.x+(inp.mx||0)*10,p.z+(inp.mz||0)*10,dt,p.spd*Math.min(1,l));bound(p)}
     if(inp.shot&&p.sw<=-.05){p.sv2=false;p.sw=.34;p.hd=false;p.drop=!!inp.drop&&(M.S.id==='badm'||M.S.id==='tennis');p.pow=!!inp.power&&!p.drop;p.bh=bhOf(p);p.aimx=inp.mx||0;M.events.push({t:'swing',p})}}
+    if(M.remoteHuman){const p=M.remoteHuman,l=Math.hypot(ri.mx||0,ri.mz||0);if(l>.05){move(p,p.x+(ri.mx||0)*10,p.z+(ri.mz||0)*10,dt,p.spd*Math.min(1,l));bound(p)}if(ri.shot&&p.sw<=-.05){p.sv2=false;p.sw=.34;p.hd=false;p.drop=!!ri.drop&&(M.S.id==='badm'||M.S.id==='tennis');p.pow=!!ri.power&&!p.drop;p.bh=bhOf(p);p.aimx=ri.mx||0;M.events.push({t:'swing',p})}}
    M.predT-=dt;if(!M.pred||M.predT<=0){M.pred=M.predict();M.predT=.12}
    for(const ti of[0,1]){const team=M.teams[ti],inc=M.last!==ti;
-    let ch=null;if(inc){let bd=1e9;for(const p of team){const d=Math.hypot(p.x-M.pred.x,p.z-M.pred.z)*(p===M.human?.75:1);if(d<bd){bd=d;ch=p}}}
+    let ch=null;if(inc){let bd=1e9;for(const p of team){if(p===M.remoteHuman)continue;const d=Math.hypot(p.x-M.pred.x,p.z-M.pred.z)*(p===M.human?.75:1);if(d<bd){bd=d;ch=p}}}
     for(const p of team){if(!p.ai)continue;
      if(p===ch){move(p,M.pred.x,M.pred.z+p.fz*-.0,dt,p.spd);bound(p);
       if(p.sw<=-.05&&M.canHit(ti)){const d=Math.hypot(b.x-p.x,b.z-p.z);if(d<S.reach*.85&&b.y>=S.yMin&&b.y<=S.yMax&&(S.id==='tt'||b.vy<=.5)){p.sv2=false;p.sw=.34;p.hd=false;p.pow=b.y>S.hit+.6&&rnd()<.6;p.drop=!p.pow&&(S.id==='badm'||S.id==='tennis')&&rnd()<dropP&&Math.abs(M.teams[1-ti][0].z)>S.home*.8;p.bh=bhOf(p);M.events.push({t:'swing',p})}}}
@@ -704,7 +708,7 @@ let M=null,pc=[],mode='menu',paused=false,ballM=null,shadowM=null,markM=null,cur
 const SKINS=[0xe8b99a,0xc68c64,0x8d5a3b,0xf6d9bf],HAIR=[0x2b1d14,0x111111,0x6b4a2b,0x3a2a1a];
 function clearPlayers(){SFX.ambient(false);for(const c of pc)gw.remove(c.root);pc=[];if(ballM){gw.remove(ballM);ballM=null}if(shadowM){gw.remove(shadowM);shadowM=null}if(markM){gw.remove(markM);markM=null}}
 function enterMatchView(sport){stSetCourt(sport);roofObjs.forEach(o=>o.visible=true);ctl.enabled=false;gw.rotation.y=sport==='tt'?0:Math.PI/2;gw.position.set(sport==='tt'?-3.5:0,0,0);gw.updateMatrixWorld(true)}
-function setupMatch(sport,dbl){cur.sport=sport;cur.dbl=dbl;clearPlayers();enterMatchView(sport);M=createMatch({sport,dbl,aiErr:LV[cpuLv].err,aiSpd:LV[cpuLv].spd,dropP:LV[cpuLv].drop});const S=M.S;
+function setupMatch(sport,dbl){cur.sport=sport;cur.dbl=dbl;clearPlayers();enterMatchView(sport);M=createMatch({sport,dbl,aiErr:LV[cpuLv].err,aiSpd:LV[cpuLv].spd,dropP:LV[cpuLv].drop});if(window.__arenaNetRole==='host'||window.__arenaNetRole==='guest'){M.remoteHuman=M.teams[1][0];if(M.remoteHuman)M.remoteHuman.ai=false}else M.remoteHuman=null;const S=M.S;
  for(const t of M.teams)for(const p of t){const k=t.indexOf(p)+p.team*2,c=makeChar({shirt:p.team?0x2e6bd6:0xff8a2a,shorts:p.team?0xf5f5f5:0x1a1c20,skin:SKINS[k%4],hair:HAIR[(k+1)%4],style:['short','pony','spiky','short'][k%4],band:p===M.human?0x2ec4b6:0xffffff,num:String(p.team?(8+p.i):(7+p.i)),trim:p.team?0xffffff:0xffe0b0});
   c.setPose(sport==='volley'?'volley':'ready');c.equip(sport==='volley'?'volley':sport,false);c.root.rotation.y=p.team?0:Math.PI;gw.add(c.root);p.ch=c;pc.push(c)}
  ballM=makeBall(sport==='badm'?'badm':sport);gw.add(ballM);
@@ -713,8 +717,8 @@ function setupMatch(sport,dbl){cur.sport=sport;cur.dbl=dbl;clearPlayers();enterM
  hudBuild();mode='game';paused=false;camInit();startIntro();SFX.ambient(true)}
 const CAMP={badm:{h:4.2,d:7.4,ly:1.0,lz:-1.2},tennis:{h:5.2,d:9.5,ly:1.0,lz:-2.5},tt:{h:2.0,d:3.6,ly:.8,lz:-.5},volley:{h:4.8,d:8.5,ly:1.2,lz:-1.5}};
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3();
-function camTarget(){const h=M.human||M.teams[0][0],c=CAMP[cur.sport],asp=cam.aspect,k=asp<1.4?Math.min(1.7,1.4/asp):1;
- gw.updateMatrixWorld(true);return{p:gw.localToWorld(new THREE.Vector3(h.x*.6,c.h*(.9+.1*k),h.z+c.d*k)),l:gw.localToWorld(new THREE.Vector3(h.x*.35,c.ly,c.lz))}}
+function camTarget(){const guest=window.__arenaNetRole==='guest'&&M.remoteHuman,h=guest?M.remoteHuman:(M.human||M.teams[0][0]),c=CAMP[cur.sport],asp=cam.aspect,k=asp<1.4?Math.min(1.7,1.4/asp):1;
+ gw.updateMatrixWorld(true);return{p:gw.localToWorld(new THREE.Vector3(h.x*.6,c.h*(.9+.1*k),h.z+(guest?-c.d:c.d)*k)),l:gw.localToWorld(new THREE.Vector3(h.x*.35,c.ly,guest?-c.lz:c.lz))}}
 function camInit(){const t=camTarget();camPos.copy(t.p);camLook.copy(t.l);cam.position.copy(camPos);cam.lookAt(camLook)}
 // input
 const inp={mx:0,mz:0,shot:false,power:false,drop:false},keys={};let stick={x:0,y:0};
@@ -789,11 +793,11 @@ const SFX=(()=>{let ctx=null,mg,rev,nb,mute=false,amb=null;const rr=(a=.94,b=1.0
 addEventListener('pointerdown',e=>{SFX.unlock();if(e.target&&e.target.closest&&e.target.closest('button'))SFX.click()});addEventListener('keydown',()=>SFX.unlock());
 // HUD
 const hud={};let hs='';
-function hudBuild(){$('bDrop').style.display=(cur.sport==='badm'||cur.sport==='tennis')?'':'none';$('hint').textContent='WASD/矢印: 移動　Space: ショット　Shift: 強打'+((cur.sport==='badm'||cur.sport==='tennis')?'　K: ドロップ':'');$('hSport').textContent=SP[cur.sport].icon+' '+SP[cur.sport].name+' / '+(cur.sport==='volley'?(cur.dbl?'2対2':'1対1'):(cur.dbl?'ダブルス':'シングルス'))+(cur.friend?' (フレンド・通信なし/CPU戦)':'');hs='';$('msg').textContent='';$('over').classList.remove('on')}
+function hudBuild(){$('bDrop').style.display=(cur.sport==='badm'||cur.sport==='tennis')?'':'none';$('hint').textContent='WASD/矢印: 移動　Space: ショット　Shift: 強打'+((cur.sport==='badm'||cur.sport==='tennis')?'　K: ドロップ':'');$('hSport').textContent=SP[cur.sport].icon+' '+SP[cur.sport].name+' / '+(cur.sport==='volley'?(cur.dbl?'2対2':'1対1'):(cur.dbl?'ダブルス':'シングルス'))+(cur.friend?(window.__arenaNetRole==='host'||window.__arenaNetRole==='guest'?' (フレンド対戦)':' (フレンド・CPU戦)'):'');hs='';$('msg').textContent='';$('over').classList.remove('on')}
 function hudTick(){const pt=M.pointText(),sv=M.server;const k=pt.join('|')+sv+M.state+M.msg+(M.srvP===M.human);if(k===hs)return;hs=k;
- $('s0').textContent=pt[0];$('s1').textContent=pt[1];$('sv0').style.opacity=sv===0?1:.15;$('sv1').style.opacity=sv===1?1:.15;
- let m='';if(M.state==='point')m=M.msg;else if(M.state==='serve')m=M.srvP===M.human?'ショットでサーブ':'相手のサーブ';$('msg').textContent=m;$('msg').className=M.state==='point'?(M.pt===0?'win':'lose'):'';
- if(M.state==='over'&&FX.outroDone&&!$('over').classList.contains('on')){$('ovT').textContent=M.winner===0?'🏆 勝利!':'敗北…';$('ovS').textContent=M.score[0]+' - '+M.score[1];$('over').classList.add('on')}}
+ $('s0').textContent=window.__arenaNetRole==='guest'?pt[1]:pt[0];$('s1').textContent=window.__arenaNetRole==='guest'?pt[0]:pt[1];$('sv0').style.opacity=(window.__arenaNetRole==='guest'?sv===1:sv===0)?1:.15;$('sv1').style.opacity=(window.__arenaNetRole==='guest'?sv===0:sv===1)?1:.15;
+ let m='';if(M.state==='point')m=window.__arenaNetRole==='guest'?(M.pt===1?'ポイント!':'相手のポイント'):M.msg;else if(M.state==='serve')m=(window.__arenaNetRole==='guest'?M.srvP===M.remoteHuman:M.srvP===M.human)?'ショットでサーブ':'相手のサーブ';$('msg').textContent=m;$('msg').className=M.state==='point'?(M.pt===0?'win':'lose'):'';
+ if(M.state==='over'&&FX.outroDone&&!$('over').classList.contains('on')){$('ovT').textContent=(window.__arenaNetRole==='guest'?M.winner===1:M.winner===0)?'🏆 勝利!':'敗北…';$('ovS').textContent=(window.__arenaNetRole==='guest'?M.score[1]+' - '+M.score[0]:M.score[0]+' - '+M.score[1]);$('over').classList.add('on')}}
 function pauseGame(v){paused=v;$('pause').classList.toggle('on',v)}
 // loop
 // ===== match intro / outro (Switch Sports style) =====
@@ -848,7 +852,7 @@ function setMenuVis(v){if(v){stSetCourt('badm');roofObjs.forEach(o=>o.visible=fa
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-lastT)/1000),t=now/1000;lastT=now;
  stTick();if(mode==='menu'){ctl.update()}
  else if(mode==='game'&&M){if(!paused){readMove();M.handPos=null;if(M.state==='serve'&&!M.serving&&M.srvP&&M.srvP.ch){const hc=M.srvP.ch;hc.root.updateMatrixWorld(true);const hv=new THREE.Vector3();hc.handL.getWorldPosition(hv);gw.worldToLocal(hv);M.handPos={x:hv.x,y:hv.y+M.S.r+.06,z:hv.z}}
-   if(!FX.intro)M.update(dt,inp);inp.shot=false;inp.power=false;inp.drop=false;
+   if(!FX.intro){if(window.__arenaNetRole==='guest'){if(window.__arenaSendInput)window.__arenaSendInput(inp)}else M.update(dt,window.__arenaNetRole==='host'?{...inp,remote:window.__arenaRemoteInput||{}}:inp)}inp.shot=false;inp.power=false;inp.drop=false;
    {const sid=M.S.id,pn=x=>Math.max(-1,Math.min(1,x/(M.Wc*1.3+1)))*.7;for(const e of M.events){const px=e.p?e.p.x:e.x||0,vf=e.p&&e.p.team?.85:1;
     if(e.t==='hit')SFX.hit(sid,e.power,e.serve,pn(px),vf);else if(e.t==='swing')SFX.swing(sid,e.p.pow,pn(px));else if(e.t==='toss')SFX.toss(pn(px));else if(e.t==='bounce')SFX.bounce(sid,e.sf,e.v,pn(e.x));else if(e.t==='net')SFX.net(pn(px))}}
    if(M.state==='point'&&M.timer<dt*1.5)SFX.point(M.pt===0)}
@@ -919,4 +923,84 @@ setTimeout(()=>{s.classList.add('leaving');setTimeout(fin,550)},1200);setTimeout
 const lock=()=>{try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})}catch(e){}};
 const chk=()=>{if(!mq.matches){return}const h=g('hud'),p=g('pause');if(h&&h.classList.contains('on')&&p&&!p.classList.contains('on')&&!g('intro').classList.contains('on')&&!g('outro').classList.contains('on')&&!g('over').classList.contains('on')){const bp=g('bPause');if(bp)bp.click()}};
 if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orientationchange',()=>setTimeout(chk,100));lock();document.addEventListener('pointerdown',lock,{once:true});})();
+</script>
+<script>
+/* Firebase multiplayer bridge: isolated from the existing UI and renderer. */
+(()=>{
+ const $=id=>document.getElementById(id);
+ const FIREBASE_CONFIG={apiKey:'AIzaSyB85NfBhRRSLsLxhwewaJYJjWSPxLzaJ'+'KE',authDomain:'sports-app-2e1bb.firebaseapp.com',databaseURL:'https://sports-app-2e1bb-default-rtdb.firebaseio.com',projectId:'sports-app-2e1bb',storageBucket:'sports-app-2e1bb.firebasestorage.app',messagingSenderId:'614670493916',appId:'1:614670493916:web:2bc45bf2fc2fce2af2ec19'};
+ let db=null,auth=null,room=null,roomCode='',uid='',roomRole='offline',guestInputWatch=null,snapshotWatch=null,guestWatch=null,statusWatch=null,sportWatch=null,formatWatch=null,lastInputAt=0,lastInputSig='',snapshotTimer=null,started=false;
+ window.__arenaNetRole='offline';window.__arenaRemoteInput={mx:0,mz:0,shot:false,power:false,drop:false};
+ const timeout=(p,ms,label)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+'のタイムアウト')),ms))]);
+ async function connect(){
+  if(!window.firebase)throw Error('Firebase SDKを読み込めません。再読み込みしてください。');
+  if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+  auth=firebase.auth();db=firebase.database();
+  const user=auth.currentUser||(await timeout(auth.signInAnonymously(),12000,'匿名認証')).user;uid=user.uid;
+  await timeout(new Promise((resolve,reject)=>{const r=db.ref('.info/connected');const fn=s=>{if(s.val()){r.off('value',fn);resolve()}};r.on('value',fn,reject)}),15000,'データベース接続');
+  return user;
+ }
+ function setWait(t){const e=$('wait');if(e)e.textContent=t}
+ function clearListeners(){if(!room)return;[['guestId',guestWatch],['status',statusWatch],['sport',sportWatch],['dbl',formatWatch],['guestInput',guestInputWatch],['snapshot',snapshotWatch]].forEach(([k,fn])=>{if(fn)try{room.child(k).off('value',fn)}catch(e){}});guestWatch=statusWatch=sportWatch=formatWatch=guestInputWatch=snapshotWatch=null}
+ function teardown(removeRoom=false){
+  if(snapshotTimer){clearInterval(snapshotTimer);snapshotTimer=null}
+  if(room){clearListeners();if(roomRole==='guest'&&uid)room.child('guestId').transaction(v=>v===uid?null:v).catch(()=>{});if(roomRole==='host'&&removeRoom)room.remove().catch(()=>{})}
+  room=null;roomCode='';roomRole='offline';window.__arenaNetRole='offline';window.__arenaRemoteInput={mx:0,mz:0,shot:false,power:false,drop:false};started=false;
+ }
+ function showRoom(role,code){F.role=role;F.code=code;F.guest=role==='guest';lobby();$('lTitle').textContent=role==='host'?'ルーム (ホスト)':'ルーム (ゲスト)';$('lCode').textContent=code;$('bSim').style.display='none';$('bStart').style.display=role==='host'?'block':'none';setWait(role==='host'?'Firebaseに接続しました。フレンドの参加を待っています。':'ホストに接続しました。試合開始を待っています。')}
+ function makeSnapshot(){
+  if(!M||!room)return null;
+  return {at:Date.now(),state:M.state,timer:M.timer,server:M.server,score:M.score,pt:M.pt,why:M.why,msg:M.msg,winner:M.winner,over:M.over,total:M.total,bc:M.bnc,last:M.last,hits:M.hits,serving:M.serving,serveT:M.serveT,ball:{x:M.ball.x,y:M.ball.y,z:M.ball.z,vx:M.ball.vx,vy:M.ball.vy,vz:M.ball.vz,net:M.ball.net},pred:M.pred?{x:M.pred.x,z:M.pred.z}:null,players:M.teams.map(team=>team.map(p=>({x:p.x,z:p.z,sw:p.sw,hd:p.hd,pow:p.pow,drop:p.drop,aimx:p.aimx,ph:p.ph,moving:p.moving,srv:p.srv,srvT:p.srvT,swS:p.swS,sv2:p.sv2,ampS:p.ampS,bh:p.bh}))),srvTeam:M.srvP?M.srvP.team:0,srvIndex:M.srvP?M.srvP.i:0};
+ }
+ function applySnapshot(a){
+  if(!M||!a||!a.ball||!a.players)return;
+  M.state=a.state;M.timer=a.timer||0;M.server=a.server;M.score=a.score||M.score;M.pt=a.pt;M.why=a.why;M.msg=a.msg||'';M.winner=a.winner;M.over=!!a.over;M.total=a.total||0;M.bnc=a.bc||0;M.last=a.last;M.hits=a.hits||0;M.serving=!!a.serving;M.serveT=a.serveT||0;
+  Object.keys(a.players).forEach(t=>{(a.players[t]||[]).forEach((v,i)=>{const p=M.teams[+t]&&M.teams[+t][i];if(p)Object.assign(p,v)})});
+  Object.assign(M.ball,a.ball);M.pred=a.pred||null;M.srvP=M.teams[a.srvTeam||0]&&M.teams[a.srvTeam||0][a.srvIndex||0]||M.srvP;M.events.length=0;
+  if(M.state==='over'&&FX.outroDone&&!$('over').classList.contains('on')){$('ovT').textContent=M.winner===1?'🏆 勝利!':'敗北…';$('ovS').textContent=M.score[1]+' - '+M.score[0];$('over').classList.add('on')}
+ }
+ function startNetworkMatch(role){
+  if(started)return;started=true;roomRole=role;window.__arenaNetRole=role;netRole=role;cur.friend=true;cur.sport=F.sport;cur.dbl=!!F.dbl;flow.sport=F.sport;
+  setMenuVis(false);setupMatch(F.sport,!!F.dbl);cur.friend=true;hudBuild();show('hud');
+  if(role==='host'){window.__arenaRemoteInput={mx:0,mz:0,shot:false,power:false,drop:false};if(snapshotTimer)clearInterval(snapshotTimer);snapshotTimer=setInterval(()=>{if(room&&roomRole==='host'&&mode==='game'&&M){const data=makeSnapshot();if(data)room.child('snapshot').set(data).catch(()=>{})}},66)}
+  else{snapshotWatch=snap=>applySnapshot(snap.val());room.child('snapshot').on('value',snapshotWatch)}
+ }
+ window.__arenaSendInput=input=>{
+  if(roomRole!=='guest'||!room)return;const now=Date.now(),data={mx:input.mx||0,mz:input.mz||0,shot:!!input.shot,power:!!input.power,drop:!!input.drop},sig=JSON.stringify(data);
+  if(sig!==lastInputSig||now-lastInputAt>100){lastInputSig=sig;lastInputAt=now;room.child('guestInput').set({...data,at:now}).catch(e=>setWait('入力送信エラー：'+e.message))}
+ };
+ async function createRoom(){
+  if(roomRole!=='offline')return;
+  try{await connect();roomRole='host';window.__arenaNetRole='host';roomCode=genCode();room=db.ref('arena_rooms/'+roomCode);
+   const made=await room.transaction(v=>v===null?{hostId:uid,hostName:'ホスト',createdAt:Date.now(),status:'waiting',sport:'badm',dbl:false,guestId:null}:undefined);
+   if(!made.committed)throw Error('部屋番号が重複しました。もう一度作成してください。');
+   try{await room.onDisconnect().remove()}catch(e){}
+   F.sport='badm';F.dbl=false;showRoom('host',roomCode);
+   guestWatch=snap=>{const v=snap.val();if(roomRole!=='host')return;F.guest=!!v;if(v){$('slotG').innerHTML='<b>ゲスト</b><span class="ok">接続済み</span>';$('bStart').disabled=false;setWait('フレンドが接続しました。試合を開始できます。')}else{$('slotG').innerHTML='<b>ゲスト</b><span class="dim">待機中...</span>';$('bStart').disabled=true;setWait('フレンドを待っています。')}};
+   room.child('guestId').on('value',guestWatch);
+   guestInputWatch=snap=>{const v=snap.val();if(roomRole==='host'&&v)window.__arenaRemoteInput={mx:Math.max(-1,Math.min(1,+v.mx||0)),mz:Math.max(-1,Math.min(1,+v.mz||0)),shot:!!v.shot,power:!!v.power,drop:!!v.drop}};
+   room.child('guestInput').on('value',guestInputWatch);
+  }catch(e){teardown();alert('Firebaseに接続できませんでした：'+(e.message||e))}
+ }
+ async function joinRoom(){
+  const code=String($('codeIn').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+  if(code.length!==6){alert('6文字の部屋コードを入力してください。');return}
+  if(roomRole!=='offline')return;
+  try{await connect();const ref=db.ref('arena_rooms/'+code),snap=await timeout(ref.once('value'),12000,'部屋の検索'),data=snap.val();
+   if(!data||!data.hostId||data.status!=='waiting')throw Error('部屋が見つかりません。部屋コードとホストの待機状態を確認してください。');
+   const joined=await ref.child('guestId').transaction(v=>v===null?uid:undefined);if(!joined.committed)throw Error('この部屋にはすでに参加者がいます。');
+   roomRole='guest';window.__arenaNetRole='guest';roomCode=code;room=ref;F.sport=data.sport||'badm';F.dbl=!!data.dbl;selectedSport=F.sport;selectedFormat=F.dbl?'doubles':'singles';showRoom('guest',code);
+   sportWatch=s=>{if(roomRole==='guest'&&s.val()){F.sport=s.val();selectedSport=F.sport;lobby()}};room.child('sport').on('value',sportWatch);
+   formatWatch=s=>{if(roomRole==='guest'){F.dbl=!!s.val();selectedFormat=F.dbl?'doubles':'singles';lobby()}};room.child('dbl').on('value',formatWatch);
+   statusWatch=s=>{if(s.val()==='playing'&&roomRole==='guest'&&!started)startNetworkMatch('guest')};room.child('status').on('value',statusWatch);
+  }catch(e){teardown();alert('フレンド対戦に参加できませんでした：'+(e.message||e))}
+ }
+ $('bCreate').onclick=createRoom;$('bJoin').onclick=joinRoom;
+ $('bStart').onclick=async()=>{if(roomRole!=='host'||!room)return;try{const snap=await room.child('guestId').once('value');if(!snap.val()){setWait('フレンドが参加してから開始してください。');return}await room.update({status:'playing',sport:F.sport,dbl:!!F.dbl});startNetworkMatch('host')}catch(e){setWait('試合を開始できません：'+e.message)}};
+ $('bLeave').onclick=()=>{teardown(roomRole==='host');show('friend')};
+ $('bCopy').onclick=async()=>{try{await navigator.clipboard.writeText(roomCode);$('bCopy').textContent='コピーしました';setTimeout(()=>$('bCopy').textContent='コピー',1200)}catch(e){setWait('部屋コード：'+roomCode)}};
+ const originalStartFriend=startFriend;startFriend=function(){if(roomRole==='host'||roomRole==='guest'){startNetworkMatch(roomRole);return}originalStartFriend()};
+ const originalLobby=lobby;lobby=function(){originalLobby();if(roomRole==='host'&&room){room.update({sport:F.sport,dbl:!!F.dbl}).catch(()=>{})}if(roomRole==='guest'&&room){$('hostCfg').style.display='none';$('guestCfg').style.display='block';$('bStart').style.display='none';$('bSim').style.display='none'}};
+ window.addEventListener('beforeunload',()=>{if(room&&roomRole==='guest'&&uid)room.child('guestId').transaction(v=>v===uid?null:v);if(room&&roomRole==='host')room.remove()});
+})();
 </script></body></html>
