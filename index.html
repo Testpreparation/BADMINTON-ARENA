@@ -48,7 +48,7 @@ input{touch-action:manipulation}
 #sportCards .card:nth-child(2) .ic{background:#c6f36b}
 #sportCards .card:nth-child(3) .ic{background:#ffd9a0}
 #sportCards .card:nth-child(4) .ic{background:#ffb8aa}
-.card small{color:var(--ink2);font-size:.7em}
+.card small{color:var(--ink2);font-size:.7em}.card.locked{opacity:.78;cursor:not-allowed;filter:saturate(.55)}.card.locked:active{transform:none;box-shadow:0 9px 0 rgba(20,60,120,.18)}.card .status-lock{display:block;margin-top:5px;color:#a14b42;font-size:clamp(10px,1.6vh,12px);font-weight:900;letter-spacing:.04em}
 #fmt .card{padding:clamp(20px,5vh,34px) 10px;font-size:clamp(18px,3vw,24px)}
 .btn{white-space:nowrap;padding:12px 20px;border-radius:18px;background:var(--pale);color:var(--ink);font-weight:800;box-shadow:0 4px 0 rgba(20,60,120,.12)}
 .btn.pri{background:var(--co);color:#fff;box-shadow:0 4px 0 rgba(180,54,35,.3)}
@@ -722,7 +722,7 @@ function setupMatch(sport,dbl){cur.sport=sport;cur.dbl=dbl;clearPlayers();enterM
 const CAMP={badm:{h:4.2,d:7.4,ly:1.0,lz:-1.2},tennis:{h:5.2,d:9.5,ly:1.0,lz:-2.5},tt:{h:2.0,d:3.6,ly:.8,lz:-.5},volley:{h:4.8,d:8.5,ly:1.2,lz:-1.5}};
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3();
 function camTarget(){const guest=window.__arenaNetRole==='guest'&&M.remoteHuman,h=guest?M.remoteHuman:(M.human||M.teams[0][0]),c=CAMP[cur.sport],asp=cam.aspect,k=asp<1.4?Math.min(1.7,1.4/asp):1;
- gw.updateMatrixWorld(true);return{p:gw.localToWorld(new THREE.Vector3(h.x*.6,c.h*(.9+.1*k),h.z+(guest?-c.d:c.d)*k)),l:gw.localToWorld(new THREE.Vector3(h.x*.35,c.ly,guest?-c.lz:c.lz))}}
+ gw.updateMatrixWorld(true);if(cur.sport==='tt'){const dir=guest?1:-1;return{p:gw.localToWorld(new THREE.Vector3(h.x,1.55,h.z+dir*.32)),l:gw.localToWorld(new THREE.Vector3(h.x,1.5,h.z+dir*8))}}return{p:gw.localToWorld(new THREE.Vector3(h.x*.6,c.h*(.9+.1*k),h.z+(guest?-c.d:c.d)*k)),l:gw.localToWorld(new THREE.Vector3(h.x*.35,c.ly,guest?-c.lz:c.lz))}}
 function camInit(){const t=camTarget();camPos.copy(t.p);camLook.copy(t.l);cam.position.copy(camPos);cam.lookAt(camLook)}
 // input
 const inp={mx:0,mz:0,shot:false,power:false,drop:false},keys={};let stick={x:0,y:0};
@@ -890,7 +890,7 @@ let flow={sport:null};
 async function showMatchLoading(){const el=document.getElementById('matchLoading');if(el)el.classList.add('on');await new Promise(resolve=>setTimeout(resolve,3000));if(el)el.classList.remove('on')}
 $('bPlay').onclick=()=>{cur.friend=false;show('sport')};$('bFriend').onclick=()=>show('friend');
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show(b.dataset.back));
-const cards=$('sportCards');for(const id of SPORTS){const s=SP[id],b=document.createElement('button');b.className='card';b.innerHTML=`<span class="ic">${s.icon}</span><b>${s.name}</b>`;b.onclick=()=>{flow.sport=id;$('fmtT').textContent=s.name;$('fS').textContent=id==='volley'?'1対1':'シングルス';$('fD').textContent=id==='volley'?'2対2':'ダブルス';$('ruleSelect').style.display=id==='badm'?'block':'none';cur.rule='short';renderRuleChoices('ruleChoices','ruleNote','short');show('fmt')};cards.appendChild(b)}
+const cards=$('sportCards');for(const id of SPORTS){const s=SP[id],b=document.createElement('button');b.className='card';b.innerHTML=`<span class="ic">${s.icon}</span><b>${s.name}</b>${id==='volley'?'<small class="status-lock">未実装 🔒</small>':''}`;if(id==='volley'){b.disabled=true;b.classList.add('locked');b.setAttribute('aria-label','バレーボール、未実装');b.setAttribute('title','未実装')}else b.onclick=()=>{flow.sport=id;$('fmtT').textContent=s.name;$('fS').textContent=id==='volley'?'1対1':'シングルス';$('fD').textContent=id==='volley'?'2対2':'ダブルス';$('ruleSelect').style.display=id==='badm'?'block':'none';cur.rule='short';renderRuleChoices('ruleChoices','ruleNote','short');show('fmt')};cards.appendChild(b)}
 async function go(dbl){await showMatchLoading();setMenuVis(false);setupMatch(flow.sport,dbl);show('hud')}
 $('fS').onclick=()=>go(false);$('fD').onclick=()=>go(true);
 $('bAgain').onclick=()=>{setupMatch(cur.sport,cur.dbl);show('hud')};$('bQuit').onclick=()=>{if(cur.friend){mode='menu';clearPlayers();M=null;setMenuVis(true);show('lobby')}else toMenu()};
