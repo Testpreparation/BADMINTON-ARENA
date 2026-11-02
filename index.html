@@ -261,8 +261,8 @@ body.fxi #hud{visibility:hidden}
 
 /* ---- メインメニュー設定ハンバーガー ---- */
 #menuTools{position:absolute;top:calc(env(safe-area-inset-top,0px) + 16px);right:calc(env(safe-area-inset-right,0px) + 18px);z-index:40}
-#bMenuTools{display:flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:10px 16px;border:1px solid rgba(255,255,255,.62);border-radius:16px;background:rgba(255,255,255,.94);color:var(--ink);font-size:14px;font-weight:850;box-shadow:0 5px 0 rgba(20,60,120,.22);backdrop-filter:blur(12px)}
-#bMenuTools .hamb{display:flex;flex-direction:column;gap:4px;width:19px}
+#bMenuTools{display:flex;align-items:center;justify-content:center;gap:9px;min-width:48px;min-height:48px;padding:10px 14px;border:1px solid rgba(255,255,255,.62);border-radius:16px;background:rgba(255,255,255,.94);color:var(--ink);font-size:14px;font-weight:850;box-shadow:0 5px 0 rgba(20,60,120,.22);backdrop-filter:blur(12px)}
+#bMenuTools .hamb{display:flex;flex-direction:column;gap:4px;width:19px}#bMenuTools{width:48px;padding:10px}
 #bMenuTools .hamb i{display:block;height:2px;width:19px;border-radius:2px;background:currentColor}
 #menuSettings{position:fixed;inset:0;z-index:1000;display:none;align-items:flex-start;justify-content:flex-end;padding:calc(env(safe-area-inset-top,0px) + 76px) calc(env(safe-area-inset-right,0px) + 16px) 16px;background:rgba(3,10,22,.48);backdrop-filter:blur(5px);pointer-events:auto}
 #menuSettings.open{display:flex}
@@ -278,21 +278,21 @@ body.fxi #hud{visibility:hidden}
 #menuSettings .settingsBody{padding:0 14px 14px;font-size:13px;line-height:1.65;color:#526b84}
 #menuSettings .settingsBody p{margin:0 0 8px}
 #bSettingsSound{width:100%;padding:11px 12px;border-radius:12px;background:#d9efff;color:#16324f;font-size:14px;font-weight:850;text-align:left}
-#menuSettings .settingsHint{font-size:11px;opacity:.8;margin-top:6px}
-@media(max-width:640px){#menuTools{top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 10px)}#bMenuTools{min-height:42px;padding:8px 12px;font-size:12px;border-radius:13px}#menuSettings{padding:calc(env(safe-area-inset-top,0px) + 62px) 10px 10px}#menuSettingsCard{padding:14px;gap:10px}}
-@media(orientation:landscape) and (max-height:520px){#menuTools{top:calc(env(safe-area-inset-top,0px) + 7px);right:calc(env(safe-area-inset-right,0px) + 8px)}#bMenuTools{min-height:36px;padding:6px 10px}#menuSettings{padding-top:50px}#menuSettingsCard{max-height:calc(100dvh - 60px);padding:12px;gap:8px}#menuSettings summary{padding:10px 38px 10px 12px}}
+#menuSettings .settingsHint{font-size:11px;opacity:.8;margin-top:6px}\n#menuSettings .volumeLabel{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:var(--ink);font-size:13px;font-weight:850}\n#menuSettings .volumeSlider{display:block;width:100%;margin:8px 0 0;padding:0;height:26px;accent-color:#4aa8ff;touch-action:pan-x;cursor:pointer;box-shadow:none;border:0;background:transparent}
+@media(max-width:640px){#menuTools{top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 10px)}#bMenuTools{min-width:42px;width:42px;min-height:42px;padding:8px;border-radius:13px}#menuSettings{padding:calc(env(safe-area-inset-top,0px) + 62px) 10px 10px}#menuSettingsCard{padding:14px;gap:10px}}
+@media(orientation:landscape) and (max-height:520px){#menuTools{top:calc(env(safe-area-inset-top,0px) + 7px);right:calc(env(safe-area-inset-right,0px) + 8px)}#bMenuTools{min-width:36px;width:36px;min-height:36px;padding:6px}#menuSettings{padding-top:50px}#menuSettingsCard{max-height:calc(100dvh - 60px);padding:12px;gap:8px}#menuSettings summary{padding:10px 38px 10px 12px}}
 
 </style><script>{const D=Date;window.Date=class extends D{getHours(){return 12}getMinutes(){return 0}getSeconds(){return 0}}}</script></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite"><div class="splashGlow" aria-hidden="true"></div><div class="splashOrb one" aria-hidden="true"></div><div class="splashOrb two" aria-hidden="true"></div><div class="splashOrb three" aria-hidden="true"></div><div class="splashCourt" aria-hidden="true"></div><div class="splashContent"><div class="splashMark" aria-hidden="true">AS</div><p class="splashEyebrow">WELCOME TO</p><h1 id="splashHeading">ARENA<br>SPORTS</h1><p class="splashSub">BADMINTON <span aria-hidden="true">·</span> TENNIS <span aria-hidden="true">·</span> TABLE TENNIS <span aria-hidden="true">·</span> VOLLEYBALL</p></div></div>
 <div class="bar" id="top"></div><div class="bar" id="bot"></div><canvas id="c"></canvas>
 <div id="menu" class="scr on"><div class="home"><div class="title"><small>RACKET &amp; NET SPORTS</small><h1>ARENA <span>SPORTS</span></h1><p>BADMINTON · TENNIS · TABLE TENNIS · VOLLEYBALL</p></div>
  <div class="side"><button class="big" id="bPlay"><span class="ic">🎮</span><span>プレイ<small>CPUと対戦</small></span><em>PLAY ▶</em></button><button class="big b2" id="bFriend"><span class="ic">🤝</span><span>フレンド対戦<small>部屋を作って遊ぶ</small></span><em>PLAY ▶</em></button></div></div>
- <div id="menuTools"><button id="bMenuTools" type="button" aria-expanded="false" aria-controls="menuSettings"><span class="hamb" aria-hidden="true"><i></i><i></i><i></i></span>設定</button></div>
- <div id="menuSettings" aria-hidden="true"><div id="menuSettingsCard" role="dialog" aria-modal="true" aria-labelledby="menuSettingsTitle"><div id="menuSettingsHead"><h2 id="menuSettingsTitle">設定</h2><button id="bSettingsClose" type="button" aria-label="設定を閉じる">×</button></div>
-  <details open><summary>🔊 サウンド</summary><div class="settingsBody"><p>試合中の効果音をオン・オフできます。</p><button id="bSettingsSound" type="button">🔊 サウンド：ON</button></div></details>
+ <div id="menuTools"><button id="bMenuTools" type="button" aria-expanded="false" aria-label="メニューを開く" title="メニュー" aria-expanded="false" aria-controls="menuSettings"><span class="hamb" aria-hidden="true"><i></i><i></i><i></i></span></button></div>
+ <div id="menuSettings" aria-hidden="true"><div id="menuSettingsCard" role="dialog" aria-modal="true" aria-labelledby="menuSettingsTitle"><div id="menuSettingsHead"><h2 id="menuSettingsTitle">メニュー</h2><button id="bSettingsClose" type="button" aria-label="メニューを閉じる">×</button></div>
+  <details open><summary>⚙️ 設定</summary><div class="settingsBody"><p>音声のオン・オフと音量を調整できます。</p><button id="bSettingsSound" type="button">🔊 サウンド：ON</button><label class="volumeLabel" for="bSettingsVolume"><span>🔉 音量</span><output id="bSettingsVolumeValue" for="bSettingsVolume">100%</output></label><input id="bSettingsVolume" class="volumeSlider" type="range" min="0" max="100" step="1" value="100" aria-label="効果音の音量"></div></details>
   <details><summary>🎮 操作方法</summary><div class="settingsBody"><p><b>PC：</b>WASD または矢印キーで移動、Spaceでショット、Shiftで強打。</p><p><b>スマホ・タブレット：</b>画面左のスティックで移動し、右側のショット・強打ボタンで操作します。</p></div></details>
   <details><summary>🖥️ 画面・表示</summary><div class="settingsBody"><p>このゲームは横画面専用です。スマホ・タブレットでは端末を横向きにしてください。</p><p>メニューや操作ボタンは画面サイズに合わせて自動調整されます。</p></div></details>
-  <details><summary>ℹ️ ゲームについて</summary><div class="settingsBody"><p>競技と試合形式は「プレイ」から、フレンドとの対戦は「フレンド対戦」から選択できます。</p><p class="settingsHint">設定を閉じるには右上の ×、またはパネル外をタップしてください。</p></div></details>
+  <details><summary>ℹ️ ゲームについて</summary><div class="settingsBody"><p>競技と試合形式は「プレイ」から、フレンドとの対戦は「フレンド対戦」から選択できます。</p><p class="settingsHint">メニューを閉じるには右上の ×、またはパネル外をタップしてください。</p></div></details>
  </div></div></div>
 <div id="sport" class="scr"><div class="panel"><button class="back" data-back="menu">‹ メニュー</button><h2>競技を選択</h2><div class="grid" id="sportCards"></div></div></div>
 <div id="fmt" class="scr"><div class="panel"><button class="back" data-back="sport">‹ 競技選択</button><h2 id="fmtT"></h2><p class="sub">試合形式を選択</p><div class="grid"><button class="card" id="fD0" style="display:none"></button><button class="card" id="fS" style="grid-column:1"></button><button class="card" id="fD"></button></div><div id="ruleSelect" style="display:none"><div class="lbl">ルール</div><div class="ruleChoices" id="ruleChoices"><button type="button" class="ruleChoice sel" data-rule="short">短縮ルール</button><button type="button" class="ruleChoice" data-rule="official">公式ルール</button></div><p class="ruleNote" id="ruleNote">1ゲーム11点先取（10点同点は2点差、最大15点）</p></div><div><div class="lbl">CPUの強さ</div><div class="row lvRow" id="lvChips"></div></div></div></div>
@@ -840,9 +840,9 @@ for(const id of['bShot','bPow','bDrop'])for(const ev of['pointerup','pointerleav
  addEventListener('pointerdown',e=>{if(svOpen&&!svDown&&!(e.target.closest&&(e.target.closest('.svo')||e.target.closest('#bShot'))))svClose()},true)}
 if(matchMedia('(pointer:coarse)').matches)document.body.classList.add('touch');addEventListener('touchstart',()=>document.body.classList.add('touch'),{once:true});
 // ===== sound engine v2 (WebAudio modal synthesis) =====
-const SFX=(()=>{let ctx=null,mg,rev,nb,mute=false,amb=null;const rr=(a=.94,b=1.06)=>a+Math.random()*(b-a);
+const SFX=(()=>{let ctx=null,mg,rev,nb,mute=false,amb=null,volume=1;try{const saved=Number(localStorage.getItem('badmintonArenaSfxVolume'));if(localStorage.getItem('badmintonArenaSfxVolume')!==null&&Number.isFinite(saved))volume=Math.max(0,Math.min(1,saved))}catch(e){}const rr=(a=.94,b=1.06)=>a+Math.random()*(b-a);
  const init=()=>{if(ctx)return ctx;try{ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return null}
-  const comp=ctx.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=5;comp.attack.value=.003;comp.release.value=.2;mg=ctx.createGain();mg.gain.value=mute?0:.85;mg.connect(comp);comp.connect(ctx.destination);
+  const comp=ctx.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=5;comp.attack.value=.003;comp.release.value=.2;mg=ctx.createGain();mg.gain.value=mute?0:.85*volume;mg.connect(comp);comp.connect(ctx.destination);
   const len=ctx.sampleRate*1.8|0,ib=ctx.createBuffer(2,len,ctx.sampleRate);for(let c=0;c<2;c++){const d=ib.getChannelData(c);let lp=0;for(let i=0;i<len;i++){lp+=((Math.random()*2-1)-lp)*(.25+.75*(1-i/len));d[i]=lp*Math.pow(1-i/len,2.4)*1.6}}
   rev=ctx.createConvolver();rev.buffer=ib;const rg=ctx.createGain();rg.gain.value=.55;rev.connect(rg);rg.connect(mg);
   nb=ctx.createBuffer(1,ctx.sampleRate*3,ctx.sampleRate);const nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;return ctx};
@@ -866,7 +866,7 @@ const SFX=(()=>{let ctx=null,mg,rev,nb,mute=false,amb=null;const rr=(a=.94,b=1.0
  const applause=(t,d,k)=>{nz(t,d,{f1:3200,q:.6,v:.07*k,a:d*.2,wet:.4});for(let i=0;i<Math.round(60*k);i++)nz(t+Math.random()*d,.02+Math.random()*.03,{f1:1500+Math.random()*3500,q:1,v:.03+Math.random()*.05,pan:(Math.random()-.5)*1.6,wet:.35})};
  const sparkle=(t,n,d)=>{for(let i=0;i<n;i++)bell(t+Math.random()*d,1800+Math.random()*2600,.35,.06,.5,(Math.random()-.5)*1.4)};
  const A={
-  unlock(){ok()},mute(m){mute=m;if(mg)mg.gain.value=m?0:.85;if(m&&amb){try{amb.s.stop()}catch(e){}amb=null}},isMute:()=>mute,
+  unlock(){ok()},mute(m){mute=m;if(mg)mg.gain.value=m?0:.85*volume;if(m&&amb){try{amb.s.stop()}catch(e){}amb=null}},isMute:()=>mute,volume:()=>volume,setVolume(v){volume=Math.max(0,Math.min(1,Number(v)||0));try{localStorage.setItem('badmintonArenaSfxVolume',String(volume))}catch(e){}if(mg)mg.gain.value=mute?0:.85*volume},
   hit(sp,pw,srv,pan=0,vol=1){if(!ok())return;const t=T0(),k=(pw?1.25:1)*vol,d=rr(.97,1.03);
    if(sp==='tennis'){hitM(t,[{f:330,d:.1,v:.5},{f:640,d:.075,v:.32},{f:1250,d:.05,v:.2},{f:2450,d:.04,v:.1}],{pan,k,det:d,click:.4});tone(t,480,200,.05,{v:.35*k,pan,wet:.04});tone(t,140,70,.07,{v:.4*k,pan,wet:.05});if(pw||srv){nz(t,.05,{f1:5200,type:'highpass',v:.2*vol,pan});hitM(t+.004,[{f:900,d:.05,v:.15}],{pan,k,click:0})}}
    else if(sp==='badm'){hitM(t,[{f:2100,d:.05,v:.3},{f:3350,d:.035,v:.2},{f:1250,d:.06,v:.2}],{pan,k,det:d,click:.45,ck:6500});nz(t,.035,{f1:4600,q:1,v:.18*k,pan});tone(t,220,140,.04,{v:.2*k,pan});if(pw){nz(t,.07,{f1:2300,q:1.4,v:.35*vol,pan});tone(t,130,70,.1,{v:.4*vol,pan,wet:.08})}}
@@ -1019,12 +1019,12 @@ const cards=$('sportCards');for(const id of SPORTS){const s=SP[id],b=document.cr
 async function go(dbl){await showMatchLoading();setMenuVis(false);setupMatch(flow.sport,dbl);show('hud')}
 $('fS').onclick=()=>go(false);$('fD').onclick=()=>go(true);
 $('bAgain').onclick=()=>{setupMatch(cur.sport,cur.dbl);show('hud')};$('bQuit').onclick=()=>{if(cur.friend){mode='menu';clearPlayers();M=null;setMenuVis(true);show('lobby')}else toMenu()};
-const settingsPanel=$('menuSettings'),settingsButton=$('bMenuTools'),settingsSound=$('bSettingsSound');
- function syncSettingsSound(){const off=SFX.isMute();settingsSound.textContent=off?'🔇 サウンド：OFF':'🔊 サウンド：ON';settingsSound.setAttribute('aria-pressed',String(!off));$('bSnd').textContent=off?'🔇 サウンド: OFF':'🔊 サウンド: ON'}
+const settingsPanel=$('menuSettings'),settingsButton=$('bMenuTools'),settingsSound=$('bSettingsSound'),settingsVolume=$('bSettingsVolume'),settingsVolumeValue=$('bSettingsVolumeValue');
+ function syncSettingsSound(){const off=SFX.isMute();settingsSound.textContent=off?'🔇 サウンド：OFF':'🔊 サウンド：ON';settingsSound.setAttribute('aria-pressed',String(!off));$('bSnd').textContent=off?'🔇 サウンド: OFF':'🔊 サウンド: ON';settingsVolume.value=String(Math.round(SFX.volume()*100));settingsVolumeValue.textContent=settingsVolume.value+'%'}
  function closeMenuSettings(){settingsPanel.classList.remove('open');settingsPanel.setAttribute('aria-hidden','true');settingsButton.setAttribute('aria-expanded','false')}
  settingsButton.onclick=()=>{const open=!settingsPanel.classList.contains('open');settingsPanel.classList.toggle('open',open);settingsPanel.setAttribute('aria-hidden',String(!open));settingsButton.setAttribute('aria-expanded',String(open));if(open)syncSettingsSound()};
  $('bSettingsClose').onclick=closeMenuSettings;settingsPanel.addEventListener('click',e=>{if(e.target===settingsPanel)closeMenuSettings()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenuSettings()});
- settingsSound.onclick=()=>{SFX.mute(!SFX.isMute());syncSettingsSound()};$('bSnd').onclick=()=>{SFX.mute(!SFX.isMute());syncSettingsSound()};syncSettingsSound();
+ settingsSound.onclick=()=>{SFX.mute(!SFX.isMute());syncSettingsSound()};settingsVolume.oninput=()=>{SFX.setVolume(Number(settingsVolume.value)/100);settingsVolumeValue.textContent=settingsVolume.value+'%'};$('bSnd').onclick=()=>{SFX.mute(!SFX.isMute());syncSettingsSound()};syncSettingsSound();
  $('bPause').onclick=()=>pauseGame(true);$('bResume').onclick=()=>pauseGame(false);$('bPQuit').onclick=()=>{pauseGame(false);$('bQuit').onclick()};
 // ===== friend =====
 const F={role:'host',code:'',sport:'tennis',dbl:false,guest:false,rule:'short'};
