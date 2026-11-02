@@ -620,20 +620,22 @@ function createMatch(cfg){const S=SP[cfg.sport];S.tossT=S.rise>0?Math.sqrt(2*S.r
    if(S.id==='tt'){if(bounced>=1&&Math.abs(c.z)>=S.zMin-.2)return lastp}else if(S.rule==='bounce'){if(bounced>=1&&c.vy<0&&c.y<=S.hit)return lastp}else if(c.vy<0&&c.y<=S.hit)return lastp}
   return lastp};
  M.start=first=>{M.state='serve';M.timer=0;M.last=-1;M.bnc=0;M.msg='';M.pt=-1;for(const t of M.teams)for(const p of t){if(first){p.x=p.hx;p.z=p.hz}p.sw=0;p.hd=true;p.srv=false;p.srvT=-1;p.swS=false;p.sv2=false}
-  M.srvP=M.teams[M.server][0];M.srvP.srv=true;const b=M.ball;b.vx=b.vy=b.vz=0;b.net=false;b.sT=b.sS=0;M.svPh=0;b.x=M.srvP.x+M.srvP.fz*.28;b.z=M.srvP.z+M.srvP.fz*.35;b.y=S.h0;M.serving=false};
+  M.srvP=M.teams[M.server][0];M.srvP.srv=true;if(S.id==='badm'){const spot=serveSpot(M.srvP);M.srvP.x=spot.x;M.srvP.z=spot.z}const b=M.ball;b.vx=b.vy=b.vz=0;b.net=false;b.sT=b.sS=0;M.svPh=0;b.x=M.srvP.x+M.srvP.fz*.28;b.z=M.srvP.z+M.srvP.fz*.35;b.y=S.h0;M.serving=false};
  M.pointText=()=>{const a=M.score[0],c=M.score[1];if(S.id!=='tennis')return[String(a),String(c)];const m=['0','15','30','40'];if(a>=3&&c>=3){return a===c?['DEUCE','DEUCE']:a>c?['AD','40']:['40','AD']}return[m[Math.min(a,3)],m[Math.min(c,3)]]};
  M.finishPoint=()=>{M.score[M.pt]++;M.total++;const a=M.score[0],c=M.score[1],mx=Math.max(a,c),df=Math.abs(a-c);
   if(S.id==='badm'&&M.ruleMode==='official'){if((mx>=21&&df>=2)||mx>=30){const gw=a>c?0:1;M.games[gw]++;if(M.games[gw]>=2){M.over=true;M.state='over';M.winner=gw;return}M.score=[0,0];M.server=gw;M.start();return}}
   else if((mx>=(S.id==='badm'&&M.ruleMode==='short'?11:S.win)&&df>=2)||mx>=(S.id==='badm'&&M.ruleMode==='short'?15:S.cap)){M.over=true;M.state='over';M.winner=a>c?0:1;return}
   if(S.id==='badm'||S.id==='volley')M.server=M.pt;else if(S.id==='tt')M.server=(M.score[0]>=10&&M.score[1]>=10)?M.total%2:((M.total>>1)%2===0?0:1);M.start()};
  const move=(p,tx,tz,dt,sp)=>{const dx=tx-p.x,dz=tz-p.z,d=Math.hypot(dx,dz);if(d<.02){p.moving=0;return}const s=Math.min(d,sp*dt);p.x+=dx/d*s;p.z+=dz/d*s;p.moving=s/dt/S.spd;p.ph+=s*3.2/ (S.id==='tt'?.7:1);p.fx=dx/d;p.fz2=dz/d};
- const bound=p=>{const sg=p.team?-1:1;p.x=clamp(p.x,-Wc-S.xPad,Wc+S.xPad);const z=clamp(Math.abs(p.z),S.zMin,S.zMax);p.z=sg*z};
+ const serveLane=p=>(M.score[p.team]%2===0?(p.team===0?-1:1):(p.team===0?1:-1));
+ const serveSpot=p=>({x:serveLane(p)*Wc*.5,z:(p.team?-1:1)*((1.98+(dbl?S.L-.76:S.L))*.5)});
+ const bound=p=>{const sg=p.team?-1:1;p.x=clamp(p.x,-Wc-S.xPad,Wc+S.xPad);let z=clamp(Math.abs(p.z),S.zMin,S.zMax);if(S.id==='tennis'&&M.state==='serve'&&p===M.srvP)z=Math.min(z,S.L-.08);if(S.id==='badm'&&M.state==='serve'&&p===M.srvP){const lane=serveLane(p),back=dbl?S.L-.76:S.L;p.x=lane*clamp(Math.abs(p.x),.08,Wc-.08);z=clamp(z,1.98+.08,back-.08)}p.z=sg*z};
  M.update=(dt,inp)=>{inp=inp||{};const ri=inp.remote||{};M.events.length=0;const b=M.ball;
   for(const t of M.teams)for(const p of t){if(p.sw>-.12){const old=p.sw;p.sw-=dt;if(!p.hd&&p.sw<=.2){const ok=M.state==='rally'&&M.tryHit(p,p.pow,p.drop);if(ok||S.id!=='tt'||p.ai||p.sw<=0)p.hd=true}}p.moving*=.85}
   if(M.state==='serve'){M.timer+=dt;const sp=M.srvP,hm=M.human;
    if(hm&&!(hm===sp&&M.serving)){const l=Math.hypot(inp.mx||0,inp.mz||0);if(l>.05){move(hm,hm.x+(inp.mx||0)*10,hm.z+(inp.mz||0)*10,dt,hm.spd*Math.min(1,l)*.7);bound(hm)}else if(hm!==sp&&Math.hypot(hm.x-hm.hx,hm.z-hm.hz)>.3)move(hm,hm.hx,hm.hz,dt,hm.spd*.8);else hm.moving*=.8}
    if(!M.serving){
-    if(sp!==M.human&&sp!==M.remoteHuman)move(sp,sp.hx,sp.hz,dt,sp.spd*.8);
+    if(sp!==M.human&&sp!==M.remoteHuman){if(S.id==='badm'){const spot=serveSpot(sp);move(sp,spot.x,spot.z,dt,sp.spd*.8);bound(sp)}else move(sp,sp.hx,sp.hz,dt,sp.spd*.8)}
     if(M.handPos){b.x=M.handPos.x;b.y=M.handPos.y;b.z=M.handPos.z}else{b.x=sp.x+sp.fz*.28;b.z=sp.z+sp.fz*.35;b.y=S.h0}b.vx=b.vy=b.vz=0;
     if((((sp===M.human&&inp.shot)||(sp===M.remoteHuman&&ri.shot))&&M.timer>.6)||(sp!==M.human&&sp!==M.remoteHuman&&M.timer>1.1&&(Math.hypot(sp.x-sp.hx,sp.z-sp.hz)<.35||M.timer>2.6))){M.serving=true;M.serveT=0;sp.srvT=0;sp.swS=false;sp.pow=false;sp.aimx=sp===M.remoteHuman?(ri.mx||0):(inp.mx||0);if(S.id==='tt')sp.svk=sp===M.remoteHuman?clamp(ri.sv|0,0,4):sp===M.human?clamp(inp.sv|0,0,4):TTPICK();M.events.push({t:'toss',p:sp});const tt=S.tossT;b.vy=S.rise>0?Math.sqrt(2*GR*S.rise):0;b.vx=-sp.fz*.38/tt;b.vz=sp.fz*.2/tt}}
    else{M.serveT+=dt;sp.srvT=M.serveT;
@@ -813,8 +815,10 @@ const gw=new THREE.Group();scene.add(gw);
 // players
 let M=null,pc=[],mode='menu',paused=false,ballM=null,shadowM=null,markM=null,cur={sport:'tennis',dbl:false,friend:false,rule:'short'};
 const SKINS=[0xe8b99a,0xc68c64,0x8d5a3b,0xf6d9bf],HAIR=[0x2b1d14,0x111111,0x6b4a2b,0x3a2a1a];
-function clearPlayers(){SFX.ambient(false);for(const c of pc)gw.remove(c.root);pc=[];if(ballM){gw.remove(ballM);ballM=null}if(shadowM){gw.remove(shadowM);shadowM=null}if(markM){gw.remove(markM);markM=null}}
+let serveAreaGlow=null,serveAreaKey='';
+function clearPlayers(){SFX.ambient(false);for(const c of pc)gw.remove(c.root);pc=[];if(ballM){gw.remove(ballM);ballM=null}if(shadowM){gw.remove(shadowM);shadowM=null}if(markM){gw.remove(markM);markM=null}if(serveAreaGlow){gw.remove(serveAreaGlow);serveAreaGlow=null;serveAreaKey=''}}
 function enterMatchView(sport){stSetCourt(sport);roofObjs.forEach(o=>o.visible=true);ctl.enabled=false;gw.rotation.y=sport==='tt'?0:Math.PI/2;gw.position.set(sport==='tt'?-3.5:0,0,0);gw.updateMatrixWorld(true)}
+function refreshBadmintonServeArea(){if(!M||M.S.id!=='badm'||M.state!=='serve'||!M.srvP){if(serveAreaGlow)serveAreaGlow.visible=false;return}const p=M.srvP,S=M.S,parity=(M.score[p.team]||0)%2,lane=parity===0?(p.team===0?-1:1):(p.team===0?1:-1),side=p.team===0?1:-1,W=M.Wc,back=cur.dbl?S.L-.76:S.L,key=[p.team,parity,W,back].join(':');if(key!==serveAreaKey){if(serveAreaGlow)gw.remove(serveAreaGlow);serveAreaGlow=new THREE.Group();const mat=new THREE.MeshBasicMaterial({color:0x46f5ff,transparent:true,opacity:.96,depthWrite:false});const x1=lane*W,z1=side*1.98,z2=side*back,midZ=(z1+z2)/2,len=Math.abs(z2-z1),midX=lane*W/2,width=W;const edge=(w,d,x,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,.026,d),mat);m.position.set(x,.055,z);serveAreaGlow.add(m)};edge(.065,len,0,midZ);edge(.065,len,x1,midZ);edge(width,.026,midX,z1);edge(width,.026,midX,z2);gw.add(serveAreaGlow);serveAreaKey=key}serveAreaGlow.visible=true}
 function setupMatch(sport,dbl){cur.sport=sport;cur.dbl=dbl;clearPlayers();enterMatchView(sport);M=createMatch({sport,dbl,ruleMode:cur.rule,aiErr:LV[cpuLv].err,aiSpd:LV[cpuLv].spd,dropP:LV[cpuLv].drop});if(window.__arenaNetRole==='host'||window.__arenaNetRole==='guest'){M.remoteHuman=M.teams[1][0];if(M.remoteHuman)M.remoteHuman.ai=false}else M.remoteHuman=null;const S=M.S;
  for(const t of M.teams)for(const p of t){const k=t.indexOf(p)+p.team*2,c=makeChar({shirt:p.team?0x2e6bd6:0xff8a2a,shorts:p.team?0xf5f5f5:0x1a1c20,skin:SKINS[k%4],hair:HAIR[(k+1)%4],style:['short','pony','spiky','short'][k%4],band:p===M.human?0x2ec4b6:0xffffff,num:String(p.team?(8+p.i):(7+p.i)),trim:p.team?0xffffff:0xffe0b0});
   c.setPose(sport==='volley'?'volley':'ready');c.equip(sport==='volley'?'volley':sport,false);c.root.rotation.y=p.team?0:Math.PI;gw.add(c.root);p.ch=c;pc.push(c)}
@@ -993,7 +997,7 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-lastT)
    {const sid=M.S.id,pn=x=>Math.max(-1,Math.min(1,x/(M.Wc*1.3+1)))*.7;for(const e of M.events){const px=e.p?e.p.x:e.x||0,vf=e.p&&e.p.team?.85:1;
     if(e.t==='hit')SFX.hit(sid,e.power,e.serve,pn(px),vf);else if(e.t==='swing')SFX.swing(sid,e.p.pow,pn(px));else if(e.t==='toss')SFX.toss(pn(px));else if(e.t==='bounce')SFX.bounce(sid,e.sf,e.v,pn(e.x));else if(e.t==='net')SFX.net(pn(px))}}
    if(M.state==='point'&&M.timer<dt*1.5)SFX.point(M.pt===0)}
-  const S=M.S,b=M.ball;
+  const S=M.S,b=M.ball;refreshBadmintonServeArea();
   for(const tm of M.teams)for(const p of tm){const c=p.ch,face=p.team?0:Math.PI,lock=p.sw>0||p.sT!=null,L=loco(p,dt,S,face,lock,paused),mv=Math.min(1,L.v/S.spd);
    p.ampS=Math.min(.7,mv*.8);
    if(!paused){if(p.srvT>=0){p.sT=p.srvT}else if(p.sT!=null){p.sT+=dt;if(p.sT>S.tossT+.45)p.sT=null}}
