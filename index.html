@@ -271,6 +271,9 @@ body.fxi #hud{visibility:hidden}
 #menuSettingsHead h2{margin:0;font-size:23px;font-weight:900}
 #bSettingsClose{width:38px;height:38px;border-radius:12px;background:#e6eef7;color:var(--ink);font-size:22px;font-weight:800}
 #menuSettings details{border:1px solid #c6d7e8;border-radius:14px;background:rgba(255,255,255,.9);overflow:hidden}
+#menuSettings .settingsGroupBody{display:flex;flex-direction:column;gap:8px;padding:0 10px 10px}
+#menuSettings .settingsSub{border-color:#d5e2ee;background:rgba(248,252,255,.96)}
+#menuSettings .settingsSub summary{padding:11px 38px 11px 12px;font-size:13px}
 #menuSettings summary{position:relative;list-style:none;padding:14px 42px 14px 14px;font-size:15px;font-weight:850;cursor:pointer}
 #menuSettings summary::-webkit-details-marker{display:none}
 #menuSettings summary:after{content:'＋';position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:19px;color:#4a91c9}
@@ -278,7 +281,8 @@ body.fxi #hud{visibility:hidden}
 #menuSettings .settingsBody{padding:0 14px 14px;font-size:13px;line-height:1.65;color:#526b84}
 #menuSettings .settingsBody p{margin:0 0 8px}
 #bSettingsSound{width:100%;padding:11px 12px;border-radius:12px;background:#d9efff;color:#16324f;font-size:14px;font-weight:850;text-align:left}
-#menuSettings .settingsHint{font-size:11px;opacity:.8;margin-top:6px}\n#menuSettings .volumeLabel{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:var(--ink);font-size:13px;font-weight:850}\n#menuSettings .volumeSlider{display:block;width:100%;margin:8px 0 0;padding:0;height:26px;accent-color:#4aa8ff;touch-action:pan-x;cursor:pointer;box-shadow:none;border:0;background:transparent}
+#menuSettings .settingsHint{font-size:11px;opacity:.8;margin-top:6px}
+#menuSettings .volumeLabel{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:var(--ink);font-size:13px;font-weight:850}\n#menuSettings .volumeSlider{display:block;width:100%;margin:8px 0 0;padding:0;height:26px;accent-color:#4aa8ff;touch-action:pan-x;cursor:pointer;box-shadow:none;border:0;background:transparent}
 @media(max-width:640px){#menuTools{top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 10px)}#bMenuTools{min-width:42px;width:42px;min-height:42px;padding:8px;border-radius:13px}#menuSettings{padding:calc(env(safe-area-inset-top,0px) + 62px) 10px 10px}#menuSettingsCard{padding:14px;gap:10px}}
 @media(orientation:landscape) and (max-height:520px){#menuTools{top:calc(env(safe-area-inset-top,0px) + 7px);right:calc(env(safe-area-inset-right,0px) + 8px)}#bMenuTools{min-width:36px;width:36px;min-height:36px;padding:6px}#menuSettings{padding-top:50px}#menuSettingsCard{max-height:calc(100dvh - 60px);padding:12px;gap:8px}#menuSettings summary{padding:10px 38px 10px 12px}}
 
@@ -289,10 +293,12 @@ body.fxi #hud{visibility:hidden}
  <div class="side"><button class="big" id="bPlay"><span class="ic">🎮</span><span>プレイ<small>CPUと対戦</small></span><em>PLAY ▶</em></button><button class="big b2" id="bFriend"><span class="ic">🤝</span><span>フレンド対戦<small>部屋を作って遊ぶ</small></span><em>PLAY ▶</em></button></div></div>
  <div id="menuTools"><button id="bMenuTools" type="button" aria-expanded="false" aria-label="メニューを開く" title="メニュー" aria-expanded="false" aria-controls="menuSettings"><span class="hamb" aria-hidden="true"><i></i><i></i><i></i></span></button></div>
  <div id="menuSettings" aria-hidden="true"><div id="menuSettingsCard" role="dialog" aria-modal="true" aria-labelledby="menuSettingsTitle"><div id="menuSettingsHead"><h2 id="menuSettingsTitle">メニュー</h2><button id="bSettingsClose" type="button" aria-label="メニューを閉じる">×</button></div>
-  <details open><summary>⚙️ 設定</summary><div class="settingsBody"><p>音声のオン・オフと音量を調整できます。</p><button id="bSettingsSound" type="button">🔊 サウンド：ON</button><label class="volumeLabel" for="bSettingsVolume"><span>🔉 音量</span><output id="bSettingsVolumeValue" for="bSettingsVolume">100%</output></label><input id="bSettingsVolume" class="volumeSlider" type="range" min="0" max="100" step="1" value="100" aria-label="効果音の音量"></div></details>
-  <details><summary>🎮 操作方法</summary><div class="settingsBody"><p><b>PC：</b>WASD または矢印キーで移動、Spaceでショット、Shiftで強打。</p><p><b>スマホ・タブレット：</b>画面左のスティックで移動し、右側のショット・強打ボタンで操作します。</p></div></details>
-  <details><summary>🖥️ 画面・表示</summary><div class="settingsBody"><p>このゲームは横画面専用です。スマホ・タブレットでは端末を横向きにしてください。</p><p>メニューや操作ボタンは画面サイズに合わせて自動調整されます。</p></div></details>
-  <details><summary>ℹ️ ゲームについて</summary><div class="settingsBody"><p>競技と試合形式は「プレイ」から、フレンドとの対戦は「フレンド対戦」から選択できます。</p><p class="settingsHint">メニューを閉じるには右上の ×、またはパネル外をタップしてください。</p></div></details>
+  <details open class="settingsGroup"><summary>⚙️ 設定</summary><div class="settingsGroupBody">
+   <details class="settingsSub" open><summary>🔊 オーディオ</summary><div class="settingsBody"><p>効果音のオン・オフと音量を調整できます。</p><button id="bSettingsSound" type="button">🔊 サウンド：ON</button><label class="volumeLabel" for="bSettingsVolume"><span>🔉 音量</span><output id="bSettingsVolumeValue" for="bSettingsVolume">100%</output></label><input id="bSettingsVolume" class="volumeSlider" type="range" min="0" max="100" step="1" value="100" aria-label="効果音の音量"></div></details>
+   <details class="settingsSub"><summary>🎮 操作方法</summary><div class="settingsBody"><p><b>PC：</b>WASD または矢印キーで移動、Spaceでショット、Shiftで強打。</p><p><b>スマホ・タブレット：</b>画面左のスティックで移動し、右側のショット・強打ボタンで操作します。</p></div></details>
+   <details class="settingsSub"><summary>🖥️ 画面・表示</summary><div class="settingsBody"><p>このゲームは横画面専用です。スマホ・タブレットでは端末を横向きにしてください。</p><p>メニューや操作ボタンは画面サイズに合わせて自動調整されます。</p></div></details>
+   <details class="settingsSub"><summary>ℹ️ ゲームについて</summary><div class="settingsBody"><p>競技と試合形式は「プレイ」から、フレンドとの対戦は「フレンド対戦」から選択できます。</p><p class="settingsHint">メニューを閉じるには右上の ×、またはパネル外をタップしてください。</p></div></details>
+  </div></details>
  </div></div></div>
 <div id="sport" class="scr"><div class="panel"><button class="back" data-back="menu">‹ メニュー</button><h2>競技を選択</h2><div class="grid" id="sportCards"></div></div></div>
 <div id="fmt" class="scr"><div class="panel"><button class="back" data-back="sport">‹ 競技選択</button><h2 id="fmtT"></h2><p class="sub">試合形式を選択</p><div class="grid"><button class="card" id="fD0" style="display:none"></button><button class="card" id="fS" style="grid-column:1"></button><button class="card" id="fD"></button></div><div id="ruleSelect" style="display:none"><div class="lbl">ルール</div><div class="ruleChoices" id="ruleChoices"><button type="button" class="ruleChoice sel" data-rule="short">短縮ルール</button><button type="button" class="ruleChoice" data-rule="official">公式ルール</button></div><p class="ruleNote" id="ruleNote">1ゲーム11点先取（10点同点は2点差、最大15点）</p></div><div><div class="lbl">CPUの強さ</div><div class="row lvRow" id="lvChips"></div></div></div></div>
