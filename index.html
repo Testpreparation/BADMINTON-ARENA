@@ -63,6 +63,7 @@ input::placeholder{color:#8ba3ba;letter-spacing:.05em}
 .lbl{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--ink2);margin-bottom:6px}
 
 /* 待機ルーム */
+#bJoin:disabled{background:#b9c3cd;color:#eef2f6;box-shadow:none;filter:grayscale(1);opacity:.7;cursor:default;transform:none}
 #nick input{text-transform:none;letter-spacing:.04em}#nick .btn{background:var(--co);color:#fff}#nick .btn:disabled{opacity:.45}
 #lobby .panel{background:linear-gradient(155deg,#fff,#eaf4ff);border:3px solid var(--line);border-radius:26px;box-shadow:0 10px 0 rgba(20,60,120,.22),0 22px 50px rgba(0,0,0,.28);width:min(560px,92vw)}
 #lobby .panel>.row:first-child{justify-content:space-between;padding-bottom:10px;border-bottom:2px solid #d8e7f5}
@@ -996,7 +997,7 @@ function setMenuVis(v){if(v){if(typeof ttViewRacket!=='undefined'&&ttViewRacket)
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-lastT)/1000),t=now/1000;lastT=now;
  stTick();if(mode==='menu'){ctl.update()}
  else if(mode==='game'&&M){if(!paused){readMove();M.handPos=null;if(M.state==='serve'&&!M.serving&&M.srvP&&M.srvP.ch){const hc=M.srvP.ch;hc.root.updateMatrixWorld(true);const hv=new THREE.Vector3();hc.handL.getWorldPosition(hv);gw.worldToLocal(hv);M.handPos={x:hv.x,y:hv.y+M.S.r+.06,z:hv.z}}
-   if(!FX.intro){if(window.__arenaNetRole==='guest'){if(window.__arenaSendInput)window.__arenaSendInput(inp)}else{M.update(dt,window.__arenaNetRole==='host'?{...inp,remote:window.__arenaRemoteInput||{}}:inp);if(window.__arenaNetRole==='host'&&window.__arenaRemoteInput)window.__arenaRemoteInput.shot=false;if(window.__arenaSendBall)window.__arenaSendBall()}}inp.shot=false;inp.power=false;inp.drop=false;
+   if(!FX.intro){if(window.__arenaNetRole==='guest'){if(window.__arenaSendInput)window.__arenaSendInput(inp);if(window.__arenaLocalSwing)window.__arenaLocalSwing(inp,dt)}else{M.update(dt,window.__arenaNetRole==='host'?{...inp,remote:window.__arenaRemoteInput||{}}:inp);if(window.__arenaNetRole==='host'&&window.__arenaRemoteInput)window.__arenaRemoteInput.shot=false;if(window.__arenaSendBall)window.__arenaSendBall()}}inp.shot=false;inp.power=false;inp.drop=false;
    {const sid=M.S.id,pn=x=>Math.max(-1,Math.min(1,x/(M.Wc*1.3+1)))*.7;for(const e of M.events){const px=e.p?e.p.x:e.x||0,vf=e.p&&e.p.team?.85:1;
     if(e.t==='hit')SFX.hit(sid,e.power,e.serve,pn(px),vf);else if(e.t==='swing')SFX.swing(sid,e.p.pow,pn(px));else if(e.t==='toss')SFX.toss(pn(px));else if(e.t==='bounce')SFX.bounce(sid,e.sf,e.v,pn(e.x));else if(e.t==='net')SFX.net(pn(px))}}
    if(M.state==='point'&&M.timer<dt*1.5)SFX.point(M.pt===0)}
@@ -1102,6 +1103,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  function setWait(t){const e=$('wait');if(e)e.textContent=t}
  function clearListeners(){if(!room)return;[['guestId',guestWatch],['status',statusWatch],['sport',sportWatch],['dbl',formatWatch],['guestInput',guestInputWatch],['snapshot',snapshotWatch],['guestName',nameWatch],['ball',ballWatch]].forEach(([k,fn])=>{if(fn)try{room.child(k).off('value',fn)}catch(e){}});guestWatch=statusWatch=sportWatch=formatWatch=guestInputWatch=snapshotWatch=nameWatch=ballWatch=null}
  function teardown(removeRoom=false){
+  {const jb=$('bJoin');if(jb){jb.disabled=false;jb.textContent='参加'}}
   if(snapshotTimer){clearInterval(snapshotTimer);snapshotTimer=null}
   if(room){clearListeners();if(roomRole==='guest'&&uid)room.child('guestId').transaction(v=>v===uid?null:v).catch(()=>{});if(roomRole==='host'&&removeRoom)room.remove().catch(()=>{})}
   room=null;roomCode='';roomRole='offline';window.__arenaNetRole='offline';window.__arenaRemoteInput={mx:0,mz:0,shot:false,power:false,drop:false};started=false;
@@ -1114,7 +1116,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  function applySnapshot(a){
   if(!M||!a||!a.ball||!a.players)return;if(a.at&&a.at<(window.__arenaSnapAt||0))return;window.__arenaSnapAt=a.at||0;
   M.state=a.state;M.timer=a.timer||0;M.server=a.server;M.score=a.score||M.score;M.games=a.games||M.games;M.ruleMode=a.ruleMode||M.ruleMode;M.pt=a.pt;M.why=a.why;M.msg=a.msg||'';M.winner=a.winner;M.over=!!a.over;M.total=a.total||0;M.bnc=a.bc||0;M.last=a.last;M.hits=a.hits||0;M.serving=!!a.serving;M.serveT=a.serveT||0;
-  Object.keys(a.players).forEach(t=>{(a.players[t]||[]).forEach((v,i)=>{const p=M.teams[+t]&&M.teams[+t][i];if(!p)return;Object.assign(p,v)})});
+  Object.keys(a.players).forEach(t=>{(a.players[t]||[]).forEach((v,i)=>{const p=M.teams[+t]&&M.teams[+t][i];if(!p)return;if(p===M.remoteHuman&&Date.now()-(window.__arenaLocalSwAt||0)<450){const{sw,...r}=v;Object.assign(p,r)}else Object.assign(p,v)})});
   M.pred=a.pred||null;M.srvP=M.teams[a.srvTeam||0]&&M.teams[a.srvTeam||0][a.srvIndex||0]||M.srvP;M.events.length=0;
   if(M.state==='over'&&FX.outroDone&&!$('over').classList.contains('on')){$('ovT').textContent=M.winner===1?'🏆 勝利!':'敗北…';$('ovS').textContent=M.score[1]+' - '+M.score[0];$('over').classList.add('on')}
  }
@@ -1124,7 +1126,8 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
   if(role==='host'){window.__arenaRemoteInput={mx:0,mz:0,shot:false,power:false,drop:false};if(snapshotTimer)clearInterval(snapshotTimer);snapshotTimer=setInterval(()=>{if(room&&roomRole==='host'&&mode==='game'&&M){try{const data=makeSnapshot();if(data)room.child('snapshot').set(data).catch(()=>{})}catch(e){}}},33)}
   else{snapshotWatch=snap=>applySnapshot(snap.val());room.child('snapshot').on('value',snapshotWatch);ballWatch=snap=>{const v=snap.val();if(!v||!M||roomRole!=='guest')return;const b=M.ball;b.x=v.x;b.y=v.y;b.z=v.z;b.vx=v.vx;b.vy=v.vy;b.vz=v.vz;b.net=!!v.net};room.child('ball').on('value',ballWatch)}
  }
- window.__arenaSendBall=()=>{if(roomRole!=='host'||!room||!M)return;const b=M.ball,r=v=>Math.round(v*1000)/1000;try{room.child('ball').set({x:r(b.x),y:r(b.y),z:r(b.z),vx:r(b.vx),vy:r(b.vy),vz:r(b.vz),net:!!b.net,at:Date.now()}).catch(()=>{})}catch(e){}};
+ window.__arenaLocalSwing=(i,dt)=>{const me=M&&M.remoteHuman;if(!me||roomRole!=='guest')return;if(me.sw>-.12)me.sw-=dt;if(i.shot&&M.state==='rally'&&me.sw<=-.05){me.sv2=false;me.sw=.34;me.hd=false;me.drop=!!i.drop;me.pow=!!i.power&&!me.drop;window.__arenaLocalSwAt=Date.now();try{SFX.swing(M.S.id,me.pow,0)}catch(e){}}};
+  window.__arenaSendBall=()=>{if(roomRole!=='host'||!room||!M)return;const b=M.ball,r=v=>Math.round(v*1000)/1000;try{room.child('ball').set({x:r(b.x),y:r(b.y),z:r(b.z),vx:r(b.vx),vy:r(b.vy),vz:r(b.vz),net:!!b.net,at:Date.now()}).catch(()=>{})}catch(e){}};
   window.__arenaSendInput=input=>{
   if(roomRole!=='guest'||!room)return;const now=Date.now(),data={mx:-(input.mx||0),mz:-(input.mz||0),shot:!!input.shot,power:!!input.power,drop:!!input.drop,sv:(input.sv|0)},sig=JSON.stringify(data);
   if(sig!==lastInputSig||now-lastInputAt>100){lastInputSig=sig;lastInputAt=now;room.child('guestInput').set({...data,at:now}).catch(e=>setWait('入力送信エラー：'+e.message))}
@@ -1146,6 +1149,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
   const code=String($('codeIn').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
   if(code.length!==6){alert('6文字の部屋コードを入力してください。');return}
   if(roomRole!=='offline')return;
+  const jb=$('bJoin');if(jb.disabled)return;jb.disabled=true;jb.textContent='参加中…';
   try{await connect();const ref=db.ref('badminton_rooms/'+code),snap=await timeout(ref.once('value'),12000,'部屋の検索'),data=snap.val();
    if(!data||!data.hostId||data.status!=='waiting')throw Error('部屋が見つかりません。部屋コードとホストの待機状態を確認してください。');
    const joined=await ref.child('guestId').transaction(v=>v===null?uid:undefined);if(!joined.committed)throw Error('この部屋にはすでに参加者がいます。');
