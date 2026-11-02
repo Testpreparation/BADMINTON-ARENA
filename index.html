@@ -220,6 +220,44 @@ body.fxi #hud{visibility:hidden}
 .bar{display:none}
 #matchLoading{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column;gap:18px;background:#101d30;color:white;font-size:clamp(20px,4vw,36px);font-weight:800}#matchLoading.on{display:flex}#matchLoading .spinner{width:38px;height:38px;border:4px solid #ffffff55;border-top-color:#bfe6ff;border-radius:50%;animation:loadspin .8s linear infinite}@keyframes loadspin{to{transform:rotate(360deg)}}/* Rule selector and UI-library scoreboard */
 .ruleChoices{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.ruleChoice{flex:1;min-width:120px;padding:10px;border-radius:12px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.24);color:#fff;font-size:13px;font-weight:800}.ruleChoice.sel{background:linear-gradient(135deg,#d9f0ff,#83c9ff);color:#16324f}.ruleNote{font-size:12px;line-height:1.5;color:var(--ink2)}#score{position:fixed;z-index:4;box-sizing:border-box;padding:10px 12px;min-width:174px;max-width:min(48vw,250px);left:env(safe-area-inset-left,0px);top:env(safe-area-inset-top,0px);font-size:13px;line-height:1.25;border:1px solid rgba(255,255,255,.38);border-radius:16px;background:linear-gradient(135deg,rgba(235,247,255,.28),rgba(120,170,220,.12));-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);box-shadow:0 10px 30px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.34),inset 0 -1px 0 rgba(255,255,255,.08);color:rgba(255,255,255,.98);text-shadow:0 1px 5px rgba(0,0,0,.32);pointer-events:none}#score .sr{display:grid;grid-template-columns:minmax(68px,1fr) 26px 34px;gap:5px;padding:5px 2px;align-items:center}#score .sr:first-child{border-bottom:1px solid rgba(255,255,255,.26)}#score .sr b,#score .sr i,#score .sr u{font-size:12px}#score .sr b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#score .sr i{font-style:normal;text-align:center}#score .sr u{text-decoration:none;text-align:center;font-weight:850}#score .summary{display:flex;justify-content:space-between;padding-top:6px;font-size:11px}#pointScore{display:none;position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 72px);transform:translateX(-50%);min-width:min(300px,78vw);padding:10px 16px;border:1px solid rgba(255,255,255,.3);border-top:4px solid var(--ac);border-radius:10px;background:linear-gradient(110deg,rgba(5,15,28,.96),rgba(16,34,53,.94));box-shadow:0 8px 28px rgba(0,0,0,.45);color:#fff;text-align:center;z-index:5;pointer-events:none}#pointScore.on{display:block;animation:scorePop .3s ease-out}#pointScore .ps-title{font-size:11px;letter-spacing:.18em;opacity:.8;font-weight:800}#pointScore .ps-main{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:5px;font-size:clamp(20px,4vw,30px);font-weight:900;font-variant-numeric:tabular-nums}#pointScore .ps-sub{margin-top:5px;font-size:12px;opacity:.85}@keyframes scorePop{from{opacity:0;transform:translate(-50%,-12px) scale(.94)}to{opacity:1;transform:translate(-50%,0) scale(1)}}@media(pointer:coarse) and (max-width:900px){#score{padding:8px 10px;min-width:158px;max-width:52vw}#score .sr{grid-template-columns:minmax(58px,1fr) 22px 30px;gap:3px;padding:4px 1px}}
+
+/* ---- 画面サイズ別レイアウト調整（既存デザイン・ゲーム処理は維持） ---- */
+@media (min-width: 901px) and (min-height: 600px) {
+  .home { width: min(1120px, 90vw); gap: clamp(28px, 4vw, 64px); }
+  .side { gap: clamp(14px, 2.2vh, 24px); }
+  .big { padding: clamp(16px, 1.8vw, 26px) clamp(22px, 2.6vw, 38px); }
+  .panel { width: min(640px, 86vw); max-height: min(88dvh, 900px); padding: clamp(22px, 2.4vw, 32px); }
+  #lobby .panel { width: min(680px, 88vw); }
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  .home { width: 94vw; gap: clamp(16px, 3vw, 30px); }
+  .big { gap: clamp(8px, 1.8vw, 16px); padding: clamp(10px, 1.8vh, 18px) clamp(12px, 2vw, 22px); }
+  .panel { width: min(620px, 92vw); max-height: 90dvh; padding: clamp(16px, 2.5vw, 26px); }
+  #lobby .panel { width: min(640px, 94vw); }
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .scr { overflow-y: auto; }
+  .panel { max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 12px); }
+  #menu { overflow: hidden; }
+  .home { max-height: 96dvh; }
+  #stick { width: clamp(78px, 22vh, 130px); height: clamp(78px, 22vh, 130px); }
+  #knob { width: clamp(38px, 10vh, 60px); height: clamp(38px, 10vh, 60px); }
+  #bShot { width: clamp(62px, 17vh, 96px); height: clamp(62px, 17vh, 96px); font-size: clamp(12px, 3vh, 18px); }
+  #bPow, #bDrop { width: clamp(48px, 12vh, 64px); height: clamp(48px, 12vh, 64px); font-size: clamp(10px, 2.5vh, 13px); }
+  #pointScore { top: calc(env(safe-area-inset-top, 0px) + 56px); }
+}
+@media (pointer: coarse) and (min-width: 901px) and (orientation: landscape) {
+  #stick { width: clamp(100px, 14vw, 140px); height: clamp(100px, 14vw, 140px); }
+  #knob { width: clamp(48px, 6vw, 64px); height: clamp(48px, 6vw, 64px); }
+  #bShot { width: clamp(78px, 9vw, 104px); height: clamp(78px, 9vw, 104px); }
+  #bPow, #bDrop { width: clamp(56px, 6vw, 70px); height: clamp(56px, 6vw, 70px); }
+}
+@media (max-width: 640px) {
+  .panel { width: 92vw; }
+  #score { max-width: min(52vw, 220px); }
+  #pointScore { min-width: min(260px, 76vw); padding: 8px 12px; }
+}
+
 </style><script>{const D=Date;window.Date=class extends D{getHours(){return 12}getMinutes(){return 0}getSeconds(){return 0}}}</script></head><body>
 <div id="appSplash" aria-labelledby="splashHeading" role="status" aria-live="polite"><div class="splashGlow" aria-hidden="true"></div><div class="splashOrb one" aria-hidden="true"></div><div class="splashOrb two" aria-hidden="true"></div><div class="splashOrb three" aria-hidden="true"></div><div class="splashCourt" aria-hidden="true"></div><div class="splashContent"><div class="splashMark" aria-hidden="true">AS</div><p class="splashEyebrow">WELCOME TO</p><h1 id="splashHeading">ARENA<br>SPORTS</h1><p class="splashSub">BADMINTON <span aria-hidden="true">·</span> TENNIS <span aria-hidden="true">·</span> TABLE TENNIS <span aria-hidden="true">·</span> VOLLEYBALL</p></div></div>
 <div class="bar" id="top"></div><div class="bar" id="bot"></div><canvas id="c"></canvas>
