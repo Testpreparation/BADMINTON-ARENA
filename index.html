@@ -63,6 +63,7 @@ input::placeholder{color:#8ba3ba;letter-spacing:.05em}
 .lbl{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--ink2);margin-bottom:6px}
 
 /* 待機ルーム */
+#nick input{text-transform:none;letter-spacing:.04em}#nick .btn{background:var(--co);color:#fff}#nick .btn:disabled{opacity:.45}
 #lobby .panel{background:linear-gradient(155deg,#fff,#eaf4ff);border:3px solid var(--line);border-radius:26px;box-shadow:0 10px 0 rgba(20,60,120,.22),0 22px 50px rgba(0,0,0,.28);width:min(560px,92vw)}
 #lobby .panel>.row:first-child{justify-content:space-between;padding-bottom:10px;border-bottom:2px solid #d8e7f5}
 #lobby h2{font-size:clamp(19px,4.5vmin,25px)}
@@ -313,6 +314,7 @@ body.fxi #hud{visibility:hidden}
  <div id="hostCfg" style="flex-direction:column;gap:10px"><div><div class="lbl">競技</div><div class="row" id="sportChips"></div></div><div><div class="lbl">試合形式</div><div class="row" id="fmtChips"></div></div><div id="friendRuleSelect" style="display:none"><div class="lbl">ルール</div><div class="ruleChoices" id="friendRuleChoices"><button type="button" class="ruleChoice sel" data-rule="short">短縮ルール</button><button type="button" class="ruleChoice" data-rule="official">公式ルール</button></div><p class="ruleNote" id="friendRuleNote">1ゲーム11点先取（10点同点は2点差、最大15点）</p></div></div>
  <div id="guestCfg"><div class="lbl">ホストの設定</div><div class="slot"><b id="gInfo"></b></div></div>
  <div id="lvCfg"><div class="lbl">CPUの強さ</div><div class="row lvRow" id="lvChips2"></div></div><div id="wait"></div><button class="btn pri" id="bStart">試合開始</button><button class="back" id="bSim" style="align-self:center"></button></div></div>
+<div id="nick" class="scr"><div class="panel"><h2>ニックネームを決めよう</h2><p class="sub">あとで変更はできません（1〜12文字）</p><input id="nickIn" maxlength="12" autocomplete="off" placeholder="ニックネーム"><button class="btn" id="nickOk" disabled>決定</button></div></div>
 <div id="hud" class="scr"><div id="gtop" style="display:none"><div><div class="n">YOU</div><div class="s" id="s0">0</div><div id="sv0">●</div></div><div class="mid" id="hSport"></div><div><div class="n">CPU</div><div class="s" id="s1">0</div><div id="sv1">●</div></div></div><div id="score"><div class="sr"><b id="scoreName0">YOU</b><i id="games0">0</i><u id="points0">0</u></div><div class="sr"><b id="scoreName1">CPU</b><i id="games1">0</i><u id="points1">0</u></div><div class="summary"><span id="scoreMode">短縮ルール</span><span id="scoreFormat">SINGLES</span></div></div><div id="pointScore"><div class="ps-title">POINT</div><div class="ps-main"><span id="pointLeft">0</span><span>–</span><span id="pointRight">0</span></div><div class="ps-sub" id="pointWinner"></div></div><div id="msg"></div><div id="hint">WASD/矢印: 移動　Space: ショット　Shift: 強打</div>
  <button id="bPause">❚❚</button><div id="ctl"><div id="stick"><div id="knob"></div></div><button class="ab" id="bPow">強打</button><button class="ab" id="bDrop" style="display:none">ドロップ</button><button class="ab" id="bShot">ショット</button></div></div>
 <div id="over"><div class="panel"><div id="ovT"></div><div id="ovS"></div><div class="row"><button class="btn pri" id="bAgain">もう一度</button><button class="btn" id="bQuit">戻る</button></div></div></div>
@@ -634,6 +636,7 @@ function createMatch(cfg){const S=SP[cfg.sport];S.tossT=S.rise>0?Math.sqrt(2*S.r
   for(const t of M.teams)for(const p of t){if(p.sw>-.12){const old=p.sw;p.sw-=dt;if(!p.hd&&p.sw<=.2){const ok=M.state==='rally'&&M.tryHit(p,p.pow,p.drop);if(ok||S.id!=='tt'||p.ai||p.sw<=0)p.hd=true}}p.moving*=.85}
   if(M.state==='serve'){M.timer+=dt;const sp=M.srvP,hm=M.human;
    if(hm&&!(hm===sp&&M.serving)){const l=Math.hypot(inp.mx||0,inp.mz||0);if(l>.05){move(hm,hm.x+(inp.mx||0)*10,hm.z+(inp.mz||0)*10,dt,hm.spd*Math.min(1,l)*.7);bound(hm)}else if(hm!==sp&&Math.hypot(hm.x-hm.hx,hm.z-hm.hz)>.3)move(hm,hm.hx,hm.hz,dt,hm.spd*.8);else hm.moving*=.8}
+   if(M.remoteHuman&&!(M.remoteHuman===sp&&M.serving)){const rm=M.remoteHuman,rl=Math.hypot(ri.mx||0,ri.mz||0);if(rl>.05){move(rm,rm.x+(ri.mx||0)*10,rm.z+(ri.mz||0)*10,dt,rm.spd*Math.min(1,rl)*.7);bound(rm)}else if(rm!==sp&&Math.hypot(rm.x-rm.hx,rm.z-rm.hz)>.3)move(rm,rm.hx,rm.hz,dt,rm.spd*.8);else rm.moving*=.8}
    if(!M.serving){
     if(sp!==M.human&&sp!==M.remoteHuman){if(S.id==='badm'){const spot=serveSpot(sp);move(sp,spot.x,spot.z,dt,sp.spd*.8);bound(sp)}else move(sp,sp.hx,sp.hz,dt,sp.spd*.8)}
     if(M.handPos){b.x=M.handPos.x;b.y=M.handPos.y;b.z=M.handPos.z}else{b.x=sp.x+sp.fz*.28;b.z=sp.z+sp.fz*.35;b.y=S.h0}b.vx=b.vy=b.vz=0;
@@ -993,7 +996,7 @@ function setMenuVis(v){if(v){if(typeof ttViewRacket!=='undefined'&&ttViewRacket)
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-lastT)/1000),t=now/1000;lastT=now;
  stTick();if(mode==='menu'){ctl.update()}
  else if(mode==='game'&&M){if(!paused){readMove();M.handPos=null;if(M.state==='serve'&&!M.serving&&M.srvP&&M.srvP.ch){const hc=M.srvP.ch;hc.root.updateMatrixWorld(true);const hv=new THREE.Vector3();hc.handL.getWorldPosition(hv);gw.worldToLocal(hv);M.handPos={x:hv.x,y:hv.y+M.S.r+.06,z:hv.z}}
-   if(!FX.intro){if(window.__arenaNetRole==='guest'){if(window.__arenaSendInput)window.__arenaSendInput(inp)}else M.update(dt,window.__arenaNetRole==='host'?{...inp,remote:window.__arenaRemoteInput||{}}:inp)}inp.shot=false;inp.power=false;inp.drop=false;
+   if(!FX.intro){if(window.__arenaNetRole==='guest'){if(window.__arenaSendInput)window.__arenaSendInput(inp)}else{M.update(dt,window.__arenaNetRole==='host'?{...inp,remote:window.__arenaRemoteInput||{}}:inp);if(window.__arenaNetRole==='host'&&window.__arenaRemoteInput)window.__arenaRemoteInput.shot=false}}inp.shot=false;inp.power=false;inp.drop=false;
    {const sid=M.S.id,pn=x=>Math.max(-1,Math.min(1,x/(M.Wc*1.3+1)))*.7;for(const e of M.events){const px=e.p?e.p.x:e.x||0,vf=e.p&&e.p.team?.85:1;
     if(e.t==='hit')SFX.hit(sid,e.power,e.serve,pn(px),vf);else if(e.t==='swing')SFX.swing(sid,e.p.pow,pn(px));else if(e.t==='toss')SFX.toss(pn(px));else if(e.t==='bounce')SFX.bounce(sid,e.sf,e.v,pn(e.x));else if(e.t==='net')SFX.net(pn(px))}}
    if(M.state==='point'&&M.timer<dt*1.5)SFX.point(M.pt===0)}
@@ -1015,8 +1018,9 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-lastT)
 function resize(){cam.fov=innerWidth/innerHeight<1?62:50;cam.updateProjectionMatrix();if(mode==='menu')overview()}
 addEventListener('resize',resize);resize();
 // ===== screens =====
-const SC=['menu','sport','fmt','friend','lobby'];
-function show(id){for(const s of SC)$(s).classList.toggle('on',s===id);$('hud').classList.toggle('on',id==='hud');if(id==='hud'){}else{ $('over').classList.remove('on');$('pause').classList.remove('on')}}
+const SC=['menu','sport','fmt','friend','lobby','nick'];
+let NICK='';try{NICK=(localStorage.getItem('arenaNick')||'').trim()}catch(e){}
+function show(id){if(id==='menu'&&!NICK)id='nick';for(const s of SC)$(s).classList.toggle('on',s===id);$('hud').classList.toggle('on',id==='hud');if(id==='hud'){}else{ $('over').classList.remove('on');$('pause').classList.remove('on')}}
 function toMenu(){mode='menu';paused=false;clearPlayers();M=null;setMenuVis(true);show('menu')}
 const SPORTS=['badm','tennis','tt','volley'];
 const LV=[{n:'かんたん',err:1.7,spd:.74,drop:.05},{n:'ふつう',err:1,spd:.9,drop:.14},{n:'つよい',err:.55,spd:1,drop:.28},{n:'最強',err:.3,spd:1.12,drop:.4}];
@@ -1064,7 +1068,8 @@ $('bSim').onclick=()=>{if(F.role==='host'){F.guest=true;lobby()}else startFriend
 $('bStart').onclick=()=>{if(F.guest)startFriend()};$('bLeave').onclick=()=>show('friend');
 $('bCopy').onclick=()=>{try{navigator.clipboard.writeText(F.code)}catch(e){}$('bCopy').textContent='コピーしました';setTimeout(()=>$('bCopy').textContent='コピー',1200)};
 function startFriend(){cur.friend=true;flow.sport=F.sport;setMenuVis(false);setupMatch(F.sport,F.dbl);cur.friend=true;hudBuild();show('hud')}
-setMenuVis(true);requestAnimationFrame(loop);
+{const ni=$('nickIn'),ok=$('nickOk');ni.oninput=()=>{ok.disabled=!ni.value.trim()};const fin=()=>{const v=ni.value.trim().slice(0,12);if(!v)return;NICK=v;try{localStorage.setItem('arenaNick',v)}catch(e){}show('menu')};ok.onclick=fin;ni.onkeydown=e=>{if(e.key==='Enter')fin()}}
+setMenuVis(true);show('menu');requestAnimationFrame(loop);
 window.Arena={makeChar,makeRacket,makeBall,SP,createMatch};
 
 </script>
@@ -1103,7 +1108,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  function showRoom(role,code){F.role=role;F.code=code;F.guest=role==='guest';lobby();$('lTitle').textContent=role==='host'?'ルーム (ホスト)':'ルーム (ゲスト)';$('lCode').textContent=code;$('bSim').style.display='none';$('bStart').style.display=role==='host'?'block':'none';setWait(role==='host'?'Firebaseに接続しました。フレンドの参加を待っています。':'ホストに接続しました。試合開始を待っています。')}
  function makeSnapshot(){
   if(!M||!room)return null;
-  return {at:Date.now(),state:M.state,timer:M.timer,server:M.server,score:M.score,games:M.games,ruleMode:M.ruleMode,pt:M.pt,why:M.why,msg:M.msg,winner:M.winner,over:M.over,total:M.total,bc:M.bnc,last:M.last,hits:M.hits,serving:M.serving,serveT:M.serveT,ball:{x:M.ball.x,y:M.ball.y,z:M.ball.z,vx:M.ball.vx,vy:M.ball.vy,vz:M.ball.vz,net:M.ball.net},pred:M.pred?{x:M.pred.x,z:M.pred.z}:null,players:M.teams.map(team=>team.map(p=>({x:p.x,z:p.z,sw:p.sw,hd:p.hd,pow:p.pow,drop:p.drop,aimx:p.aimx,ph:p.ph,moving:p.moving,srv:p.srv,srvT:p.srvT,swS:p.swS,sv2:p.sv2,ampS:p.ampS,bh:p.bh}))),srvTeam:M.srvP?M.srvP.team:0,srvIndex:M.srvP?M.srvP.i:0};
+  return JSON.parse(JSON.stringify({at:Date.now(),state:M.state,timer:M.timer,server:M.server,score:M.score,games:M.games,ruleMode:M.ruleMode,pt:M.pt,why:M.why,msg:M.msg,winner:M.winner,over:M.over,total:M.total,bc:M.bnc,last:M.last,hits:M.hits,serving:M.serving,serveT:M.serveT,ball:{x:M.ball.x,y:M.ball.y,z:M.ball.z,vx:M.ball.vx,vy:M.ball.vy,vz:M.ball.vz,net:M.ball.net},pred:M.pred?{x:M.pred.x,z:M.pred.z}:null,players:M.teams.map(team=>team.map(p=>({x:p.x,z:p.z,sw:p.sw,hd:p.hd,pow:p.pow,drop:p.drop,aimx:p.aimx,ph:p.ph,moving:p.moving,srv:p.srv,srvT:p.srvT,swS:p.swS,sv2:p.sv2,ampS:p.ampS,bh:p.bh}))),srvTeam:M.srvP?M.srvP.team:0,srvIndex:M.srvP?M.srvP.i:0}));
  }
  function applySnapshot(a){
   if(!M||!a||!a.ball||!a.players)return;
@@ -1115,7 +1120,7 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  async function startNetworkMatch(role){
   if(started)return;started=true;roomRole=role;window.__arenaNetRole=role;netRole=role;cur.friend=true;cur.sport=F.sport;cur.dbl=!!F.dbl;cur.rule=F.rule||'short';flow.sport=F.sport;
   await showMatchLoading();setMenuVis(false);setupMatch(F.sport,!!F.dbl);cur.friend=true;hudBuild();const scoreNames=document.querySelectorAll('#gtop .n');if(scoreNames[0])scoreNames[0].textContent='YOU';if(scoreNames[1])scoreNames[1].textContent='FRIEND';show('hud');
-  if(role==='host'){window.__arenaRemoteInput={mx:0,mz:0,shot:false,power:false,drop:false};if(snapshotTimer)clearInterval(snapshotTimer);snapshotTimer=setInterval(()=>{if(room&&roomRole==='host'&&mode==='game'&&M){const data=makeSnapshot();if(data)room.child('snapshot').set(data).catch(()=>{})}},66)}
+  if(role==='host'){window.__arenaRemoteInput={mx:0,mz:0,shot:false,power:false,drop:false};if(snapshotTimer)clearInterval(snapshotTimer);snapshotTimer=setInterval(()=>{if(room&&roomRole==='host'&&mode==='game'&&M){try{const data=makeSnapshot();if(data)room.child('snapshot').set(data).catch(()=>{})}catch(e){}}},66)}
   else{snapshotWatch=snap=>applySnapshot(snap.val());room.child('snapshot').on('value',snapshotWatch)}
  }
  window.__arenaSendInput=input=>{
@@ -1125,13 +1130,13 @@ if(mq.addEventListener)mq.addEventListener('change',chk);addEventListener('orien
  async function createRoom(){
   if(roomRole!=='offline')return;
   try{await connect();roomRole='host';window.__arenaNetRole='host';roomCode=genCode();room=db.ref('badminton_rooms/'+roomCode);
-   const made=await room.transaction(v=>v===null?{hostId:uid,hostName:'ホスト',createdAt:Date.now(),status:'waiting',sport:'tennis',dbl:false,ruleMode:'short',guestId:null}:undefined);
+   const made=await room.transaction(v=>v===null?{hostId:uid,hostName:NICK||'ホスト',createdAt:Date.now(),status:'waiting',sport:'tennis',dbl:false,ruleMode:'short',guestId:null}:undefined);
    if(!made.committed)throw Error('部屋番号が重複しました。もう一度作成してください。');
    try{await room.onDisconnect().remove()}catch(e){}
    F.sport='tennis';F.dbl=false;F.rule='short';showRoom('host',roomCode);
    guestWatch=snap=>{const v=snap.val();if(roomRole!=='host')return;F.guest=!!v;if(v){$('slotG').innerHTML='<b>ゲスト</b><span class="ok">接続済み</span>';$('bStart').disabled=false;setWait('フレンドが接続しました。試合を開始できます。')}else{$('slotG').innerHTML='<b>ゲスト</b><span class="dim">待機中...</span>';$('bStart').disabled=true;setWait('フレンドを待っています。')}};
    room.child('guestId').on('value',guestWatch);
-   guestInputWatch=snap=>{const v=snap.val();if(roomRole==='host'&&v)window.__arenaRemoteInput={mx:Math.max(-1,Math.min(1,+v.mx||0)),mz:Math.max(-1,Math.min(1,+v.mz||0)),shot:!!v.shot,power:!!v.power,drop:!!v.drop,sv:(+v.sv|0)}};
+   guestInputWatch=snap=>{const v=snap.val();if(roomRole==='host'&&v){const pv=window.__arenaRemoteInput||{},keep=!!pv.shot&&!v.shot;window.__arenaRemoteInput={mx:Math.max(-1,Math.min(1,+v.mx||0)),mz:Math.max(-1,Math.min(1,+v.mz||0)),shot:!!v.shot||keep,power:keep?!!pv.power:!!v.power,drop:keep?!!pv.drop:!!v.drop,sv:keep?(pv.sv|0):(+v.sv|0)}}};
    room.child('guestInput').on('value',guestInputWatch);
   }catch(e){teardown();alert('Firebaseに接続できませんでした：'+(e.message||e))}
  }
